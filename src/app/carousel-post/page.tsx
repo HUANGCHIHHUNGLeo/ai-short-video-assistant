@@ -30,7 +30,7 @@ import { CreditsAlert } from "@/components/billing"
 
 interface CarouselSlide {
   page: number
-  type: "cover" | "content" | "cta"
+  type: "cover" | "content" | "cta" | "result"
   headline: string
   subheadline?: string
   body?: string
@@ -178,8 +178,17 @@ export default function CarouselPostPage() {
     text += `輪播內容（共 ${post.slides.length} 頁）\n`
     text += `═══════════════════════════════════\n\n`
 
+    const getSlideTypeName = (type: string) => {
+      switch (type) {
+        case "cover": return "封面"
+        case "cta": return "CTA"
+        case "result": return "結果"
+        default: return "內容"
+      }
+    }
+
     post.slides.forEach((slide) => {
-      text += `【第 ${slide.page} 頁 - ${slide.type === "cover" ? "封面" : slide.type === "cta" ? "CTA" : "內容"}】\n`
+      text += `【第 ${slide.page} 頁 - ${getSlideTypeName(slide.type)}】\n`
       text += `標題：${slide.headline}\n`
       if (slide.subheadline) text += `副標：${slide.subheadline}\n`
       if (slide.body) text += `內容：${slide.body}\n`
@@ -242,15 +251,35 @@ export default function CarouselPostPage() {
       ? "bg-gradient-to-br from-primary/20 to-purple-500/20"
       : slide.type === "cta"
         ? "bg-gradient-to-br from-green-500/20 to-emerald-500/20"
-        : "bg-muted/50"
+        : slide.type === "result"
+          ? "bg-gradient-to-br from-amber-500/20 to-orange-500/20"
+          : "bg-muted/50"
 
     const bodyLines = formatBodyText(slide.body || '')
+
+    const getBadgeLabel = () => {
+      switch (slide.type) {
+        case "cover": return "封面"
+        case "cta": return "CTA"
+        case "result": return "結果"
+        default: return `第 ${slide.page || index + 1} 頁`
+      }
+    }
+
+    const getBadgeVariant = () => {
+      switch (slide.type) {
+        case "cover": return "default"
+        case "cta": return "success"
+        case "result": return "warning"
+        default: return "secondary"
+      }
+    }
 
     return (
       <div className={`aspect-[4/5] rounded-lg border-2 ${bgColor} p-3 sm:p-4 flex flex-col`}>
         <div className="flex justify-between items-center mb-2">
-          <Badge variant={slide.type === "cover" ? "default" : slide.type === "cta" ? "success" : "secondary"} className="text-xs">
-            {slide.type === "cover" ? "封面" : slide.type === "cta" ? "CTA" : `第 ${slide.page || index + 1} 頁`}
+          <Badge variant={getBadgeVariant() as "default" | "secondary" | "success" | "warning"} className="text-xs">
+            {getBadgeLabel()}
           </Badge>
           <span className="text-xs text-muted-foreground">{index + 1}/{total}</span>
         </div>
@@ -261,7 +290,7 @@ export default function CarouselPostPage() {
             <p className="text-xs sm:text-sm text-muted-foreground">{slide.subheadline}</p>
           )}
           {bodyLines.length > 0 && (
-            <div className="space-y-1.5 mt-2">
+            <div className={`space-y-1.5 mt-2 ${slide.type === "result" ? "text-left px-2" : ""}`}>
               {bodyLines.map((line, i) => (
                 <p key={i} className="text-xs sm:text-sm leading-relaxed">{line}</p>
               ))}

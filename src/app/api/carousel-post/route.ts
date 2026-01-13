@@ -48,11 +48,19 @@ const systemPrompt = `你是台灣頂尖社群內容策劃師，專精 IG/小紅
 
 slides 結構說明：
 - page: 頁碼數字（1開始）
-- type: "cover"=封面、"content"=內容頁、"cta"=行動呼籲頁
-- headline: 該頁主標題
-- body: 具體內容（內容頁至少3行）
+- type: "cover"=封面、"content"=內容頁、"cta"=行動呼籲頁、"result"=結果頁（測驗專用）
+- headline: 每頁必填主標題
+- body: 內容頁必填（至少3行），封面/CTA頁可選副標或說明
 
-注意：quizResults 只有測驗類貼文才需要，提供4-6個不同結果讓創作者回覆粉絲留言`
+## 測驗類特殊規則（超重要！）
+測驗類貼文結構：封面 → 測驗題目內容頁 → CTA頁 → 1-2頁結果頁
+- 結果頁 type="result"，放在 CTA 後面
+- 第一頁結果：headline="選A、B的結果"，body 列出 A 和 B 的結果描述
+- 第二頁結果：headline="選C、D的結果"，body 列出 C 和 D 的結果描述
+- 每個選項格式：「選A：你是XX型 - 描述內容」
+- 測驗類貼文因為有結果頁，總頁數可以到 7-9 頁
+
+注意：quizResults 陣列也要保留，方便創作者回覆留言時複製`
 
 export async function POST(request: NextRequest) {
   try {
