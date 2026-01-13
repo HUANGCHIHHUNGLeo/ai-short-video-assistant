@@ -10,7 +10,6 @@ import {
   LayoutDashboard,
   Lightbulb,
   Menu,
-  Settings,
   Video
 } from "lucide-react"
 import Link from "next/link"
@@ -75,17 +74,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             ))}
           </div>
 
-          <div className="mt-8 px-3">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 pl-2">
-              系統設定
-            </div>
-            <Link href="/settings">
-              <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground">
-                <Settings className="h-5 w-5" />
-                設定與 API Key
-              </Button>
-            </Link>
-          </div>
         </ScrollArea>
 
         <div className="p-4 border-t border-border/40">
