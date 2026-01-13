@@ -14,7 +14,7 @@ export default function Home() {
   const features = [
     {
       title: "AI 定位教練",
-      desc: "迷茫時的第一步，幫你找到最適合的變現定位。",
+      desc: "基於 SFM 系統，三個核心問題幫你找到市場需求與個人優勢的交集點。",
       icon: Bot,
       href: "/positioning",
       color: "text-blue-500",
@@ -22,7 +22,7 @@ export default function Home() {
     },
     {
       title: "爆款腳本生成",
-      desc: "輸入主題，自動套用顏董爆款公式生成腳本。",
+      desc: "五種必爆開頭公式 + 黃金三段結構，AI 幫你寫出高轉化腳本。",
       icon: Video,
       href: "/script-generator",
       color: "text-purple-500",
@@ -30,7 +30,7 @@ export default function Home() {
     },
     {
       title: "文案覆盤優化",
-      desc: "貼上文案，AI 幫你診斷並提供優化建議。",
+      desc: "從開頭吸引力、價值清晰度、痛點觸及、CTA 強度四維度診斷優化。",
       icon: FileText,
       href: "/copy-optimizer",
       color: "text-green-500",
@@ -38,7 +38,7 @@ export default function Home() {
     },
     {
       title: "熱門選題靈感",
-      desc: "結合你的定位，推薦全網最熱門的選題。",
+      desc: "根據你的定位，AI 推薦痛點型、反常識型、數據型等五種爆款選題。",
       icon: Lightbulb,
       href: "/topic-ideas",
       color: "text-orange-500",
@@ -49,9 +49,9 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">早安，未來的百萬創作者！</h1>
+        <h1 className="text-3xl font-bold tracking-tight">哎呀，準備好打造爆款了嗎？</h1>
         <p className="text-muted-foreground mt-2">
-          今天是個創作的好日子。顏董 AI 助理隨時準備好協助你打造下一個爆款。
+          基於 SFM 流量變現系統，顏董 AI 助理幫你從定位到腳本，一站式搞定自媒體內容。
         </p>
       </div>
 

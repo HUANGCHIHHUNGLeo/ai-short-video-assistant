@@ -14,6 +14,12 @@ export default function CopyOptimizerPage() {
   const [originalCopy, setOriginalCopy] = useState("")
   const [result, setResult] = useState<{
     score: number
+    breakdown?: {
+      opening: number
+      value: number
+      painPoint: number
+      cta: number
+    }
     feedback: string
     optimized: string
   } | null>(null)
@@ -135,6 +141,28 @@ export default function CopyOptimizerPage() {
                   <div className="text-5xl font-bold text-primary">{result.score}</div>
                   <div className="text-sm text-muted-foreground">/ 100 分</div>
                 </div>
+
+                {/* Breakdown Scores */}
+                {result.breakdown && (
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <div className="text-2xl font-bold text-blue-500">{result.breakdown.opening}</div>
+                      <div className="text-xs text-muted-foreground">開頭吸引力</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <div className="text-2xl font-bold text-green-500">{result.breakdown.value}</div>
+                      <div className="text-xs text-muted-foreground">價值清晰度</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <div className="text-2xl font-bold text-orange-500">{result.breakdown.painPoint}</div>
+                      <div className="text-xs text-muted-foreground">痛點觸及度</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <div className="text-2xl font-bold text-purple-500">{result.breakdown.cta}</div>
+                      <div className="text-xs text-muted-foreground">CTA 強度</div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Feedback */}
                 <div className="mb-6">

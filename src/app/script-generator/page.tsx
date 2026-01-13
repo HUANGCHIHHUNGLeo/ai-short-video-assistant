@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Copy, Download, FileText, Sparkles, Video, Wand2 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 
 export default function ScriptGeneratorPage() {
+  const searchParams = useSearchParams()
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedScript, setGeneratedScript] = useState<string | null>(null)
   const [topic, setTopic] = useState("")
@@ -19,6 +21,14 @@ export default function ScriptGeneratorPage() {
   const [duration, setDuration] = useState("30-60")
   const [keyMessage, setKeyMessage] = useState("")
   const [openingStyle, setOpeningStyle] = useState("")
+
+  // 從 URL 參數讀取選題
+  useEffect(() => {
+    const topicParam = searchParams.get("topic")
+    if (topicParam) {
+      setTopic(topicParam)
+    }
+  }, [searchParams])
 
   const handleGenerate = async () => {
     if (!topic) return
@@ -137,9 +147,9 @@ export default function ScriptGeneratorPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>選擇爆款開頭風格</Label>
+              <Label>選擇爆款開頭風格（五種必爆開頭）</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {["提問直擊痛點", "反常識觀點", "數據震驚", "故事懸念"].map((style) => (
+                {["提問直擊痛點", "反常識觀點", "數據震驚", "故事懸念", "直接利益"].map((style) => (
                   <div
                     key={style}
                     className={`flex items-center space-x-2 rounded-lg border p-3 cursor-pointer transition-colors ${
