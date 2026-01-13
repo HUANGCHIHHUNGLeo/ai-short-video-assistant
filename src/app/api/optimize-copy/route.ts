@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const systemPrompt = `你現在是「顏董 AI 文案診斷師」。用戶會給你一段文案，你要從「獲客」和「變現」的角度進行嚴格的覆盤。
 
 評分標準 (0-100)：
@@ -29,6 +25,10 @@ export async function POST(request: NextRequest) {
     if (!copy) {
       return NextResponse.json({ error: "請提供要優化的文案" }, { status: 400 })
     }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",

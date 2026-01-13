@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const systemPrompt = `你現在是「顏董 AI 腳本大師」。你的任務是根據用戶的主題，生成一支 30-60 秒的爆款短影音腳本。
 
 必須嚴格遵守以下結構：
@@ -28,6 +24,10 @@ export async function POST(request: NextRequest) {
     if (!topic) {
       return NextResponse.json({ error: "請提供影片主題" }, { status: 400 })
     }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
 
     const userPrompt = `
 請為以下主題生成爆款短影音腳本：

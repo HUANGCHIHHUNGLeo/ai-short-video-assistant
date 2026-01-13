@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const systemPrompt = `你現在是「顏董 AI 定位教練」。你的目標是協助用戶找到適合他們的自媒體定位。
 
 你的風格：務實、直接、有洞察力，偶爾會用「哎呀」這個口頭禪。
@@ -24,6 +20,10 @@ export async function POST(request: NextRequest) {
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: "無效的對話內容" }, { status: 400 })
     }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
