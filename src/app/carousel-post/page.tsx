@@ -200,6 +200,43 @@ export default function CarouselPostPage() {
     return text
   }
 
+  // 將長文本智能分行（每行約15-20字，最多3行）
+  const formatBodyText = (text: string) => {
+    if (!text) return []
+
+    // 先檢查是否已有換行符號
+    if (text.includes('\n')) {
+      return text.split('\n').filter(line => line.trim())
+    }
+
+    // 中文標點符號作為自然斷點
+    const breakPoints = /([，。！？、；：」）])/g
+    const segments = text.split(breakPoints).filter(Boolean)
+
+    const lines: string[] = []
+    let currentLine = ''
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i]
+      const testLine = currentLine + segment
+
+      // 每行約15-20字
+      if (testLine.length > 18 && currentLine.length > 0) {
+        lines.push(currentLine)
+        currentLine = segment
+      } else {
+        currentLine = testLine
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine)
+    }
+
+    // 最多顯示4行
+    return lines.slice(0, 4)
+  }
+
   const SlidePreview = ({ slide, index, total }: { slide: CarouselSlide; index: number; total: number }) => {
     const bgColor = slide.type === "cover"
       ? "bg-gradient-to-br from-primary/20 to-purple-500/20"
@@ -207,28 +244,34 @@ export default function CarouselPostPage() {
         ? "bg-gradient-to-br from-green-500/20 to-emerald-500/20"
         : "bg-muted/50"
 
+    const bodyLines = formatBodyText(slide.body || '')
+
     return (
-      <div className={`aspect-[4/5] rounded-lg border-2 ${bgColor} p-4 flex flex-col`}>
+      <div className={`aspect-[4/5] rounded-lg border-2 ${bgColor} p-3 sm:p-4 flex flex-col`}>
         <div className="flex justify-between items-center mb-2">
-          <Badge variant={slide.type === "cover" ? "default" : slide.type === "cta" ? "success" : "secondary"}>
+          <Badge variant={slide.type === "cover" ? "default" : slide.type === "cta" ? "success" : "secondary"} className="text-xs">
             {slide.type === "cover" ? "封面" : slide.type === "cta" ? "CTA" : `第 ${slide.page || index + 1} 頁`}
           </Badge>
           <span className="text-xs text-muted-foreground">{index + 1}/{total}</span>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center text-center space-y-2">
-          <h3 className="font-bold text-lg leading-tight">{slide.headline}</h3>
+        <div className="flex-1 flex flex-col justify-center text-center space-y-3 overflow-hidden">
+          <h3 className="font-bold text-base sm:text-lg leading-tight">{slide.headline}</h3>
           {slide.subheadline && (
-            <p className="text-sm text-muted-foreground">{slide.subheadline}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">{slide.subheadline}</p>
           )}
-          {slide.body && (
-            <p className="text-sm mt-2">{slide.body}</p>
+          {bodyLines.length > 0 && (
+            <div className="space-y-1.5 mt-2">
+              {bodyLines.map((line, i) => (
+                <p key={i} className="text-xs sm:text-sm leading-relaxed">{line}</p>
+              ))}
+            </div>
           )}
         </div>
 
         {slide.designTip && (
           <div className="mt-auto pt-2 border-t">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               <span className="font-medium">設計提示：</span>{slide.designTip}
             </p>
           </div>
