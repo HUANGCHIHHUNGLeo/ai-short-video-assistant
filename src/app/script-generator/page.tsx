@@ -9,11 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Copy, Download, FileText, Sparkles, Video, Wand2 } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useState } from "react"
 
 export default function ScriptGeneratorPage() {
-  const searchParams = useSearchParams()
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedScript, setGeneratedScript] = useState<string | null>(null)
   const [topic, setTopic] = useState("")
@@ -21,14 +19,6 @@ export default function ScriptGeneratorPage() {
   const [duration, setDuration] = useState("30-60")
   const [keyMessage, setKeyMessage] = useState("")
   const [openingStyle, setOpeningStyle] = useState("")
-
-  // 從 URL 參數讀取選題
-  useEffect(() => {
-    const topicParam = searchParams.get("topic")
-    if (topicParam) {
-      setTopic(topicParam)
-    }
-  }, [searchParams])
 
   const handleGenerate = async () => {
     if (!topic) return

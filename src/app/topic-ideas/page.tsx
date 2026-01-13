@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Lightbulb, RefreshCw, Sparkles, TrendingUp, Target, Zap } from "lucide-react"
 import { useState } from "react"
-import Link from "next/link"
 
 interface TopicIdea {
   title: string
@@ -181,11 +180,13 @@ export default function TopicIdeasPage() {
                     <p className="text-sm text-muted-foreground">{idea.hookSuggestion}</p>
                   </div>
                 )}
-                <Link href={`/script-generator?topic=${encodeURIComponent(idea.title)}`}>
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    使用這個選題生成腳本
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                  onClick={() => navigator.clipboard.writeText(idea.title)}
+                >
+                  複製選題標題
+                </Button>
               </CardContent>
             </Card>
           ))}
