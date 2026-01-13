@@ -211,7 +211,7 @@ export default function CarouselPostPage() {
       <div className={`aspect-[4/5] rounded-lg border-2 ${bgColor} p-4 flex flex-col`}>
         <div className="flex justify-between items-center mb-2">
           <Badge variant={slide.type === "cover" ? "default" : slide.type === "cta" ? "success" : "secondary"}>
-            {slide.type === "cover" ? "封面" : slide.type === "cta" ? "CTA" : `第 ${slide.page} 頁`}
+            {slide.type === "cover" ? "封面" : slide.type === "cta" ? "CTA" : `第 ${slide.page || index + 1} 頁`}
           </Badge>
           <span className="text-xs text-muted-foreground">{index + 1}/{total}</span>
         </div>

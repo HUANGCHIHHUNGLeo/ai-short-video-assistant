@@ -44,7 +44,13 @@ const systemPrompt = `你是台灣頂尖社群內容策劃師，專精 IG/小紅
 - headline、body、caption 等欄位都要是乾淨的純文字
 
 ## JSON格式
-{"carouselPosts":[{"id":1,"title":"標題","type":"類型","slides":[...],"caption":"配文","hashtags":["tag"],"quizResults":[{"result":"A型","title":"結果標題","description":"2-3句結果描述，可直接複製回覆粉絲"}]}]}
+{"carouselPosts":[{"id":1,"title":"標題","type":"類型","slides":[{"page":1,"type":"cover","headline":"封面標題","body":"副標文字"},{"page":2,"type":"content","headline":"重點標題","body":"具體內容3-5行"},{"page":3,"type":"cta","headline":"行動呼籲","body":"收藏/分享/追蹤"}],"caption":"配文","hashtags":["tag"],"quizResults":[{"result":"A型","title":"結果標題","description":"2-3句結果描述"}]}]}
+
+slides 結構說明：
+- page: 頁碼數字（1開始）
+- type: "cover"=封面、"content"=內容頁、"cta"=行動呼籲頁
+- headline: 該頁主標題
+- body: 具體內容（內容頁至少3行）
 
 注意：quizResults 只有測驗類貼文才需要，提供4-6個不同結果讓創作者回覆粉絲留言`
 
