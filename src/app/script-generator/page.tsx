@@ -8,21 +8,33 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { Copy, Download, FileText, Sparkles, Video, Wand2 } from "lucide-react"
+import { Copy, Download, FileText, Sparkles, Video, Wand2, User, Target, MessageSquare } from "lucide-react"
 import { useState } from "react"
 
 export default function ScriptGeneratorPage() {
+  const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedScript, setGeneratedScript] = useState<string | null>(null)
-  const [topic, setTopic] = useState("")
-  const [audience, setAudience] = useState("")
-  const [duration, setDuration] = useState("30-60")
-  const [keyMessage, setKeyMessage] = useState("")
-  const [openingStyle, setOpeningStyle] = useState("")
+
+  // Step 1: 了解創作者背景
+  const [creatorBackground, setCreatorBackground] = useState({
+    niche: "",
+    expertise: "",
+    targetAudience: "",
+    audiencePainPoints: "",
+    contentStyle: ""
+  })
+
+  // Step 2: 影片設定
+  const [videoSettings, setVideoSettings] = useState({
+    topic: "",
+    goal: "",
+    duration: "30-60",
+    keyMessage: "",
+    cta: ""
+  })
 
   const handleGenerate = async () => {
-    if (!topic) return
-
     setIsGenerating(true)
     setGeneratedScript(null)
 
@@ -31,11 +43,8 @@ export default function ScriptGeneratorPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          topic,
-          audience,
-          duration,
-          keyMessage,
-          openingStyle
+          creatorBackground,
+          videoSettings
         })
       })
 
@@ -43,12 +52,13 @@ export default function ScriptGeneratorPage() {
 
       if (data.script) {
         setGeneratedScript(data.script)
+        setStep(3)
       } else {
         setGeneratedScript("生成失敗，請稍後再試。")
       }
     } catch (error) {
       console.error("Error:", error)
-      setGeneratedScript("發生錯誤，請檢查 API Key 設定。")
+      setGeneratedScript("發生錯誤，請檢查網路連線。")
     } finally {
       setIsGenerating(false)
     }
@@ -60,199 +70,327 @@ export default function ScriptGeneratorPage() {
     }
   }
 
+  const canProceedStep1 = creatorBackground.niche && creatorBackground.targetAudience
+  const canProceedStep2 = videoSettings.topic && videoSettings.goal
+
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Video className="h-8 w-8 text-primary" />
-            爆款腳本生成器
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            輸入主題，AI 自動套用顏董爆款公式，生成分鏡腳本。
-          </p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Video className="h-8 w-8 text-primary" />
+          爆款腳本生成器
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          填寫完整資訊，AI 根據你的定位和目標生成最適合的腳本。
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
-        {/* Input Panel */}
-        <Card className="flex flex-col h-full border-primary/20">
+      {/* Progress Steps */}
+      <div className="flex items-center gap-4">
+        {[
+          { num: 1, label: "創作者背景", icon: User },
+          { num: 2, label: "影片設定", icon: Target },
+          { num: 3, label: "生成結果", icon: FileText }
+        ].map((s, i) => (
+          <div key={s.num} className="flex items-center">
+            <div
+              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
+                step === s.num
+                  ? "bg-primary text-primary-foreground"
+                  : step > s.num
+                  ? "bg-primary/20 text-primary"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <s.icon className="h-4 w-4" />
+              <span className="text-sm font-medium">{s.label}</span>
+            </div>
+            {i < 2 && <div className="w-8 h-0.5 bg-border mx-2" />}
+          </div>
+        ))}
+      </div>
+
+      {/* Step 1: 創作者背景 */}
+      {step === 1 && (
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-primary" />
-              腳本設定
+              <User className="h-5 w-5 text-primary" />
+              第一步：告訴我你的創作者背景
             </CardTitle>
             <CardDescription>
-              設定你的影片參數，讓 AI 更精準地為你創作。
+              讓 AI 了解你是誰、你的專業和目標受眾，才能生成最適合你的腳本風格。
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 flex-1 overflow-y-auto">
+          <CardContent className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>你的領域/定位 *</Label>
+                <Input
+                  placeholder="例如：個人理財教學、職場成長、健身教練..."
+                  value={creatorBackground.niche}
+                  onChange={(e) => setCreatorBackground({ ...creatorBackground, niche: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">你專注在哪個領域做內容？</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>你的專業背景/優勢</Label>
+                <Input
+                  placeholder="例如：10年金融業經驗、考過CFP證照..."
+                  value={creatorBackground.expertise}
+                  onChange={(e) => setCreatorBackground({ ...creatorBackground, expertise: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">什麼讓你有資格談這個話題？</p>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>影片主題 *</Label>
-              <Input
-                placeholder="例如：新手如何開始做自媒體？"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+              <Label>你的目標受眾是誰？ *</Label>
+              <Textarea
+                placeholder="例如：25-35歲的上班族，月薪 3-5 萬，想學習理財但不知道從何開始，對投資有興趣但怕賠錢..."
+                className="h-24 resize-none"
+                value={creatorBackground.targetAudience}
+                onChange={(e) => setCreatorBackground({ ...creatorBackground, targetAudience: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">描述越具體，腳本越精準（年齡、職業、困擾、渴望）</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>他們最大的痛點/困擾是什麼？</Label>
+              <Textarea
+                placeholder="例如：存不到錢、不知道怎麼開始投資、怕被割韭菜、資訊太多不知道該信誰..."
+                className="h-24 resize-none"
+                value={creatorBackground.audiencePainPoints}
+                onChange={(e) => setCreatorBackground({ ...creatorBackground, audiencePainPoints: e.target.value })}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>你的說話風格</Label>
+              <Select
+                value={creatorBackground.contentStyle}
+                onValueChange={(v) => setCreatorBackground({ ...creatorBackground, contentStyle: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇你偏好的風格" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="professional">專業權威型 - 像老師一樣教學</SelectItem>
+                  <SelectItem value="friendly">親切朋友型 - 像朋友分享經驗</SelectItem>
+                  <SelectItem value="energetic">熱血激勵型 - 充滿能量和感染力</SelectItem>
+                  <SelectItem value="humorous">幽默風趣型 - 輕鬆有趣好消化</SelectItem>
+                  <SelectItem value="storytelling">故事敘事型 - 用故事帶出觀點</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setStep(2)}
+                disabled={!canProceedStep1}
+                className="px-8"
+              >
+                下一步：設定影片內容
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Step 2: 影片設定 */}
+      {step === 2 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              第二步：這支影片要達成什麼目標？
+            </CardTitle>
+            <CardDescription>
+              告訴 AI 這支影片的主題和目的，生成最有效的腳本結構。
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>影片主題 *</Label>
+              <Input
+                placeholder="例如：新手如何開始投資？/ 3個存錢技巧讓你月存1萬"
+                value={videoSettings.topic}
+                onChange={(e) => setVideoSettings({ ...videoSettings, topic: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">這支影片要講什麼？</p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>目標受眾</Label>
-                <Select value={audience} onValueChange={setAudience}>
+                <Label>影片目標 *</Label>
+                <Select
+                  value={videoSettings.goal}
+                  onValueChange={(v) => setVideoSettings({ ...videoSettings, goal: v })}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="選擇受眾" />
+                    <SelectValue placeholder="這支影片的主要目的" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">職場新鮮人</SelectItem>
-                    <SelectItem value="business">中小企業主</SelectItem>
-                    <SelectItem value="freelancer">自由接案者</SelectItem>
-                    <SelectItem value="student">學生族群</SelectItem>
+                    <SelectItem value="awareness">曝光獲客 - 讓更多人認識我</SelectItem>
+                    <SelectItem value="engagement">互動漲粉 - 增加留言分享</SelectItem>
+                    <SelectItem value="trust">建立信任 - 展現專業度</SelectItem>
+                    <SelectItem value="conversion">導流變現 - 引導私訊/購買</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
                 <Label>影片時長</Label>
-                <Select value={duration} onValueChange={setDuration}>
+                <Select
+                  value={videoSettings.duration}
+                  onValueChange={(v) => setVideoSettings({ ...videoSettings, duration: v })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="選擇時長" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15-30">15-30 秒 (極短)</SelectItem>
-                    <SelectItem value="30-60">30-60 秒 (標準)</SelectItem>
-                    <SelectItem value="60+">60 秒以上 (長片)</SelectItem>
+                    <SelectItem value="15-30">15-30 秒（極短，適合曝光）</SelectItem>
+                    <SelectItem value="30-60">30-60 秒（標準，最常見）</SelectItem>
+                    <SelectItem value="60-90">60-90 秒（中長，適合教學）</SelectItem>
+                    <SelectItem value="90+">90 秒以上（長片，深度內容）</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>核心觀點 (Key Message)</Label>
+              <Label>核心訊息 (Key Message)</Label>
               <Textarea
-                placeholder="你想傳達的最重要的一句話是什麼？"
-                className="h-24 resize-none"
-                value={keyMessage}
-                onChange={(e) => setKeyMessage(e.target.value)}
+                placeholder="看完這支影片，觀眾最應該記住的一句話是什麼？"
+                className="h-20 resize-none"
+                value={videoSettings.keyMessage}
+                onChange={(e) => setVideoSettings({ ...videoSettings, keyMessage: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>選擇爆款開頭風格（五種必爆開頭）</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {["提問直擊痛點", "反常識觀點", "數據震驚", "故事懸念", "直接利益"].map((style) => (
-                  <div
-                    key={style}
-                    className={`flex items-center space-x-2 rounded-lg border p-3 cursor-pointer transition-colors ${
-                      openingStyle === style
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/50"
-                    }`}
-                    onClick={() => setOpeningStyle(style)}
-                  >
-                    <div className={`h-4 w-4 rounded-full border-2 ${
-                      openingStyle === style
-                        ? "border-primary bg-primary"
-                        : "border-muted-foreground"
-                    }`} />
-                    <span className="text-sm">{style}</span>
-                  </div>
-                ))}
-              </div>
+              <Label>希望觀眾做什麼？(CTA)</Label>
+              <Select
+                value={videoSettings.cta}
+                onValueChange={(v) => setVideoSettings({ ...videoSettings, cta: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇行動呼籲類型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="follow">追蹤帳號</SelectItem>
+                  <SelectItem value="like">按讚收藏</SelectItem>
+                  <SelectItem value="comment">留言互動</SelectItem>
+                  <SelectItem value="share">分享給朋友</SelectItem>
+                  <SelectItem value="dm">私訊諮詢</SelectItem>
+                  <SelectItem value="link">點擊連結</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <Button
-              className="w-full h-12 text-lg font-bold shadow-lg mt-4"
-              onClick={handleGenerate}
-              disabled={isGenerating || !topic}
-            >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                  AI 正在創作中...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  立即生成爆款腳本
-                </>
-              )}
-            </Button>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(1)}>
+                上一步
+              </Button>
+              <Button
+                onClick={handleGenerate}
+                disabled={!canProceedStep2 || isGenerating}
+                className="px-8"
+              >
+                {isGenerating ? (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                    AI 正在為你量身打造腳本...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    生成專屬腳本
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Output Panel */}
-        <Card className="flex flex-col h-full bg-muted/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                生成結果
-              </CardTitle>
-              <CardDescription>
-                AI 生成的分鏡腳本將顯示在這裡
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" disabled={!generatedScript} onClick={copyToClipboard}>
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" disabled={!generatedScript}>
-                <Download className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="flex-1 p-0 min-h-0 relative">
-            {!generatedScript && !isGenerating && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Video className="h-8 w-8 opacity-50" />
-                </div>
-                <p>在左側設定參數並點擊生成，<br />AI 將為你撰寫專業的分鏡腳本。</p>
+      {/* Step 3: 生成結果 */}
+      {step === 3 && generatedScript && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* 左側：用戶輸入摘要 */}
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg">腳本設定摘要</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div>
+                <p className="font-medium text-muted-foreground">創作者定位</p>
+                <p>{creatorBackground.niche}</p>
               </div>
-            )}
-
-            {isGenerating && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                <div className="space-y-4 w-full max-w-md">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>正在構思開頭...</span>
-                    <span>生成中</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary animate-pulse" style={{ width: "60%" }} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted/50 rounded w-3/4 animate-pulse" />
-                    <div className="h-4 bg-muted/50 rounded w-full animate-pulse" />
-                    <div className="h-4 bg-muted/50 rounded w-5/6 animate-pulse" />
-                  </div>
-                </div>
+              <Separator />
+              <div>
+                <p className="font-medium text-muted-foreground">目標受眾</p>
+                <p>{creatorBackground.targetAudience}</p>
               </div>
-            )}
+              <Separator />
+              <div>
+                <p className="font-medium text-muted-foreground">影片主題</p>
+                <p>{videoSettings.topic}</p>
+              </div>
+              <Separator />
+              <div>
+                <p className="font-medium text-muted-foreground">影片目標</p>
+                <p>{videoSettings.goal === "awareness" ? "曝光獲客" :
+                   videoSettings.goal === "engagement" ? "互動漲粉" :
+                   videoSettings.goal === "trust" ? "建立信任" : "導流變現"}</p>
+              </div>
+              <Separator />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setStep(1)
+                  setGeneratedScript(null)
+                }}
+              >
+                重新設定
+              </Button>
+            </CardContent>
+          </Card>
 
-            {generatedScript && !isGenerating && (
-              <ScrollArea className="h-full p-6">
-                <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+          {/* 右側：生成的腳本 */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  你的專屬腳本
+                </CardTitle>
+                <CardDescription>
+                  根據你的定位和目標量身打造
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={copyToClipboard}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <Separator />
+            <CardContent className="p-0">
+              <ScrollArea className="h-[500px] p-6">
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
                   {generatedScript}
                 </div>
-
-                <div className="mt-8 p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <h4 className="font-bold text-primary flex items-center gap-2 mb-2">
-                    <Sparkles className="h-4 w-4" />
-                    顏董拍攝建議
-                  </h4>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>開頭前 3 秒語速要快，眼神要堅定看著鏡頭。</li>
-                    <li>切換場景時，動作要俐落，不要有拖泥帶水的轉場特效。</li>
-                    <li>最後的 CTA 一定要加上手勢引導，提高轉化率。</li>
-                  </ul>
-                </div>
               </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
