@@ -20,6 +20,7 @@ import {
   Hash,
   Images,
   Lightbulb,
+  MessageCircle,
   RefreshCw,
   Sparkles
 } from "lucide-react"
@@ -34,6 +35,12 @@ interface CarouselSlide {
   designTip?: string
 }
 
+interface QuizResult {
+  result: string
+  title: string
+  description: string
+}
+
 interface CarouselPost {
   id: number
   title: string
@@ -44,6 +51,7 @@ interface CarouselPost {
   caption: string
   hashtags: string[]
   estimatedEngagement: string
+  quizResults?: QuizResult[]
 }
 
 const CAROUSEL_TYPES = [
@@ -103,7 +111,7 @@ export default function CarouselPostPage() {
   const [niche, setNiche] = useState("")
   const [targetAudience, setTargetAudience] = useState("")
   const [topic, setTopic] = useState("")
-  const [carouselCount, setCarouselCount] = useState(20)
+  const [carouselCount, setCarouselCount] = useState(10)
 
   const handleGenerate = async () => {
     if (!niche) {
@@ -299,10 +307,10 @@ export default function CarouselPostPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="10">10 組輪播貼文</SelectItem>
+                      <SelectItem value="5">5 組輪播貼文</SelectItem>
+                      <SelectItem value="10">10 組輪播貼文（推薦）</SelectItem>
                       <SelectItem value="15">15 組輪播貼文</SelectItem>
-                      <SelectItem value="20">20 組輪播貼文（推薦）</SelectItem>
-                      <SelectItem value="25">25 組輪播貼文</SelectItem>
+                      <SelectItem value="20">20 組輪播貼文</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -608,6 +616,48 @@ export default function CarouselPostPage() {
                                   ))}
                                 </div>
                               </div>
+
+                              {/* 測驗結果區域 - 只有測驗類貼文才顯示 */}
+                              {post.quizResults && post.quizResults.length > 0 && (
+                                <>
+                                  <Separator />
+                                  <div>
+                                    <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                                      <MessageCircle className="h-4 w-4 text-primary" />
+                                      測驗結果回覆（點擊複製）
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground mb-3">
+                                      粉絲留言測驗結果後，複製對應回覆貼上即可
+                                    </p>
+                                    <div className="space-y-2">
+                                      {post.quizResults.map((quizResult, i) => (
+                                        <div
+                                          key={i}
+                                          className="p-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 cursor-pointer transition-colors group"
+                                          onClick={() => copyToClipboard(`${quizResult.title}\n${quizResult.description}`)}
+                                        >
+                                          <div className="flex items-start justify-between gap-2">
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <Badge variant="outline" className="text-xs flex-shrink-0">
+                                                  {quizResult.result}
+                                                </Badge>
+                                                <span className="font-medium text-sm truncate">
+                                                  {quizResult.title}
+                                                </span>
+                                              </div>
+                                              <p className="text-xs text-muted-foreground">
+                                                {quizResult.description}
+                                              </p>
+                                            </div>
+                                            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </>
+                              )}
 
                               <Separator />
 

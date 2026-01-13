@@ -65,7 +65,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-bold text-lg tracking-tight">顏董 AI 助理</span>
+            <span className="font-bold text-lg tracking-tight">AI 短影音助理</span>
           </div>
         </div>
 
@@ -93,17 +93,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile Header & Content */}
       <div className="flex-1 flex flex-col md:pl-64 transition-all duration-300">
-        <header className="h-16 md:hidden flex items-center justify-between px-4 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-40">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
-              <Bot className="h-5 w-5 text-primary" />
-            </div>
-            <span className="font-bold text-lg">顏董 AI</span>
-          </div>
-
+        <header className="h-16 md:hidden flex items-center px-4 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-40">
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="flex-shrink-0 -ml-2">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -120,6 +113,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </ScrollArea>
             </SheetContent>
           </Sheet>
+          <div className="flex items-center gap-2 ml-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <span className="font-bold text-lg">AI 助理</span>
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in">

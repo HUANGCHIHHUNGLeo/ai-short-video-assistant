@@ -37,11 +37,13 @@ const systemPrompt = `你是台灣頂尖社群內容策劃師，專精 IG/小紅
 台灣口語、親切自然、像朋友分享，可用「欸」「齁」「對吧」
 
 ## JSON格式
-{"carouselPosts":[{"id":1,"title":"標題","type":"類型","slides":[{"page":1,"type":"cover","headline":"封面標題","subheadline":"副標"},{"page":2,"type":"content","headline":"標題","body":"至少3行具體內容"},{"page":6,"type":"cta","headline":"CTA標題","body":"行動呼籲"}],"caption":"配文","hashtags":["tag"]}]}`
+{"carouselPosts":[{"id":1,"title":"標題","type":"類型","slides":[...],"caption":"配文","hashtags":["tag"],"quizResults":[{"result":"A型","title":"結果標題","description":"2-3句結果描述，可直接複製回覆粉絲"}]}]}
+
+注意：quizResults 只有測驗類貼文才需要，提供4-6個不同結果讓創作者回覆粉絲留言`
 
 export async function POST(request: NextRequest) {
   try {
-    const { niche, targetAudience, topic, carouselCount = 20 } = await request.json()
+    const { niche, targetAudience, topic, carouselCount = 10 } = await request.json()
 
     if (!niche) {
       return NextResponse.json({ error: "請提供你的領域/定位" }, { status: 400 })
@@ -59,13 +61,13 @@ ${topic ? `主題：${topic}` : ""}
 - 知識類6-8頁、情感類5-6頁、互動類5-7頁
 - 封面必用高互動公式（數字/對比/問句/痛點/好奇）
 - 每頁至少3行具體內容，禁止placeholder
-- 測驗類需完整選項+結果描述
+- 測驗類需：完整選項 + quizResults陣列（4-6個結果，每個含result/title/description）
 - 涵蓋知識/情感/互動多種類型
 
 輸出JSON。`
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }

@@ -1,16 +1,35 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import DashboardLayout from "@/components/layout/DashboardLayout"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import PWARegister from "@/components/PWARegister"
 
 const inter = Inter({
   subsets: ["latin"],
 })
 
 export const metadata: Metadata = {
-  title: "顏董 AI 短影音助理",
+  title: "AI 短影音助理",
   description: "AI 驅動的短影音創作智能體，幫你打造爆款內容",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AI 助理",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#7c3aed",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -21,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body className={`${inter.className} antialiased`}>
+        <PWARegister />
         <TooltipProvider>
           <DashboardLayout>
             {children}
