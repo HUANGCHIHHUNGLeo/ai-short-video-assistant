@@ -1,65 +1,122 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowRight, Bot, FileText, Lightbulb, TrendingUp, Video } from "lucide-react"
+import Link from "next/link"
 
 export default function Home() {
+  const stats = [
+    { label: "已生成腳本", value: "12", change: "+2 本週" },
+    { label: "已優化文案", value: "8", change: "+3 本週" },
+    { label: "靈感收藏", value: "24", change: "+5 本週" },
+    { label: "AI 諮詢次數", value: "5", change: "+1 本週" },
+  ]
+
+  const features = [
+    {
+      title: "AI 定位教練",
+      desc: "迷茫時的第一步，幫你找到最適合的變現定位。",
+      icon: Bot,
+      href: "/positioning",
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+    },
+    {
+      title: "爆款腳本生成",
+      desc: "輸入主題，自動套用顏董爆款公式生成腳本。",
+      icon: Video,
+      href: "/script-generator",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
+    {
+      title: "文案覆盤優化",
+      desc: "貼上文案，AI 幫你診斷並提供優化建議。",
+      icon: FileText,
+      href: "/copy-optimizer",
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      title: "熱門選題靈感",
+      desc: "結合你的定位，推薦全網最熱門的選題。",
+      icon: Lightbulb,
+      href: "/topic-ideas",
+      color: "text-orange-500",
+      bg: "bg-orange-500/10",
+    },
+  ]
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">早安，未來的百萬創作者！</h1>
+        <p className="text-muted-foreground mt-2">
+          今天是個創作的好日子。顏董 AI 助理隨時準備好協助你打造下一個爆款。
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.label}
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                {stat.change}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">快速開始</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {features.map((feature) => (
+            <Link key={feature.title} href={feature.href}>
+              <Card className="h-full cursor-pointer group hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <div className={`w-12 h-12 rounded-lg ${feature.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  </div>
+                  <CardTitle className="group-hover:text-primary transition-colors">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription>
+                    {feature.desc}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="mt-auto pt-0">
+                  <Button variant="ghost" className="w-full justify-between group-hover:bg-primary/10 group-hover:text-primary">
+                    立即使用
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      {/* Recent Activity Placeholder */}
+      <Card>
+        <CardHeader>
+          <CardTitle>最近活動</CardTitle>
+          <CardDescription>你最近生成的腳本和優化記錄</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>尚無活動記錄，快去生成你的第一個爆款腳本吧！</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
