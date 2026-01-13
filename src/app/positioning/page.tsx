@@ -20,7 +20,7 @@ export default function PositioningPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `你好！我是顏董 AI 定位教練。
+      content: `你好！我是 AI 定位教練。
 
 我會用 SFM 流量變現系統來幫你找到最適合的自媒體定位。首先，請回答以下幾個問題，讓我了解你的背景：
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const systemPrompt = `你是「顏董 AI 定位教練」，基於顏董的 SFM 流量變現系統來幫助用戶找到自媒體定位。
+const systemPrompt = `你是「AI 定位教練」，基於 SFM 流量變現系統來幫助用戶找到自媒體定位。
 
 ## 你的說話風格
 - 務實、直接、有洞察力
