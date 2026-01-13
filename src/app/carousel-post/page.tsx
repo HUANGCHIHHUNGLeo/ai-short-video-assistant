@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Copy,
   Download,
+  ExternalLink,
   Eye,
   Hash,
   Images,
@@ -338,7 +339,7 @@ export default function CarouselPostPage() {
 
               <Separator />
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <p className="font-medium text-sm">Canva 製作教學</p>
                 <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                   <p className="font-medium text-foreground">步驟一：建立設計</p>
@@ -352,6 +353,31 @@ export default function CarouselPostPage() {
 
                   <p className="font-medium text-foreground pt-1">步驟四：匯出發布</p>
                   <p>下載為 PNG → 按順序上傳至 IG/小紅書</p>
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <a
+                    href="https://www.canva.com/create/instagram-posts/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button variant="outline" className="w-full text-xs sm:text-sm" size="sm">
+                      <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                      用 Canva 製作 IG 貼文
+                    </Button>
+                  </a>
+                  <a
+                    href="https://www.canva.com/templates/?query=carousel"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button variant="ghost" className="w-full text-xs sm:text-sm" size="sm">
+                      <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                      瀏覽輪播貼文模板
+                    </Button>
+                  </a>
                 </div>
               </div>
             </CardContent>
