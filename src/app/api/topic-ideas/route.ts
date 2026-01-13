@@ -46,7 +46,14 @@ const systemPrompt = `你是「顏董 AI 選題策劃師」，基於顏董的 SF
 - 選題要具體，不要太泛（「理財」太泛，「月薪3萬如何存到第一桶金」才具體）
 - 標題要有懸念或利益點
 - 每個選題都要考慮目標受眾的痛點
-- 給出 5-6 個不同類型的選題供選擇`
+- 給出 5-6 個不同類型的選題供選擇
+
+## 格式禁令（超重要！）
+- 禁止使用任何 markdown 格式符號
+- 禁止使用 **粗體**、*斜體*、***強調***
+- 禁止使用 # 標題符號、- 列表符號
+- 所有欄位都要是乾淨的純文字
+- title、description、hookSuggestion 都不要任何格式標記`
 
 export async function POST(request: NextRequest) {
   try {
