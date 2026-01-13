@@ -219,30 +219,30 @@ export default function ScriptGeneratorPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-md">
-          <Video className="h-6 w-6 text-white" />
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-md flex-shrink-0">
+          <Video className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             腳本生成器
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground truncate">
             AI 為你生成 {generateCount} 個不同風格的專業腳本
           </p>
         </div>
       </div>
 
       {/* Progress */}
-      <div className="bg-muted/30 rounded-xl p-4">
+      <div className="bg-muted/30 rounded-xl p-3 sm:p-4">
         <div className="flex items-center justify-between mb-3">
           {[
-            { num: 1, label: "創作者背景", icon: User },
-            { num: 2, label: "影片設定", icon: Target },
-            { num: 3, label: "生成結果", icon: Sparkles },
+            { num: 1, label: "背景", labelFull: "創作者背景", icon: User },
+            { num: 2, label: "設定", labelFull: "影片設定", icon: Target },
+            { num: 3, label: "結果", labelFull: "生成結果", icon: Sparkles },
           ].map((item, index) => (
-            <div key={item.num} className="flex items-center">
-              <div className={`flex items-center gap-2 ${step >= item.num ? "text-primary" : "text-muted-foreground"}`}>
+            <div key={item.num} className="flex items-center flex-1 justify-center sm:justify-start sm:flex-initial">
+              <div className={`flex flex-col sm:flex-row items-center gap-1 sm:gap-2 ${step >= item.num ? "text-primary" : "text-muted-foreground"}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step > item.num
                     ? "bg-primary text-primary-foreground"
@@ -252,10 +252,11 @@ export default function ScriptGeneratorPage() {
                 }`}>
                   {step > item.num ? <Check className="h-4 w-4" /> : item.num}
                 </div>
-                <span className="hidden sm:block text-sm font-medium">{item.label}</span>
+                <span className="text-xs sm:text-sm font-medium sm:hidden">{item.label}</span>
+                <span className="hidden sm:block text-sm font-medium">{item.labelFull}</span>
               </div>
               {index < 2 && (
-                <div className={`hidden sm:block w-12 lg:w-24 h-0.5 mx-2 ${
+                <div className={`hidden sm:block w-8 md:w-12 lg:w-24 h-0.5 mx-2 ${
                   step > item.num ? "bg-primary" : "bg-muted"
                 }`} />
               )}
@@ -377,11 +378,11 @@ export default function ScriptGeneratorPage() {
 
                     <div className="space-y-2">
                       <Label>發布平台（可多選）</Label>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         {PLATFORMS.map((platform) => (
                           <div
                             key={platform.id}
-                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-lg border cursor-pointer transition-all ${
                               creatorBackground.platforms.includes(platform.id)
                                 ? "border-primary bg-primary/5"
                                 : "hover:border-muted-foreground/50"
@@ -724,15 +725,16 @@ export default function ScriptGeneratorPage() {
           </Card>
 
           <Tabs value={activeVersion} onValueChange={setActiveVersion}>
-            <TabsList className="w-full justify-start h-auto p-1 flex-wrap gap-1">
+            <TabsList className="w-full justify-start h-auto p-1 flex-wrap gap-1 overflow-x-auto">
               {generatedVersions.map((version) => (
                 <TabsTrigger
                   key={version.id}
                   value={version.id}
-                  className="px-4 py-2.5"
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm flex-shrink-0"
                 >
-                  版本 {version.id}
-                  <Badge variant="outline" className="ml-2 text-xs">
+                  <span className="sm:hidden">{version.id}</span>
+                  <span className="hidden sm:inline">版本 {version.id}</span>
+                  <Badge variant="outline" className="ml-1.5 sm:ml-2 text-xs hidden sm:inline-flex">
                     {version.style}
                   </Badge>
                 </TabsTrigger>
@@ -740,20 +742,21 @@ export default function ScriptGeneratorPage() {
             </TabsList>
 
             {generatedVersions.map((version) => (
-              <TabsContent key={version.id} value={version.id} className="mt-6">
-                <div className="grid gap-6 lg:grid-cols-3">
+              <TabsContent key={version.id} value={version.id} className="mt-4 sm:mt-6">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                   <Card className="lg:col-span-2">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between">
-                        <div>
+                    <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
+                        <div className="min-w-0">
                           <Badge className="mb-2">{version.style}</Badge>
-                          <CardTitle className="text-lg">{version.script.title}</CardTitle>
-                          <CardDescription className="mt-1">{version.styleDescription}</CardDescription>
+                          <CardTitle className="text-base sm:text-lg leading-tight">{version.script.title}</CardTitle>
+                          <CardDescription className="mt-1 text-sm">{version.styleDescription}</CardDescription>
                         </div>
                         <Button
                           variant={copiedId === version.id ? "default" : "outline"}
                           size="sm"
                           onClick={() => copyToClipboard(formatScriptForCopy(version), version.id)}
+                          className="w-full sm:w-auto flex-shrink-0"
                         >
                           {copiedId === version.id ? (
                             <>
@@ -763,7 +766,7 @@ export default function ScriptGeneratorPage() {
                           ) : (
                             <>
                               <Copy className="h-4 w-4 mr-1" />
-                              複製
+                              複製腳本
                             </>
                           )}
                         </Button>
@@ -771,18 +774,18 @@ export default function ScriptGeneratorPage() {
                     </CardHeader>
                     <Separator />
                     <CardContent className="p-0">
-                      <ScrollArea className="h-[500px]">
-                        <div className="p-6 space-y-6">
+                      <ScrollArea className="h-[400px] sm:h-[500px]">
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                           <div>
-                            <h3 className="font-semibold mb-4">分鏡腳本</h3>
-                            <div className="space-y-4">
+                            <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">分鏡腳本</h3>
+                            <div className="space-y-3 sm:space-y-4">
                               {version.script.segments.map((segment, index) => (
                                 <div
                                   key={index}
-                                  className="p-4 rounded-lg border bg-muted/30"
+                                  className="p-3 sm:p-4 rounded-lg border bg-muted/30"
                                 >
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Badge variant="secondary">
+                                  <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
+                                    <Badge variant="secondary" className="text-xs">
                                       <Clock className="h-3 w-3 mr-1" />
                                       {segment.timeRange}
                                     </Badge>
@@ -792,7 +795,7 @@ export default function ScriptGeneratorPage() {
                                       </Badge>
                                     )}
                                   </div>
-                                  <div className="space-y-2 text-sm">
+                                  <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                                     <div>
                                       <span className="text-muted-foreground">畫面：</span>
                                       <span>{segment.visual}</span>

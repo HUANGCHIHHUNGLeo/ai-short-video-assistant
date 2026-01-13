@@ -55,22 +55,22 @@ export default function Home() {
   ]
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-8 md:p-12 border">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 sm:p-8 md:p-12 border">
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-700/25" />
 
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <Sparkles className="h-4 w-4" />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-6">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
             AI 短影音內容創作平台
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-2 sm:mb-4">
             專業內容，一鍵生成
           </h1>
 
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg">
             基於 SFM 流量變現系統，為內容創作者提供專業的 AI 輔助工具。
             從定位分析到腳本生成，全方位提升你的創作效率。
           </p>
@@ -78,36 +78,37 @@ export default function Home() {
       </div>
 
       {/* 主要功能 */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {quickActions.map((action) => (
           <Link key={action.title} href={action.href} className="block">
             <Card className="h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
               <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-              <CardHeader className="pb-4 relative">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
-                    <action.icon className="h-7 w-7 text-white" />
+              <CardHeader className="pb-3 sm:pb-4 relative px-4 sm:px-6">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
+                    <action.icon className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
                   </div>
-                  <Badge variant="secondary" className="font-medium">
+                  <Badge variant="secondary" className="font-medium text-xs">
                     {action.tag}
                   </Badge>
                 </div>
 
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">
                   {action.title}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground font-medium mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
                   {action.subtitle}
                 </p>
               </CardHeader>
 
-              <CardContent className="relative">
-                <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+              <CardContent className="relative px-4 sm:px-6">
+                <p className="text-muted-foreground mb-4 sm:mb-6 text-xs sm:text-sm leading-relaxed">
                   {action.desc}
                 </p>
                 <Button
-                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm`}
+                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm text-sm`}
+                  size="sm"
                 >
                   <Play className="h-4 w-4 mr-2" />
                   開始使用
@@ -121,26 +122,26 @@ export default function Home() {
 
       {/* 使用流程 */}
       <Card className="bg-muted/30">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
+        <CardHeader className="pb-2 px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 py-4">
+        <CardContent className="px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-12 py-2 sm:py-4">
             {[
               { step: 1, title: "填寫背景資料", desc: "描述你的領域與目標受眾" },
               { step: 2, title: "設定內容需求", desc: "說明主題與期望呈現方式" },
               { step: 3, title: "AI 智能生成", desc: "獲得多版本專業內容" },
             ].map((item, index) => (
-              <div key={item.step} className="flex items-center gap-4">
+              <div key={item.step} className="flex items-center gap-3 sm:gap-4">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-2">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-1.5 sm:mb-2 text-sm sm:text-base">
                     {item.step}
                   </div>
-                  <p className="font-semibold">{item.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+                  <p className="font-semibold text-sm sm:text-base">{item.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1 max-w-[120px] sm:max-w-none">{item.desc}</p>
                 </div>
                 {index < 2 && (
-                  <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground" />
+                  <ArrowRight className="hidden sm:block h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 )}
               </div>
             ))}
@@ -150,24 +151,24 @@ export default function Home() {
 
       {/* 其他工具 */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           更多工具
         </h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
           {tools.map((tool) => (
             <Link key={tool.title} href={tool.href}>
               <Card className={`h-full cursor-pointer group transition-all duration-300 ${tool.color}`}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <tool.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                      <tool.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold group-hover:text-primary transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base group-hover:text-primary transition-colors">
                         {tool.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
                         {tool.desc}
                       </p>
                     </div>
@@ -181,17 +182,17 @@ export default function Home() {
 
       {/* 功能特色 */}
       <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="py-6">
-          <div className="grid gap-4 md:grid-cols-4">
+        <CardContent className="py-4 sm:py-6 px-4 sm:px-6">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
             {[
               { icon: CheckCircle2, text: "台灣在地化口語腳本" },
               { icon: CheckCircle2, text: "多版本內容自由選擇" },
               { icon: CheckCircle2, text: "完整分鏡與配樂建議" },
               { icon: CheckCircle2, text: "一鍵複製立即使用" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <item.icon className="h-5 w-5 text-primary flex-shrink-0" />
-                <span className="text-sm font-medium">{item.text}</span>
+              <div key={i} className="flex items-center gap-1.5 sm:gap-2">
+                <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium">{item.text}</span>
               </div>
             ))}
           </div>

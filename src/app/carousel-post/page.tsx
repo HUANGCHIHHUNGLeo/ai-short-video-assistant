@@ -184,48 +184,53 @@ export default function CarouselPostPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Images className="h-8 w-8 text-primary" />
-          輪播貼文生成器
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          一次生成 {carouselCount} 組不同主題的 IG/小紅書 輪播貼文，含完整配文和 hashtag
-        </p>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-md flex-shrink-0">
+          <Images className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+            輪播貼文生成器
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            一次生成 {carouselCount} 組不同主題的輪播貼文
+          </p>
+        </div>
       </div>
 
       {/* 輸入區域 */}
       {generatedPosts.length === 0 && (
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 設定你的輪播貼文
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 填寫你的領域和受眾，AI 會為你生成多組不同主題的輪播貼文
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
               <div className="space-y-2">
-                <Label className="flex items-center gap-1">
+                <Label className="flex items-center gap-1 text-sm">
                   你的領域/定位 <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   placeholder="例如：個人理財教學、職場成長、健身減脂..."
                   value={niche}
                   onChange={(e) => setNiche(e.target.value)}
+                  className="h-10 sm:h-11"
                 />
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                   {EXAMPLE_NICHES.map((example, i) => (
                     <Button
                       key={i}
                       variant="outline"
                       size="sm"
-                      className="text-xs h-auto py-1"
+                      className="text-xs h-auto py-1 px-2 sm:px-3"
                       onClick={() => setNiche(example)}
                     >
                       <Lightbulb className="h-3 w-3 mr-1" />
@@ -297,20 +302,20 @@ export default function CarouselPostPage() {
 
           {/* 右側說明 */}
           <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
+            <CardHeader className="px-4 sm:px-6 pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                 什麼是輪播貼文？
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <p className="text-muted-foreground">
+            <CardContent className="space-y-3 sm:space-y-4 text-sm px-4 sm:px-6">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 輪播貼文是 IG/小紅書 上超受歡迎的內容形式，用戶可以左右滑動查看多頁內容。
               </p>
 
               <div className="space-y-2">
-                <p className="font-medium">為什麼要用輪播貼文？</p>
-                <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <p className="font-medium text-sm">為什麼要用輪播貼文？</p>
+                <ul className="list-disc list-inside text-muted-foreground space-y-1 text-xs sm:text-sm">
                   <li>停留時間長，演算法愛推</li>
                   <li>資訊量大，價值感高</li>
                   <li>收藏率高，容易爆款</li>
@@ -321,13 +326,32 @@ export default function CarouselPostPage() {
               <Separator />
 
               <div className="space-y-2">
-                <p className="font-medium">常見輪播類型</p>
+                <p className="font-medium text-sm">常見輪播類型</p>
                 <div className="flex flex-wrap gap-1">
                   {CAROUSEL_TYPES.slice(0, 4).map((type) => (
                     <Badge key={type.value} variant="outline" className="text-xs">
                       {type.label}
                     </Badge>
                   ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="font-medium text-sm">Canva 製作教學</p>
+                <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">步驟一：建立設計</p>
+                  <p>開啟 Canva → 搜尋「Instagram 貼文」→ 選擇 1080x1350 尺寸（最佳比例 4:5）</p>
+
+                  <p className="font-medium text-foreground pt-1">步驟二：設計封面</p>
+                  <p>選擇醒目模板 → 輸入標題文字 → 使用對比色背景吸引目光</p>
+
+                  <p className="font-medium text-foreground pt-1">步驟三：製作內容頁</p>
+                  <p>複製封面 → 修改內容 → 保持統一視覺風格</p>
+
+                  <p className="font-medium text-foreground pt-1">步驟四：匯出發布</p>
+                  <p>下載為 PNG → 按順序上傳至 IG/小紅書</p>
                 </div>
               </div>
             </CardContent>
@@ -337,26 +361,28 @@ export default function CarouselPostPage() {
 
       {/* 生成結果 */}
       {generatedPosts.length > 0 && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-lg sm:text-xl font-bold">
                 已生成 {generatedPosts.length} 組輪播貼文
               </h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 點擊任意貼文查看完整內容，或直接複製使用
               </p>
             </div>
             <Button
               variant="outline"
               onClick={() => setGeneratedPosts([])}
+              className="w-full sm:w-auto"
+              size="sm"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               重新生成
             </Button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {generatedPosts.map((post, index) => (
               <Card
                 key={post.id || index}
@@ -409,18 +435,18 @@ export default function CarouselPostPage() {
                           預覽
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-4 sm:p-6">
                         <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <Images className="h-5 w-5 text-primary" />
-                            {post.title}
+                          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                            <Images className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                            <span className="line-clamp-2">{post.title}</span>
                           </DialogTitle>
-                          <DialogDescription>
+                          <DialogDescription className="text-xs sm:text-sm">
                             {post.type} · {post.slides?.length || 0} 頁 · {post.estimatedEngagement}
                           </DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+                        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 mt-3 sm:mt-4">
                           {/* 輪播預覽 */}
                           <div className="space-y-4">
                             <div className="relative">
@@ -474,14 +500,14 @@ export default function CarouselPostPage() {
                           </div>
 
                           {/* 配文和 Hashtags */}
-                          <ScrollArea className="h-[400px]">
-                            <div className="space-y-4 pr-4">
+                          <ScrollArea className="h-[300px] sm:h-[400px]">
+                            <div className="space-y-3 sm:space-y-4 pr-4">
                               <div>
-                                <h4 className="font-medium mb-2 flex items-center gap-2">
+                                <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
                                   <Hash className="h-4 w-4 text-primary" />
                                   貼文配文
                                 </h4>
-                                <div className="p-3 rounded-lg bg-muted/50 text-sm whitespace-pre-wrap">
+                                <div className="p-2.5 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm whitespace-pre-wrap">
                                   {post.caption}
                                 </div>
                               </div>
@@ -489,13 +515,13 @@ export default function CarouselPostPage() {
                               <Separator />
 
                               <div>
-                                <h4 className="font-medium mb-2">Hashtags</h4>
+                                <h4 className="font-medium mb-2 text-sm">Hashtags</h4>
                                 <div className="flex flex-wrap gap-1">
                                   {post.hashtags?.map((tag, i) => (
                                     <Badge
                                       key={i}
                                       variant="secondary"
-                                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
                                       onClick={() => copyToClipboard(`#${tag}`)}
                                     >
                                       #{tag}
@@ -506,15 +532,16 @@ export default function CarouselPostPage() {
 
                               <Separator />
 
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 <Button
                                   className="flex-1"
+                                  size="sm"
                                   onClick={() => copyToClipboard(formatPostForCopy(post))}
                                 >
                                   <Copy className="h-4 w-4 mr-2" />
                                   複製全部
                                 </Button>
-                                <Button variant="outline">
+                                <Button variant="outline" size="sm">
                                   <Download className="h-4 w-4 mr-2" />
                                   下載
                                 </Button>
