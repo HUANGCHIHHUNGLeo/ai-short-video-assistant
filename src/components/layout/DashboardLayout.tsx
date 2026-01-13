@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import {
   Bot,
   FileText,
+  Images,
   LayoutDashboard,
   Lightbulb,
   Menu,
@@ -28,6 +29,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "儀表板", href: "/", icon: LayoutDashboard },
     { name: "AI 定位教練", href: "/positioning", icon: Bot },
     { name: "爆款腳本生成", href: "/script-generator", icon: Video },
+    { name: "輪播貼文生成", href: "/carousel-post", icon: Images },
     { name: "文案覆盤優化", href: "/copy-optimizer", icon: FileText },
     { name: "熱門選題靈感", href: "/topic-ideas", icon: Lightbulb },
   ]

@@ -1,103 +1,177 @@
+"use client"
+
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Bot, FileText, Lightbulb, TrendingUp, Video } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowRight, Bot, CheckCircle2, FileText, Images, Lightbulb, Play, Sparkles, Video, Zap } from "lucide-react"
 import Link from "next/link"
 
 export default function Home() {
-  const stats = [
-    { label: "已生成腳本", value: "12", change: "+2 本週" },
-    { label: "已優化文案", value: "8", change: "+3 本週" },
-    { label: "靈感收藏", value: "24", change: "+5 本週" },
-    { label: "AI 諮詢次數", value: "5", change: "+1 本週" },
-  ]
-
-  const features = [
+  const quickActions = [
     {
-      title: "AI 定位教練",
-      desc: "基於 SFM 系統，三個核心問題幫你找到市場需求與個人優勢的交集點。",
-      icon: Bot,
-      href: "/positioning",
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
-    },
-    {
-      title: "爆款腳本生成",
-      desc: "五種必爆開頭公式 + 黃金三段結構，AI 幫你寫出高轉化腳本。",
+      title: "短影音腳本生成",
+      subtitle: "AI 智能寫腳本",
+      desc: "輸入主題，AI 自動生成 3~5 個不同風格的專業腳本，包含分鏡、配樂建議",
       icon: Video,
       href: "/script-generator",
-      color: "text-purple-500",
-      bg: "bg-purple-500/10",
+      gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
+      bgGlow: "bg-purple-500/20",
+      tag: "推薦",
     },
     {
-      title: "文案覆盤優化",
-      desc: "從開頭吸引力、價值清晰度、痛點觸及、CTA 強度四維度診斷優化。",
+      title: "輪播貼文生成",
+      subtitle: "IG / 小紅書圖文",
+      desc: "一次生成 20 組不同主題的輪播貼文，含完整配文和 hashtag 建議",
+      icon: Images,
+      href: "/carousel-post",
+      gradient: "from-cyan-500 via-blue-500 to-indigo-500",
+      bgGlow: "bg-blue-500/20",
+      tag: "新功能",
+    },
+  ]
+
+  const tools = [
+    {
+      title: "AI 定位教練",
+      desc: "找不到內容方向？讓 AI 幫你分析最適合的定位策略",
+      icon: Bot,
+      href: "/positioning",
+      color: "hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/30",
+    },
+    {
+      title: "文案優化器",
+      desc: "將現有文案進行專業優化，提升吸引力和轉化率",
       icon: FileText,
       href: "/copy-optimizer",
-      color: "text-green-500",
-      bg: "bg-green-500/10",
+      color: "hover:border-green-300 hover:bg-green-50/50 dark:hover:bg-green-950/30",
     },
     {
-      title: "熱門選題靈感",
-      desc: "根據你的定位，AI 推薦痛點型、反常識型、數據型等五種爆款選題。",
+      title: "選題靈感庫",
+      desc: "根據你的領域，AI 推薦高潛力的爆款選題方向",
       icon: Lightbulb,
       href: "/topic-ideas",
-      color: "text-orange-500",
-      bg: "bg-orange-500/10",
+      color: "hover:border-amber-300 hover:bg-amber-50/50 dark:hover:bg-amber-950/30",
     },
   ]
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">準備好打造爆款了嗎？</h1>
-        <p className="text-muted-foreground mt-2">
-          基於 SFM 流量變現系統，顏董 AI 助理幫你從定位到腳本，一站式搞定自媒體內容。
-        </p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-8 md:p-12 border">
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-700/25" />
+
+        <div className="relative z-10 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Sparkles className="h-4 w-4" />
+            AI 短影音內容創作平台
+          </div>
+
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            專業內容，一鍵生成
+          </h1>
+
+          <p className="text-muted-foreground text-lg">
+            基於 SFM 流量變現系統，為內容創作者提供專業的 AI 輔助工具。
+            從定位分析到腳本生成，全方位提升你的創作效率。
+          </p>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.label}
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.change}
-              </p>
-            </CardContent>
-          </Card>
+      {/* 主要功能 */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {quickActions.map((action) => (
+          <Link key={action.title} href={action.href} className="block">
+            <Card className="h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
+              <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+              <CardHeader className="pb-4 relative">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
+                    <action.icon className="h-7 w-7 text-white" />
+                  </div>
+                  <Badge variant="secondary" className="font-medium">
+                    {action.tag}
+                  </Badge>
+                </div>
+
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  {action.title}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground font-medium mt-1">
+                  {action.subtitle}
+                </p>
+              </CardHeader>
+
+              <CardContent className="relative">
+                <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                  {action.desc}
+                </p>
+                <Button
+                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm`}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  開始使用
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">快速開始</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature) => (
-            <Link key={feature.title} href={feature.href}>
-              <Card className="h-full cursor-pointer group hover:border-primary/50 hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className={`w-12 h-12 rounded-lg ${feature.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+      {/* 使用流程 */}
+      <Card className="bg-muted/30">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 py-4">
+            {[
+              { step: 1, title: "填寫背景資料", desc: "描述你的領域與目標受眾" },
+              { step: 2, title: "設定內容需求", desc: "說明主題與期望呈現方式" },
+              { step: 3, title: "AI 智能生成", desc: "獲得多版本專業內容" },
+            ].map((item, index) => (
+              <div key={item.step} className="flex items-center gap-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-2">
+                    {item.step}
                   </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {feature.title}
-                  </CardTitle>
-                  <CardDescription>
-                    {feature.desc}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="mt-auto pt-0">
-                  <Button variant="ghost" className="w-full justify-between group-hover:bg-primary/10 group-hover:text-primary">
-                    立即使用
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+                </div>
+                {index < 2 && (
+                  <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 其他工具 */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <Zap className="h-5 w-5 text-primary" />
+          更多工具
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {tools.map((tool) => (
+            <Link key={tool.title} href={tool.href}>
+              <Card className={`h-full cursor-pointer group transition-all duration-300 ${tool.color}`}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <tool.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold group-hover:text-primary transition-colors">
+                        {tool.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                        {tool.desc}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
@@ -105,15 +179,21 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Recent Activity Placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle>最近活動</CardTitle>
-          <CardDescription>你最近生成的腳本和優化記錄</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>尚無活動記錄，快去生成你的第一個爆款腳本吧！</p>
+      {/* 功能特色 */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="py-6">
+          <div className="grid gap-4 md:grid-cols-4">
+            {[
+              { icon: CheckCircle2, text: "台灣在地化口語腳本" },
+              { icon: CheckCircle2, text: "多版本內容自由選擇" },
+              { icon: CheckCircle2, text: "完整分鏡與配樂建議" },
+              { icon: CheckCircle2, text: "一鍵複製立即使用" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <item.icon className="h-5 w-5 text-primary flex-shrink-0" />
+                <span className="text-sm font-medium">{item.text}</span>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
