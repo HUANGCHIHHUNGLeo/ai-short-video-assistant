@@ -47,22 +47,50 @@ interface CarouselPost {
 }
 
 const CAROUSEL_TYPES = [
+  // 知識實用類
   { value: "knowledge", label: "知識乾貨型", description: "分享專業知識和技巧" },
   { value: "tutorial", label: "步驟教學型", description: "一步步教學流程" },
   { value: "list", label: "清單盤點型", description: "推薦清單或合集" },
   { value: "myth", label: "迷思破解型", description: "打破常見誤解" },
-  { value: "story", label: "故事分享型", description: "個人經歷分享" },
   { value: "comparison", label: "比較分析型", description: "優缺點比較" },
   { value: "tools", label: "工具推薦型", description: "實用工具資源" },
   { value: "summary", label: "懶人包型", description: "快速總結精華" },
+  { value: "dodonot", label: "這樣做vs那樣做", description: "正確vs錯誤示範" },
+  { value: "data", label: "數據圖解型", description: "視覺化數據分析" },
+  // 生活情感類
+  { value: "photodump", label: "生活碎片型", description: "日常隨拍記錄" },
+  { value: "mood", label: "心情語錄型", description: "療癒文字分享" },
+  { value: "memory", label: "回憶記錄型", description: "旅行/活動回顧" },
+  { value: "story", label: "故事分享型", description: "個人經歷分享" },
+  { value: "transformation", label: "蛻變對比型", description: "前後對比展示" },
+  { value: "aesthetic", label: "美學靈感型", description: "視覺美感分享" },
+  { value: "dayinlife", label: "一日生活型", description: "日常Vlog風格" },
+  { value: "monthlyreview", label: "月度回顧型", description: "本月精選回顧" },
+  // 互動趣味類
+  { value: "quiz", label: "測驗互動型", description: "問答選擇題" },
+  { value: "flowchart", label: "流程圖型", description: "滑動式決策" },
+  { value: "meme", label: "迷因趣味型", description: "幽默共鳴內容" },
+  { value: "challenge", label: "挑戰紀錄型", description: "30天挑戰等" },
 ]
 
 const EXAMPLE_NICHES = [
+  // 知識專業類
   "個人理財教學",
   "職場成長攻略",
   "健身減脂知識",
   "料理食譜分享",
-  "旅遊攻略推薦"
+  "旅遊攻略推薦",
+  // 生活風格類
+  "日常生活記錄",
+  "心情語錄分享",
+  "穿搭靈感日記",
+  "居家佈置美學",
+  "咖啡廳探店",
+  // 興趣愛好類
+  "攝影作品集",
+  "手帳文具控",
+  "追劇觀影心得",
+  "寵物日常萌照",
 ]
 
 export default function CarouselPostPage() {
@@ -327,13 +355,38 @@ export default function CarouselPostPage() {
               <Separator />
 
               <div className="space-y-2">
-                <p className="font-medium text-sm">常見輪播類型</p>
-                <div className="flex flex-wrap gap-1">
-                  {CAROUSEL_TYPES.slice(0, 4).map((type) => (
-                    <Badge key={type.value} variant="outline" className="text-xs">
-                      {type.label}
-                    </Badge>
-                  ))}
+                <p className="font-medium text-sm">2025 熱門輪播類型</p>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <p className="text-muted-foreground mb-1">知識實用</p>
+                    <div className="flex flex-wrap gap-1">
+                      {CAROUSEL_TYPES.slice(0, 5).map((type) => (
+                        <Badge key={type.value} variant="outline" className="text-xs">
+                          {type.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">生活情感</p>
+                    <div className="flex flex-wrap gap-1">
+                      {CAROUSEL_TYPES.slice(9, 14).map((type) => (
+                        <Badge key={type.value} variant="outline" className="text-xs">
+                          {type.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">互動趣味</p>
+                    <div className="flex flex-wrap gap-1">
+                      {CAROUSEL_TYPES.slice(18, 22).map((type) => (
+                        <Badge key={type.value} variant="outline" className="text-xs">
+                          {type.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
