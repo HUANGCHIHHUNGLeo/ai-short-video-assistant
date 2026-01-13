@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">哎呀，準備好打造爆款了嗎？</h1>
+        <h1 className="text-3xl font-bold tracking-tight">準備好打造爆款了嗎？</h1>
         <p className="text-muted-foreground mt-2">
           基於 SFM 流量變現系統，顏董 AI 助理幫你從定位到腳本，一站式搞定自媒體內容。
         </p>
