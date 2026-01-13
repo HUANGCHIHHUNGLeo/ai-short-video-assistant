@@ -547,21 +547,21 @@ export default function CarouselPostPage() {
                           預覽
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-4 sm:p-6">
+                      <DialogContent className="max-w-lg sm:max-w-2xl max-h-[85vh] overflow-y-auto p-4 sm:p-6">
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                             <Images className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                            <span className="line-clamp-2">{post.title}</span>
+                            <span className="line-clamp-1">{post.title}</span>
                           </DialogTitle>
                           <DialogDescription className="text-xs sm:text-sm">
-                            {post.type} · {post.slides?.length || 0} 頁 · {post.estimatedEngagement}
+                            {post.type} · {post.slides?.length || 0} 頁
                           </DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 mt-3 sm:mt-4">
-                          {/* 輪播預覽 */}
-                          <div className="space-y-4">
-                            <div className="relative">
+                        <div className="space-y-4 mt-3">
+                          {/* 輪播預覽 - 縮小尺寸 */}
+                          <div className="space-y-3">
+                            <div className="relative max-w-[280px] sm:max-w-[320px] mx-auto">
                               {post.slides && post.slides.length > 0 && (
                                 <SlidePreview
                                   slide={post.slides[currentSlideIndex]}
@@ -612,96 +612,91 @@ export default function CarouselPostPage() {
                           </div>
 
                           {/* 配文和 Hashtags */}
-                          <ScrollArea className="h-[300px] sm:h-[400px]">
-                            <div className="space-y-3 sm:space-y-4 pr-4">
-                              <div>
-                                <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
-                                  <Hash className="h-4 w-4 text-primary" />
-                                  貼文配文
-                                </h4>
-                                <div className="p-2.5 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm whitespace-pre-wrap">
-                                  {post.caption}
-                                </div>
-                              </div>
-
-                              <Separator />
-
-                              <div>
-                                <h4 className="font-medium mb-2 text-sm">Hashtags</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {post.hashtags?.map((tag, i) => (
-                                    <Badge
-                                      key={i}
-                                      variant="secondary"
-                                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
-                                      onClick={() => copyToClipboard(`#${tag}`)}
-                                    >
-                                      #{tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* 測驗結果區域 - 只有測驗類貼文才顯示 */}
-                              {post.quizResults && post.quizResults.length > 0 && (
-                                <>
-                                  <Separator />
-                                  <div>
-                                    <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
-                                      <MessageCircle className="h-4 w-4 text-primary" />
-                                      測驗結果回覆（點擊複製）
-                                    </h4>
-                                    <p className="text-xs text-muted-foreground mb-3">
-                                      粉絲留言測驗結果後，複製對應回覆貼上即可
-                                    </p>
-                                    <div className="space-y-2">
-                                      {post.quizResults.map((quizResult, i) => (
-                                        <div
-                                          key={i}
-                                          className="p-2.5 rounded-lg bg-muted/50 hover:bg-primary/10 cursor-pointer transition-colors group"
-                                          onClick={() => copyToClipboard(`${quizResult.title}\n${quizResult.description}`)}
-                                        >
-                                          <div className="flex items-start justify-between gap-2">
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-center gap-2 mb-1">
-                                                <Badge variant="outline" className="text-xs flex-shrink-0">
-                                                  {quizResult.result}
-                                                </Badge>
-                                                <span className="font-medium text-sm truncate">
-                                                  {quizResult.title}
-                                                </span>
-                                              </div>
-                                              <p className="text-xs text-muted-foreground">
-                                                {quizResult.description}
-                                              </p>
-                                            </div>
-                                            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-1" />
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </>
-                              )}
-
-                              <Separator />
-
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                <Button
-                                  className="flex-1"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(formatPostForCopy(post))}
-                                >
-                                  <Copy className="h-4 w-4 mr-2" />
-                                  複製全部
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <Download className="h-4 w-4 mr-2" />
-                                  下載
-                                </Button>
+                          <div className="space-y-3">
+                            <div>
+                              <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
+                                <Hash className="h-4 w-4 text-primary" />
+                                貼文配文
+                              </h4>
+                              <div className="p-2.5 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm whitespace-pre-wrap max-h-[120px] overflow-y-auto">
+                                {post.caption}
                               </div>
                             </div>
-                          </ScrollArea>
+
+                            <Separator />
+
+                            <div>
+                              <h4 className="font-medium mb-2 text-sm">Hashtags</h4>
+                              <div className="flex flex-wrap gap-1">
+                                {post.hashtags?.map((tag, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="secondary"
+                                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
+                                    onClick={() => copyToClipboard(`#${tag}`)}
+                                  >
+                                    #{tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* 測驗結果區域 - 只有測驗類貼文才顯示 */}
+                            {post.quizResults && post.quizResults.length > 0 && (
+                              <>
+                                <Separator />
+                                <div>
+                                  <h4 className="font-medium mb-2 flex items-center gap-2 text-sm">
+                                    <MessageCircle className="h-4 w-4 text-primary" />
+                                    測驗結果回覆
+                                  </h4>
+                                  <div className="space-y-2 max-h-[150px] overflow-y-auto">
+                                    {post.quizResults.map((quizResult, i) => (
+                                      <div
+                                        key={i}
+                                        className="p-2 rounded-lg bg-muted/50 hover:bg-primary/10 cursor-pointer transition-colors group"
+                                        onClick={() => copyToClipboard(`${quizResult.title}\n${quizResult.description}`)}
+                                      >
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <Badge variant="outline" className="text-xs flex-shrink-0">
+                                                {quizResult.result}
+                                              </Badge>
+                                              <span className="font-medium text-xs truncate">
+                                                {quizResult.title}
+                                              </span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground line-clamp-2">
+                                              {quizResult.description}
+                                            </p>
+                                          </div>
+                                          <Copy className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0" />
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+
+                            <Separator />
+
+                            <div className="flex gap-2">
+                              <Button
+                                className="flex-1"
+                                size="sm"
+                                onClick={() => copyToClipboard(formatPostForCopy(post))}
+                              >
+                                <Copy className="h-4 w-4 mr-2" />
+                                複製全部
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Download className="h-4 w-4 mr-2" />
+                                下載
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>
