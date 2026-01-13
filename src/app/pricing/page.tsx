@@ -97,8 +97,8 @@ export default function PricingPage() {
                 <div className="text-center">
                   {isLifetime ? (
                     <div>
-                      <span className="text-4xl font-bold">NT${plan.lifetimePrice?.toLocaleString()}</span>
-                      <span className="text-muted-foreground ml-1">一次買斷</span>
+                      <div className="text-4xl font-bold">NT${plan.lifetimePrice?.toLocaleString()}</div>
+                      <div className="text-muted-foreground text-sm mt-1">一次買斷</div>
                     </div>
                   ) : (
                     <div>
