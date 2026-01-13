@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { Bot, Send, User } from "lucide-react"
 import { useState } from "react"
+import { useCredits } from "@/hooks/useCredits"
+import { CreditsAlert } from "@/components/billing"
 
 interface Message {
   role: "user" | "assistant"
@@ -34,10 +36,21 @@ export default function PositioningPage() {
   ])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [creditError, setCreditError] = useState<string | null>(null)
+
+  const { canUseFeature, useCredit, display } = useCredits()
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
+    // 檢查額度
+    const creditCheck = canUseFeature('positioning')
+    if (!creditCheck.canUse) {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
     const userMessage = input.trim()
     setInput("")
     setMessages(prev => [...prev, { role: "user", content: userMessage }])
@@ -55,6 +68,10 @@ export default function PositioningPage() {
       const data = await response.json()
 
       if (data.reply) {
+        // 成功後扣除額度
+        if (data._creditConsumed) {
+          useCredit('positioning')
+        }
         setMessages(prev => [...prev, { role: "assistant", content: data.reply }])
       }
     } catch (error) {
@@ -77,6 +94,9 @@ export default function PositioningPage() {
         </h1>
         <p className="text-muted-foreground mt-2">
           迷茫時的第一步，讓 AI 幫你找到最適合的自媒體定位。
+          <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+            剩餘 {display.script}
+          </span>
         </p>
       </div>
 
@@ -129,6 +149,10 @@ export default function PositioningPage() {
             </div>
           </ScrollArea>
 
+          {/* 額度不足提示 */}
+          {creditError && (
+            <CreditsAlert message={creditError} featureType="script" />
+          )}
           <div className="flex gap-2">
             <Input
               placeholder="輸入你的想法..."

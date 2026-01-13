@@ -25,6 +25,8 @@ import {
   Sparkles
 } from "lucide-react"
 import { useState } from "react"
+import { useCredits } from "@/hooks/useCredits"
+import { CreditsAlert } from "@/components/billing"
 
 interface CarouselSlide {
   page: number
@@ -106,6 +108,9 @@ export default function CarouselPostPage() {
   const [generatedPosts, setGeneratedPosts] = useState<CarouselPost[]>([])
   const [selectedPost, setSelectedPost] = useState<CarouselPost | null>(null)
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
+  const [creditError, setCreditError] = useState<string | null>(null)
+
+  const { canUseFeature, useCredit, display } = useCredits()
 
   // 輸入狀態
   const [niche, setNiche] = useState("")
@@ -119,6 +124,14 @@ export default function CarouselPostPage() {
       return
     }
 
+    // 檢查額度
+    const creditCheck = canUseFeature('carousel')
+    if (!creditCheck.canUse) {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
     setIsGenerating(true)
     setGeneratedPosts([])
 
@@ -137,6 +150,10 @@ export default function CarouselPostPage() {
       const data = await response.json()
 
       if (data.carouselPosts && data.carouselPosts.length > 0) {
+        // 成功生成後扣除額度
+        if (data._creditConsumed) {
+          useCredit('carousel')
+        }
         setGeneratedPosts(data.carouselPosts)
       } else {
         alert("生成失敗，請稍後再試")
@@ -233,6 +250,9 @@ export default function CarouselPostPage() {
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             一次生成 {carouselCount} 組不同主題的輪播貼文
+            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+              剩餘 {display.carousel}
+            </span>
           </p>
         </div>
       </div>
@@ -315,6 +335,11 @@ export default function CarouselPostPage() {
                   </Select>
                 </div>
               </div>
+
+              {/* 額度不足提示 */}
+              {creditError && (
+                <CreditsAlert message={creditError} featureType="carousel" />
+              )}
 
               <Button
                 onClick={handleGenerate}

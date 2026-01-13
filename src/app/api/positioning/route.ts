@@ -86,7 +86,12 @@ export async function POST(request: NextRequest) {
 
     const reply = completion.choices[0]?.message?.content || "抱歉，我現在無法回應。"
 
-    return NextResponse.json({ reply })
+    // 加入額度扣除標記，讓前端知道需要扣除額度
+    return NextResponse.json({
+      reply,
+      _creditConsumed: true,
+      _featureType: 'script'
+    })
   } catch (error) {
     console.error("API Error:", error)
     return NextResponse.json(

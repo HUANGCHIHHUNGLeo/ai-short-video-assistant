@@ -8,10 +8,13 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { FileText, Sparkles, Wand2 } from "lucide-react"
 import { useState } from "react"
+import { useCredits } from "@/hooks/useCredits"
+import { CreditsAlert } from "@/components/billing"
 
 export default function CopyOptimizerPage() {
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [originalCopy, setOriginalCopy] = useState("")
+  const [creditError, setCreditError] = useState<string | null>(null)
   const [result, setResult] = useState<{
     score: number
     breakdown?: {
@@ -24,9 +27,19 @@ export default function CopyOptimizerPage() {
     optimized: string
   } | null>(null)
 
+  const { canUseFeature, useCredit, display } = useCredits()
+
   const handleOptimize = async () => {
     if (!originalCopy.trim()) return
 
+    // 檢查額度
+    const creditCheck = canUseFeature('copy_optimizer')
+    if (!creditCheck.canUse) {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
     setIsOptimizing(true)
     setResult(null)
 
@@ -38,6 +51,10 @@ export default function CopyOptimizerPage() {
       })
 
       const data = await response.json()
+      // 成功後扣除額度
+      if (data._creditConsumed) {
+        useCredit('copy_optimizer')
+      }
       setResult(data)
     } catch (error) {
       console.error("Error:", error)
@@ -55,6 +72,9 @@ export default function CopyOptimizerPage() {
         </h1>
         <p className="text-muted-foreground mt-2">
           貼上你的文案，AI 會從「獲客」和「變現」角度進行診斷和優化。
+          <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+            剩餘 {display.script}
+          </span>
         </p>
       </div>
 
@@ -77,6 +97,10 @@ export default function CopyOptimizerPage() {
               value={originalCopy}
               onChange={(e) => setOriginalCopy(e.target.value)}
             />
+            {/* 額度不足提示 */}
+            {creditError && (
+              <CreditsAlert message={creditError} featureType="script" />
+            )}
             <Button
               className="w-full h-12 text-lg font-bold"
               onClick={handleOptimize}

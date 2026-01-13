@@ -88,7 +88,12 @@ ${topic ? `主題：${topic}` : ""}
 
     try {
       const result = JSON.parse(content)
-      return NextResponse.json(result)
+      // 加入額度扣除標記，讓前端知道需要扣除額度
+      return NextResponse.json({
+        ...result,
+        _creditConsumed: true,
+        _featureType: 'carousel'
+      })
     } catch {
       return NextResponse.json({
         carouselPosts: [],

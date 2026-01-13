@@ -32,6 +32,8 @@ import {
   Video
 } from "lucide-react"
 import { useState } from "react"
+import { useCredits } from "@/hooks/useCredits"
+import { CreditsAlert } from "@/components/billing"
 
 interface ScriptSegment {
   timeRange: string
@@ -96,6 +98,9 @@ export default function ScriptGeneratorPage() {
   const [activeVersion, setActiveVersion] = useState("A")
   const [generateCount, setGenerateCount] = useState(3)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [creditError, setCreditError] = useState<string | null>(null)
+
+  const { canUseFeature, useCredit, display } = useCredits()
 
   const [creatorBackground, setCreatorBackground] = useState({
     niche: "",
@@ -135,6 +140,14 @@ export default function ScriptGeneratorPage() {
   }
 
   const handleGenerate = async () => {
+    // 檢查額度
+    const creditCheck = canUseFeature('script')
+    if (!creditCheck.canUse) {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
     setIsGenerating(true)
     setGeneratedVersions([])
 
@@ -152,6 +165,10 @@ export default function ScriptGeneratorPage() {
       const data = await response.json()
 
       if (data.versions && data.versions.length > 0) {
+        // 成功生成後扣除額度
+        if (data._creditConsumed) {
+          useCredit('script')
+        }
         setGeneratedVersions(data.versions)
         setActiveVersion(data.versions[0].id)
         setStep(3)
@@ -229,6 +246,9 @@ export default function ScriptGeneratorPage() {
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground truncate">
             AI 為你生成 {generateCount} 個不同風格的專業腳本
+            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+              剩餘 {display.script}
+            </span>
           </p>
         </div>
       </div>
@@ -639,6 +659,11 @@ export default function ScriptGeneratorPage() {
                   onChange={(e) => setVideoSettings({ ...videoSettings, specialRequirements: e.target.value })}
                 />
               </div>
+
+              {/* 額度不足提示 */}
+              {creditError && (
+                <CreditsAlert message={creditError} featureType="script" />
+              )}
 
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setStep(1)}>

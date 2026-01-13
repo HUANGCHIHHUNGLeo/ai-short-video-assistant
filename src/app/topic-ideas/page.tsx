@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Lightbulb, RefreshCw, Sparkles, TrendingUp, Target, Zap } from "lucide-react"
 import { useState } from "react"
+import { useCredits } from "@/hooks/useCredits"
+import { CreditsAlert } from "@/components/billing"
 
 interface TopicIdea {
   title: string
@@ -22,10 +24,21 @@ export default function TopicIdeasPage() {
   const [targetAudience, setTargetAudience] = useState("")
   const [ideas, setIdeas] = useState<TopicIdea[]>([])
   const [hasSearched, setHasSearched] = useState(false)
+  const [creditError, setCreditError] = useState<string | null>(null)
+
+  const { canUseFeature, useCredit, display } = useCredits()
 
   const handleGenerate = async () => {
     if (!niche.trim()) return
 
+    // 檢查額度
+    const creditCheck = canUseFeature('topic_ideas')
+    if (!creditCheck.canUse) {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
     setIsLoading(true)
     setHasSearched(true)
 
@@ -39,6 +52,10 @@ export default function TopicIdeasPage() {
       const data = await response.json()
 
       if (data.ideas) {
+        // 成功後扣除額度
+        if (data._creditConsumed) {
+          useCredit('topic_ideas')
+        }
         setIdeas(data.ideas)
       }
     } catch (error) {
@@ -69,6 +86,9 @@ export default function TopicIdeasPage() {
           </h1>
           <p className="text-muted-foreground mt-2">
             基於 SFM 流量變現系統，AI 幫你找到最有爆款潛力的選題。
+            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+              剩餘 {display.script}
+            </span>
           </p>
         </div>
       </div>
@@ -103,6 +123,10 @@ export default function TopicIdeasPage() {
               />
             </div>
           </div>
+          {/* 額度不足提示 */}
+          {creditError && (
+            <CreditsAlert message={creditError} featureType="script" />
+          )}
           <Button
             onClick={handleGenerate}
             disabled={isLoading || !niche.trim()}

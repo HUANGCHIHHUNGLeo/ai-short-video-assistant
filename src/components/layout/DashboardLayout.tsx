@@ -11,11 +11,15 @@ import {
   LayoutDashboard,
   Lightbulb,
   Menu,
-  Video
+  Video,
+  CreditCard
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { CreditsBadge } from "@/components/billing"
+import { useCredits } from "@/hooks/useCredits"
+import { PLANS } from "@/lib/credits"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -25,6 +29,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
+  const { credits } = useCredits()
+  const currentPlan = credits ? PLANS[credits.tier] : PLANS.free
+
   const navigation = [
     { name: "儀表板", href: "/", icon: LayoutDashboard },
     { name: "AI 定位教練", href: "/positioning", icon: Bot },
@@ -32,6 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "輪播貼文生成", href: "/carousel-post", icon: Images },
     { name: "文案覆盤優化", href: "/copy-optimizer", icon: FileText },
     { name: "熱門選題靈感", href: "/topic-ideas", icon: Lightbulb },
+    { name: "升級方案", href: "/pricing", icon: CreditCard },
   ]
 
   const NavItem = ({ item, mobile = false }: { item: typeof navigation[0], mobile?: boolean }) => {
@@ -78,14 +86,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         </ScrollArea>
 
+        {/* 額度顯示區 */}
         <div className="p-4 border-t border-border/40">
+          <div className="mb-3">
+            <CreditsBadge showDetails className="w-full justify-center" />
+          </div>
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
               U
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">User</p>
-              <p className="text-xs text-muted-foreground truncate">Pro Plan</p>
+              <p className="text-sm font-medium truncate">訪客</p>
+              <p className="text-xs text-muted-foreground truncate">{currentPlan.name}</p>
             </div>
           </div>
         </div>
@@ -113,12 +125,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </ScrollArea>
             </SheetContent>
           </Sheet>
-          <div className="flex items-center gap-2 ml-2">
+          <div className="flex items-center gap-2 ml-2 flex-1">
             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <span className="font-bold text-lg">AI 助理</span>
           </div>
+          {/* 手機版額度顯示 */}
+          <CreditsBadge className="ml-auto" />
         </header>
 
         <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in">
