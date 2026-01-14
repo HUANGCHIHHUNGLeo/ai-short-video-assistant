@@ -49,7 +49,7 @@ interface QuestionnaireData {
   contentStyle: string        // Q7: 出鏡偏好
   timeCommitment: string      // Q8: 可投入時間
   platforms: string[]         // Q9: 想經營的平台
-  competitors: string         // Q10: 參考帳號/競品
+  competitors: string         // Q10: 內容風格偏好
 }
 
 // 定位報告類型（擴充版 - 支援更多欄位）
@@ -1071,25 +1071,28 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 10: 參考帳號/競品 */}
+      {/* Step 10: 內容風格偏好 */}
       {currentStep === 10 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Eye className="h-5 w-5 text-primary" />
-              Q10. 有沒有你欣賞的參考帳號？（選填）
+              Q10. 你喜歡什麼風格的內容？（選填）
             </CardTitle>
             <CardDescription>
-              告訴我你喜歡的創作者風格，我可以幫你分析差異化切入點
+              描述你欣賞的內容風格，幫助我們找出適合你的差異化方向
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 px-4 sm:px-6">
             <Textarea
-              placeholder="例如：&#10;- @某某帳號 - 喜歡他的教學方式很清楚&#10;- 某 YouTuber - 喜歡他的剪輯風格&#10;- 某某部落格 - 喜歡他的寫作文筆&#10;&#10;（可以填帳號名稱、連結，或描述你喜歡的風格）"
+              placeholder="例如：&#10;- 喜歡講話很直接、不拐彎抹角的風格&#10;- 喜歡用故事帶出知識的方式&#10;- 喜歡畫面乾淨、節奏快的剪輯&#10;- 喜歡溫暖療癒、像朋友聊天的感覺&#10;- 喜歡數據分析、有憑有據的內容"
               className="min-h-[150px]"
               value={formData.competitors}
               onChange={(e) => handleInputChange("competitors", e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">
+              不需要提供帳號名稱，只需描述你欣賞的風格特點即可
+            </p>
           </CardContent>
         </Card>
       )}
