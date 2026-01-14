@@ -15,6 +15,7 @@ export interface PlanConfig {
     script: number      // 腳本生成次數
     carousel: number    // 輪播貼文次數（每次20則）
   }
+  historyRetentionDays: number  // 歷史記錄保留天數（-1 表示永久）
   features: string[]
 }
 
@@ -47,11 +48,12 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
       script: 5,
       carousel: 2,
     },
+    historyRetentionDays: 0,  // 無歷史記錄
     features: [
       '每月 5 次腳本生成',
+      '每次生成 2 個腳本版本',
       '每月 2 次輪播貼文（20則/次）',
       '基礎定位分析報告',
-      '基礎腳本生成',
       '無歷史記錄',
     ],
   },
@@ -64,11 +66,12 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
       script: 15,
       carousel: 10,
     },
+    historyRetentionDays: 30,  // 30 天後自動刪除
     features: [
       '每月 15 次腳本生成',
+      '每次生成最多 3 個腳本版本',
       '每月 10 次輪播貼文（20則/次）',
       '基礎定位分析報告',
-      '基礎腳本生成',
       '30 天歷史記錄',
       '優先客服支援',
     ],
@@ -82,14 +85,16 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
       script: 100,
       carousel: 50,
     },
+    historyRetentionDays: 180,  // 180 天後自動刪除
     features: [
       '每月 100 次腳本生成',
+      '每次生成最多 5 個腳本版本',
       '每月 50 次輪播貼文（20則/次）',
       '完整定位分析（含 SWOT、變現路徑）',
       'KPI 目標與第一週任務規劃',
       '個人品牌建議與潛在機會分析',
       '專業分鏡表視圖',
-      '永久歷史記錄',
+      '180 天歷史記錄',
       '優先新功能體驗',
     ],
   },
@@ -102,8 +107,10 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
       script: -1,   // -1 表示無限
       carousel: -1,
     },
+    historyRetentionDays: -1,  // -1 表示永久保留
     features: [
       '無限次腳本生成',
+      '每次生成最多 5 個腳本版本',
       '無限次輪播貼文',
       '完整定位分析（含 SWOT、變現路徑）',
       'KPI 目標與第一週任務規劃',

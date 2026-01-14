@@ -31,7 +31,7 @@ import {
   Users,
   Video
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCredits } from "@/hooks/useCredits"
 import { CreditsAlert } from "@/components/billing"
 
@@ -116,17 +116,36 @@ const EXAMPLE_TOPICS = [
   "我靠這個方法，3個月瘦了10公斤"
 ]
 
+// 各方案的腳本版本數上限
+const TIER_SCRIPT_LIMITS = {
+  free: 2,
+  creator: 3,
+  pro: 5,
+  lifetime: 5,
+} as const
+
 export default function ScriptGeneratorPage() {
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedVersions, setGeneratedVersions] = useState<ScriptVersion[]>([])
   const [activeVersion, setActiveVersion] = useState("A")
-  const [generateCount, setGenerateCount] = useState(3)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [creditError, setCreditError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"simple" | "professional">("simple") // 檢視模式
 
   const { canUseFeature, useCredit, display, credits } = useCredits()
+
+  // 根據訂閱等級決定可生成的版本數
+  const maxVersions = TIER_SCRIPT_LIMITS[credits?.tier || 'free']
+  const [generateCount, setGenerateCount] = useState(2) // 預設值，會在 useEffect 中更新
+
+  // 當 credits 載入後，更新 generateCount 為該方案的上限
+  useEffect(() => {
+    if (credits) {
+      const limit = TIER_SCRIPT_LIMITS[credits.tier]
+      setGenerateCount(limit)
+    }
+  }, [credits?.tier])
 
   const [creatorBackground, setCreatorBackground] = useState({
     niche: "",
@@ -369,7 +388,7 @@ export default function ScriptGeneratorPage() {
             腳本生成器
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground truncate">
-            AI 為你生成 {generateCount} 個不同風格的專業腳本
+            AI 為你生成最多 {maxVersions} 個不同風格的專業腳本
             <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
               剩餘 {display.script}
             </span>
@@ -757,20 +776,35 @@ export default function ScriptGeneratorPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>生成版本數</Label>
-                  <Select
-                    value={generateCount.toString()}
-                    onValueChange={(v) => setGenerateCount(parseInt(v))}
-                  >
-                    <SelectTrigger className="h-11">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3">3 個版本（推薦）</SelectItem>
-                      <SelectItem value="4">4 個版本</SelectItem>
-                      <SelectItem value="5">5 個版本</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="flex items-center gap-2">
+                    生成版本數
+                    {maxVersions < 5 && (
+                      <Badge variant="outline" className="text-xs font-normal">
+                        上限 {maxVersions} 個
+                      </Badge>
+                    )}
+                  </Label>
+                  {maxVersions <= 2 ? (
+                    // 免費版固定 2 個，不能選擇
+                    <div className="h-11 px-3 border rounded-md flex items-center justify-between bg-muted/50">
+                      <span className="text-sm">{maxVersions} 個版本</span>
+                      <Badge variant="secondary" className="text-xs">免費版上限</Badge>
+                    </div>
+                  ) : (
+                    <Select
+                      value={generateCount.toString()}
+                      onValueChange={(v) => setGenerateCount(Math.min(parseInt(v), maxVersions))}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {maxVersions >= 3 && <SelectItem value="3">3 個版本{maxVersions === 3 ? '（上限）' : ''}</SelectItem>}
+                        {maxVersions >= 4 && <SelectItem value="4">4 個版本</SelectItem>}
+                        {maxVersions >= 5 && <SelectItem value="5">5 個版本（推薦）</SelectItem>}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 
