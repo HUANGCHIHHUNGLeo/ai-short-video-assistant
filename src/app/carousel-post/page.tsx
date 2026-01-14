@@ -170,6 +170,20 @@ export default function CarouselPostPage() {
     navigator.clipboard.writeText(text)
   }
 
+  // 下載單一輪播貼文為 TXT
+  const downloadPost = (post: CarouselPost) => {
+    const text = formatPostForCopy(post)
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `輪播貼文_${post.title.slice(0, 20)}_${new Date().toISOString().slice(0, 10)}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const formatPostForCopy = (post: CarouselPost) => {
     let text = `【${post.title}】\n\n`
     text += `類型：${post.type}\n`
@@ -763,7 +777,11 @@ export default function CarouselPostPage() {
                                 <Copy className="h-4 w-4 mr-2" />
                                 複製全部
                               </Button>
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => downloadPost(post)}
+                              >
                                 <Download className="h-4 w-4 mr-2" />
                                 下載
                               </Button>

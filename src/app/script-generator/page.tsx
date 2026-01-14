@@ -20,9 +20,9 @@ import {
   Check,
   Clock,
   Copy,
+  Download,
   Lightbulb,
   Mic,
-  Music,
   RefreshCw,
   Settings,
   Sparkles,
@@ -35,38 +35,63 @@ import { useState } from "react"
 import { useCredits } from "@/hooks/useCredits"
 import { CreditsAlert } from "@/components/billing"
 
+// 升級版分鏡結構 - 支援更多專業欄位
 interface ScriptSegment {
+  segmentId?: number
+  segmentName?: string          // 段落名稱（HOOK/CONTENT/CTA）
   timeRange: string
+  duration?: string
   visual: string
   voiceover: string
+  textOverlay?: string          // 螢幕字卡
   effect: string
+  sound?: string                // 音效建議
   note?: string
+  emotionalBeat?: string        // 情緒節奏
 }
 
+// 升級版腳本結構 - 支援專業框架和更多輸出
 interface ScriptVersion {
   id: string
   style: string
   styleDescription: string
+  framework?: string            // 使用的框架（HOOK-CONTENT-CTA / PAS / 故事三幕式 / 清單式）
   script: {
     title: string
+    subtitle?: string           // 副標題或 hashtag
     totalDuration?: string
+    pacing?: string             // 節奏建議
     castInfo?: string
     segments: ScriptSegment[]
     bgm: {
       style: string
       mood?: string
-      bpm?: number
+      bpm?: string | number
       suggestions: string[]
     }
+    soundEffects?: string[]     // 音效列表
     cta: string
+    ctaTiming?: string          // CTA 出現時機
+  }
+  visualStyle?: {               // 視覺風格建議
+    colorTone?: string
+    fontStyle?: string
+    transitionStyle?: string
   }
   shootingTips: string[]
+  editingTips?: string[]        // 剪輯建議
   equipmentNeeded?: string[]
+  locationSuggestion?: string   // 場地建議
   estimatedMetrics: {
     completionRate: string
     engagementRate: string
+    saveRate?: string           // 收藏率
+    shareability?: string       // 分享潛力
     bestPostTime: string
+    bestPlatform?: string       // 最適合平台
   }
+  warnings?: string[]           // 注意事項
+  alternativeHooks?: string[]   // 備選 HOOK
 }
 
 const PLATFORMS = [
@@ -99,8 +124,9 @@ export default function ScriptGeneratorPage() {
   const [generateCount, setGenerateCount] = useState(3)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [creditError, setCreditError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"simple" | "professional">("simple") // 檢視模式
 
-  const { canUseFeature, useCredit, display } = useCredits()
+  const { canUseFeature, useCredit, display, credits } = useCredits()
 
   const [creatorBackground, setCreatorBackground] = useState({
     niche: "",
@@ -191,41 +217,139 @@ export default function ScriptGeneratorPage() {
     }
   }
 
+  // 升級版複製格式 - 包含更多專業內容
   const formatScriptForCopy = (version: ScriptVersion) => {
-    let text = `【${version.script.title}】\n\n`
-    text += `風格：${version.style} - ${version.styleDescription}\n\n`
-    text += `═══════════════════════════════════\n`
-    text += `分鏡腳本\n`
-    text += `═══════════════════════════════════\n\n`
+    let text = `════════════════════════════════════════════════════════════\n`
+    text += `                    短影音腳本                              \n`
+    text += `════════════════════════════════════════════════════════════\n\n`
 
-    version.script.segments.forEach((seg) => {
-      text += `【${seg.timeRange}】\n`
+    text += `【${version.script.title}】\n`
+    if (version.script.subtitle) text += `${version.script.subtitle}\n`
+    text += `\n`
+    text += `風格：${version.style} - ${version.styleDescription}\n`
+    if (version.framework) text += `框架：${version.framework}\n`
+    if (version.script.totalDuration) text += `時長：${version.script.totalDuration}\n`
+    if (version.script.pacing) text += `節奏：${version.script.pacing}\n`
+    text += `\n`
+
+    text += `════════════════════════════════════════════════════════════\n`
+    text += `  分鏡腳本\n`
+    text += `════════════════════════════════════════════════════════════\n\n`
+
+    version.script.segments.forEach((seg, index) => {
+      const segName = seg.segmentName ? `【${seg.segmentName}】` : `【第 ${index + 1} 段】`
+      text += `${segName} ${seg.timeRange}\n`
+      text += `────────────────────────────────────\n`
       text += `畫面：${seg.visual}\n`
       text += `口播：${seg.voiceover}\n`
+      if (seg.textOverlay) text += `字卡：${seg.textOverlay}\n`
       if (seg.effect) text += `特效：${seg.effect}\n`
+      if (seg.sound) text += `音效：${seg.sound}\n`
+      if (seg.emotionalBeat) text += `情緒：${seg.emotionalBeat}\n`
+      if (seg.note) text += `備註：${seg.note}\n`
       text += `\n`
     })
 
-    text += `═══════════════════════════════════\n`
-    text += `BGM 建議\n`
-    text += `═══════════════════════════════════\n`
+    text += `════════════════════════════════════════════════════════════\n`
+    text += `  BGM 建議\n`
+    text += `════════════════════════════════════════════════════════════\n\n`
     text += `風格：${version.script.bgm.style}\n`
+    if (version.script.bgm.mood) text += `氛圍：${version.script.bgm.mood}\n`
     if (version.script.bgm.bpm) text += `節奏：${version.script.bgm.bpm} BPM\n`
-    text += `推薦：${version.script.bgm.suggestions.join("、")}\n\n`
+    if (version.script.bgm.suggestions?.length > 0) {
+      text += `推薦：${version.script.bgm.suggestions.join("、")}\n`
+    }
+    if (version.script.soundEffects && version.script.soundEffects.length > 0) {
+      text += `音效：${version.script.soundEffects.join("、")}\n`
+    }
+    text += `\n`
 
-    text += `═══════════════════════════════════\n`
-    text += `結尾 CTA\n`
-    text += `═══════════════════════════════════\n`
-    text += `${version.script.cta}\n\n`
+    text += `════════════════════════════════════════════════════════════\n`
+    text += `  結尾 CTA\n`
+    text += `════════════════════════════════════════════════════════════\n\n`
+    text += `${version.script.cta}\n`
+    if (version.script.ctaTiming) text += `時機：${version.script.ctaTiming}\n`
+    text += `\n`
 
-    text += `═══════════════════════════════════\n`
-    text += `拍攝建議\n`
-    text += `═══════════════════════════════════\n`
+    if (version.visualStyle) {
+      text += `════════════════════════════════════════════════════════════\n`
+      text += `  視覺風格建議\n`
+      text += `════════════════════════════════════════════════════════════\n\n`
+      if (version.visualStyle.colorTone) text += `色調：${version.visualStyle.colorTone}\n`
+      if (version.visualStyle.fontStyle) text += `字型：${version.visualStyle.fontStyle}\n`
+      if (version.visualStyle.transitionStyle) text += `轉場：${version.visualStyle.transitionStyle}\n`
+      text += `\n`
+    }
+
+    text += `════════════════════════════════════════════════════════════\n`
+    text += `  拍攝建議\n`
+    text += `════════════════════════════════════════════════════════════\n\n`
     version.shootingTips.forEach((tip, i) => {
       text += `${i + 1}. ${tip}\n`
     })
+    if (version.locationSuggestion) text += `\n場地建議：${version.locationSuggestion}\n`
+    if (version.equipmentNeeded && version.equipmentNeeded.length > 0) {
+      text += `器材需求：${version.equipmentNeeded.join("、")}\n`
+    }
+    text += `\n`
+
+    if (version.editingTips && version.editingTips.length > 0) {
+      text += `════════════════════════════════════════════════════════════\n`
+      text += `  剪輯建議\n`
+      text += `════════════════════════════════════════════════════════════\n\n`
+      version.editingTips.forEach((tip, i) => {
+        text += `${i + 1}. ${tip}\n`
+      })
+      text += `\n`
+    }
+
+    if (version.alternativeHooks && version.alternativeHooks.length > 0) {
+      text += `════════════════════════════════════════════════════════════\n`
+      text += `  備選 HOOK\n`
+      text += `════════════════════════════════════════════════════════════\n\n`
+      version.alternativeHooks.forEach((hook, i) => {
+        text += `${i + 1}. ${hook}\n`
+      })
+      text += `\n`
+    }
+
+    if (version.warnings && version.warnings.length > 0) {
+      text += `════════════════════════════════════════════════════════════\n`
+      text += `  注意事項\n`
+      text += `════════════════════════════════════════════════════════════\n\n`
+      version.warnings.forEach((w, i) => {
+        text += `${i + 1}. ${w}\n`
+      })
+      text += `\n`
+    }
+
+    text += `════════════════════════════════════════════════════════════\n`
+    text += `  預估表現\n`
+    text += `════════════════════════════════════════════════════════════\n\n`
+    text += `完播率：${version.estimatedMetrics.completionRate}\n`
+    text += `互動率：${version.estimatedMetrics.engagementRate}\n`
+    if (version.estimatedMetrics.saveRate) text += `收藏率：${version.estimatedMetrics.saveRate}\n`
+    if (version.estimatedMetrics.shareability) text += `分享潛力：${version.estimatedMetrics.shareability}\n`
+    text += `最佳發布：${version.estimatedMetrics.bestPostTime}\n`
+    if (version.estimatedMetrics.bestPlatform) text += `最適平台：${version.estimatedMetrics.bestPlatform}\n`
+
+    text += `\n════════════════════════════════════════════════════════════\n`
 
     return text
+  }
+
+  // 下載腳本為 TXT 檔案
+  const downloadScript = (version: ScriptVersion) => {
+    const text = formatScriptForCopy(version)
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `腳本_${version.style}_${version.script.title.slice(0, 15)}_${new Date().toISOString().slice(0, 10)}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const canProceedStep1 = creatorBackground.niche && creatorBackground.targetAudience
@@ -723,7 +847,7 @@ export default function ScriptGeneratorPage() {
         <div className="space-y-6">
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="py-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                     <Check className="h-5 w-5 text-primary" />
@@ -769,115 +893,349 @@ export default function ScriptGeneratorPage() {
             {generatedVersions.map((version) => (
               <TabsContent key={version.id} value={version.id} className="mt-4 sm:mt-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+                  {/* 主要腳本內容 */}
                   <Card className="lg:col-span-2">
                     <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
                       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
-                        <div className="min-w-0">
-                          <Badge className="mb-2">{version.style}</Badge>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <Badge>{version.style}</Badge>
+                            {version.framework && (
+                              <Badge variant="outline">{version.framework}</Badge>
+                            )}
+                          </div>
                           <CardTitle className="text-base sm:text-lg leading-tight">{version.script.title}</CardTitle>
-                          <CardDescription className="mt-1 text-sm">{version.styleDescription}</CardDescription>
-                        </div>
-                        <Button
-                          variant={copiedId === version.id ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => copyToClipboard(formatScriptForCopy(version), version.id)}
-                          className="w-full sm:w-auto flex-shrink-0"
-                        >
-                          {copiedId === version.id ? (
-                            <>
-                              <Check className="h-4 w-4 mr-1" />
-                              已複製
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-1" />
-                              複製腳本
-                            </>
+                          {version.script.subtitle && (
+                            <p className="text-xs text-muted-foreground mt-1">{version.script.subtitle}</p>
                           )}
-                        </Button>
+                          <CardDescription className="mt-1 text-sm">{version.styleDescription}</CardDescription>
+                          {version.script.totalDuration && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="secondary" className="text-xs">{version.script.totalDuration}</Badge>
+                              {version.script.pacing && (
+                                <Badge variant="secondary" className="text-xs">{version.script.pacing}</Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          <Button
+                            variant={copiedId === version.id ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => copyToClipboard(formatScriptForCopy(version), version.id)}
+                            className="flex-1 sm:flex-initial"
+                          >
+                            {copiedId === version.id ? (
+                              <>
+                                <Check className="h-4 w-4 mr-1" />
+                                已複製
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-1" />
+                                複製
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadScript(version)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <Separator />
                     <CardContent className="p-0">
-                      <ScrollArea className="h-[400px] sm:h-[500px]">
+                      <ScrollArea className="h-[500px] sm:h-[600px]">
                         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                          {/* 分鏡腳本 */}
                           <div>
-                            <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">分鏡腳本</h3>
-                            <div className="space-y-3 sm:space-y-4">
-                              {version.script.segments.map((segment, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 sm:p-4 rounded-lg border bg-muted/30"
-                                >
-                                  <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
-                                    <Badge variant="secondary" className="text-xs">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {segment.timeRange}
-                                    </Badge>
-                                    {segment.effect && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {segment.effect}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">畫面：</span>
-                                      <span>{segment.visual}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">口播：</span>
-                                      <span className="font-medium">{segment.voiceover}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <Separator />
-
-                          <div>
-                            <h3 className="font-semibold mb-4 flex items-center gap-2">
-                              <Music className="h-4 w-4" />
-                              BGM 建議
-                            </h3>
-                            <div className="p-4 rounded-lg bg-muted/30">
-                              <div className="grid gap-2 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">風格：</span>
-                                  <span className="font-medium">{version.script.bgm.style}</span>
-                                </div>
-                                {version.script.bgm.bpm && (
-                                  <div>
-                                    <span className="text-muted-foreground">節奏：</span>
-                                    <span>{version.script.bgm.bpm} BPM</span>
-                                  </div>
-                                )}
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-muted-foreground">推薦：</span>
-                                  {version.script.bgm.suggestions.map((s, i) => (
-                                    <Badge key={i} variant="outline">{s}</Badge>
-                                  ))}
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-semibold text-sm sm:text-base">分鏡腳本</h3>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground hidden sm:inline">共 {version.script.segments.length} 個分鏡</span>
+                                {/* 檢視模式切換 - 專業版以上才能用專業分鏡表 */}
+                                <div className="flex border rounded-md overflow-hidden text-xs">
+                                  <button
+                                    onClick={() => setViewMode("simple")}
+                                    className={`px-2 py-1 ${viewMode === "simple" ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"}`}
+                                  >
+                                    簡潔
+                                  </button>
+                                  {credits?.tier === 'pro' || credits?.tier === 'lifetime' ? (
+                                    <button
+                                      onClick={() => setViewMode("professional")}
+                                      className={`px-2 py-1 ${viewMode === "professional" ? "bg-primary text-primary-foreground" : "bg-muted/50 hover:bg-muted"}`}
+                                    >
+                                      專業
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => alert('專業分鏡表為專業版以上功能，請升級方案')}
+                                      className="px-2 py-1 bg-muted/30 text-muted-foreground cursor-not-allowed flex items-center gap-1"
+                                      title="專業版以上功能"
+                                    >
+                                      專業
+                                      <span className="text-[9px] bg-orange-100 text-orange-600 px-1 rounded">PRO</span>
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </div>
+
+                            {/* 簡潔版 - 卡片式 */}
+                            {viewMode === "simple" && (
+                              <div className="space-y-3">
+                                {version.script.segments.map((segment, index) => (
+                                  <div key={index} className="p-3 sm:p-4 rounded-lg border bg-muted/30">
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                      {segment.segmentName && (
+                                        <Badge className="text-xs">{segment.segmentName}</Badge>
+                                      )}
+                                      <Badge variant="secondary" className="text-xs">{segment.timeRange}</Badge>
+                                    </div>
+                                    <div className="space-y-2 text-sm">
+                                      <p className="text-muted-foreground">{segment.visual}</p>
+                                      <p className="font-medium bg-primary/5 p-2 rounded">{segment.voiceover}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* 專業版 - 表格式分鏡表 */}
+                            {viewMode === "professional" && (
+                              <>
+                                {/* 桌面版表格 */}
+                                <div className="hidden md:block border rounded-lg overflow-hidden">
+                                  <table className="w-full text-sm">
+                                    <thead className="bg-muted/70">
+                                      <tr>
+                                        <th className="px-3 py-2.5 text-left font-semibold w-[90px] border-r">時間軸</th>
+                                        <th className="px-3 py-2.5 text-left font-semibold border-r">畫面/運鏡</th>
+                                        <th className="px-3 py-2.5 text-left font-semibold border-r">台詞/口播</th>
+                                        <th className="px-3 py-2.5 text-left font-semibold w-[140px]">字卡/音效</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                      {version.script.segments.map((segment, index) => (
+                                        <tr key={index} className={index % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                                          <td className="px-3 py-3 align-top border-r">
+                                            <div className="space-y-1">
+                                              {segment.segmentName && (
+                                                <Badge variant="default" className="text-[10px] block w-fit mb-1">{segment.segmentName}</Badge>
+                                              )}
+                                              <p className="text-xs font-mono font-medium">{segment.timeRange}</p>
+                                              {segment.emotionalBeat && (
+                                                <p className="text-[10px] text-muted-foreground mt-1">{segment.emotionalBeat}</p>
+                                              )}
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-3 align-top border-r">
+                                            <p className="text-sm leading-relaxed">{segment.visual}</p>
+                                            {segment.note && (
+                                              <p className="text-xs text-orange-600 mt-2 p-1.5 bg-orange-50 rounded">* {segment.note}</p>
+                                            )}
+                                          </td>
+                                          <td className="px-3 py-3 align-top border-r">
+                                            <div className="bg-blue-50 border-l-3 border-blue-400 p-2.5 rounded-r">
+                                              <p className="text-sm leading-relaxed">{segment.voiceover}</p>
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-3 align-top">
+                                            <div className="space-y-1.5 text-xs">
+                                              {segment.textOverlay && (
+                                                <div className="p-1.5 bg-yellow-50 rounded">
+                                                  <span className="text-yellow-700 font-medium">字卡</span>
+                                                  <p className="mt-0.5">{segment.textOverlay}</p>
+                                                </div>
+                                              )}
+                                              {segment.effect && (
+                                                <div className="p-1.5 bg-purple-50 rounded">
+                                                  <span className="text-purple-700 font-medium">特效</span>
+                                                  <p className="mt-0.5">{segment.effect}</p>
+                                                </div>
+                                              )}
+                                              {segment.sound && (
+                                                <div className="p-1.5 bg-green-50 rounded">
+                                                  <span className="text-green-700 font-medium">音效</span>
+                                                  <p className="mt-0.5">{segment.sound}</p>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+
+                                {/* 手機版專業卡片 */}
+                                <div className="md:hidden space-y-3">
+                                  {version.script.segments.map((segment, index) => (
+                                    <div key={index} className="border rounded-lg overflow-hidden">
+                                      <div className="bg-muted/70 px-3 py-2 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs font-mono font-medium">#{index + 1}</span>
+                                          {segment.segmentName && (
+                                            <Badge className="text-[10px]">{segment.segmentName}</Badge>
+                                          )}
+                                        </div>
+                                        <span className="text-xs font-mono">{segment.timeRange}</span>
+                                      </div>
+                                      <div className="divide-y">
+                                        <div className="p-3">
+                                          <p className="text-[10px] font-semibold text-muted-foreground mb-1">畫面/運鏡</p>
+                                          <p className="text-sm">{segment.visual}</p>
+                                          {segment.note && (
+                                            <p className="text-xs text-orange-600 mt-2 p-1.5 bg-orange-50 rounded">* {segment.note}</p>
+                                          )}
+                                        </div>
+                                        <div className="p-3 bg-blue-50/50">
+                                          <p className="text-[10px] font-semibold text-blue-700 mb-1">台詞/口播</p>
+                                          <p className="text-sm font-medium">{segment.voiceover}</p>
+                                        </div>
+                                        {(segment.textOverlay || segment.effect || segment.sound || segment.emotionalBeat) && (
+                                          <div className="p-3 space-y-2">
+                                            {segment.emotionalBeat && (
+                                              <div className="text-xs">
+                                                <span className="text-muted-foreground">情緒：</span>
+                                                <span>{segment.emotionalBeat}</span>
+                                              </div>
+                                            )}
+                                            <div className="flex flex-wrap gap-1.5">
+                                              {segment.textOverlay && (
+                                                <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">字卡：{segment.textOverlay}</span>
+                                              )}
+                                              {segment.effect && (
+                                                <span className="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded">特效：{segment.effect}</span>
+                                              )}
+                                              {segment.sound && (
+                                                <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">音效：{segment.sound}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           <Separator />
 
+                          {/* BGM 建議 */}
                           <div>
-                            <h3 className="font-semibold mb-4">結尾 CTA</h3>
-                            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                              <p className="font-medium">{version.script.cta}</p>
+                            <h3 className="font-semibold mb-3">BGM 建議</h3>
+                            <div className="p-4 rounded-lg bg-muted/30 space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">風格</span>
+                                <span className="font-medium">{version.script.bgm.style}</span>
+                              </div>
+                              {version.script.bgm.mood && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">氛圍</span>
+                                  <span>{version.script.bgm.mood}</span>
+                                </div>
+                              )}
+                              {version.script.bgm.bpm && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">節奏</span>
+                                  <span>{version.script.bgm.bpm} BPM</span>
+                                </div>
+                              )}
+                              {version.script.bgm.suggestions && version.script.bgm.suggestions.length > 0 && (
+                                <div className="pt-2">
+                                  <span className="text-muted-foreground">推薦曲目：</span>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {version.script.bgm.suggestions.map((s, i) => (
+                                      <Badge key={i} variant="outline" className="text-xs">{s}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {version.script.soundEffects && version.script.soundEffects.length > 0 && (
+                                <div className="pt-2 border-t">
+                                  <span className="text-muted-foreground">音效清單：</span>
+                                  <p className="mt-1">{version.script.soundEffects.join("、")}</p>
+                                </div>
+                              )}
                             </div>
                           </div>
+
+                          <Separator />
+
+                          {/* 結尾 CTA */}
+                          <div>
+                            <h3 className="font-semibold mb-3">結尾 CTA</h3>
+                            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                              <p className="font-medium">{version.script.cta}</p>
+                              {version.script.ctaTiming && (
+                                <p className="text-xs text-muted-foreground mt-2">出現時機：{version.script.ctaTiming}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 視覺風格建議 */}
+                          {version.visualStyle && (
+                            <>
+                              <Separator />
+                              <div>
+                                <h3 className="font-semibold mb-3">視覺風格建議</h3>
+                                <div className="grid gap-2 text-sm">
+                                  {version.visualStyle.colorTone && (
+                                    <div className="p-3 rounded bg-muted/30 flex justify-between">
+                                      <span className="text-muted-foreground">色調</span>
+                                      <span>{version.visualStyle.colorTone}</span>
+                                    </div>
+                                  )}
+                                  {version.visualStyle.fontStyle && (
+                                    <div className="p-3 rounded bg-muted/30 flex justify-between">
+                                      <span className="text-muted-foreground">字型</span>
+                                      <span>{version.visualStyle.fontStyle}</span>
+                                    </div>
+                                  )}
+                                  {version.visualStyle.transitionStyle && (
+                                    <div className="p-3 rounded bg-muted/30 flex justify-between">
+                                      <span className="text-muted-foreground">轉場</span>
+                                      <span>{version.visualStyle.transitionStyle}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* 備選 HOOK */}
+                          {version.alternativeHooks && version.alternativeHooks.length > 0 && (
+                            <>
+                              <Separator />
+                              <div>
+                                <h3 className="font-semibold mb-3">備選 HOOK</h3>
+                                <div className="space-y-2">
+                                  {version.alternativeHooks.map((hook, i) => (
+                                    <div key={i} className="p-3 rounded-lg border bg-muted/20 text-sm flex items-start gap-2">
+                                      <span className="text-muted-foreground">{i + 1}.</span>
+                                      <span>{hook}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </ScrollArea>
                     </CardContent>
                   </Card>
 
-                  <div className="space-y-6">
+                  {/* 側邊欄 */}
+                  <div className="space-y-4">
+                    {/* 拍攝建議 */}
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base">拍攝建議</CardTitle>
@@ -891,45 +1249,123 @@ export default function ScriptGeneratorPage() {
                             </li>
                           ))}
                         </ul>
+                        {version.locationSuggestion && (
+                          <div className="mt-3 pt-3 border-t text-sm">
+                            <span className="text-muted-foreground">場地：</span>
+                            <span>{version.locationSuggestion}</span>
+                          </div>
+                        )}
+                        {version.equipmentNeeded && version.equipmentNeeded.length > 0 && (
+                          <div className="mt-2 text-sm">
+                            <span className="text-muted-foreground">器材：</span>
+                            <span>{version.equipmentNeeded.join("、")}</span>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
 
+                    {/* 剪輯建議 */}
+                    {version.editingTips && version.editingTips.length > 0 && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">剪輯建議</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            {version.editingTips.map((tip, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-primary font-medium">{index + 1}.</span>
+                                <span>{tip}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* 預估表現 */}
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base">預估表現</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
-                          <span className="text-sm text-muted-foreground">完播率</span>
-                          <Badge>{version.estimatedMetrics.completionRate}</Badge>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                          <span className="text-muted-foreground">完播率</span>
+                          <span className="font-medium">{version.estimatedMetrics.completionRate}</span>
                         </div>
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
-                          <span className="text-sm text-muted-foreground">互動率</span>
-                          <Badge variant="secondary">{version.estimatedMetrics.engagementRate}</Badge>
+                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                          <span className="text-muted-foreground">互動率</span>
+                          <span className="font-medium">{version.estimatedMetrics.engagementRate}</span>
                         </div>
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
-                          <span className="text-sm text-muted-foreground">最佳發布</span>
-                          <Badge variant="outline">{version.estimatedMetrics.bestPostTime}</Badge>
+                        {version.estimatedMetrics.saveRate && (
+                          <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                            <span className="text-muted-foreground">收藏率</span>
+                            <span>{version.estimatedMetrics.saveRate}</span>
+                          </div>
+                        )}
+                        {version.estimatedMetrics.shareability && (
+                          <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                            <span className="text-muted-foreground">分享潛力</span>
+                            <span>{version.estimatedMetrics.shareability}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                          <span className="text-muted-foreground">最佳發布</span>
+                          <span>{version.estimatedMetrics.bestPostTime}</span>
                         </div>
+                        {version.estimatedMetrics.bestPlatform && (
+                          <div className="flex justify-between items-center p-2 rounded bg-primary/10 text-sm">
+                            <span className="text-muted-foreground">最適平台</span>
+                            <span className="font-medium text-primary">{version.estimatedMetrics.bestPlatform}</span>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
 
-                    <Button
-                      className="w-full"
-                      onClick={() => copyToClipboard(formatScriptForCopy(version), version.id)}
-                    >
-                      {copiedId === version.id ? (
-                        <>
-                          <Check className="h-4 w-4 mr-2" />
-                          已複製
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4 mr-2" />
-                          一鍵複製腳本
-                        </>
-                      )}
-                    </Button>
+                    {/* 注意事項 */}
+                    {version.warnings && version.warnings.length > 0 && (
+                      <Card className="border-orange-500/30">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base text-orange-600">注意事項</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            {version.warnings.map((warning, index) => (
+                              <li key={index} className="text-muted-foreground">
+                                {warning}
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* 操作按鈕 */}
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1"
+                        onClick={() => copyToClipboard(formatScriptForCopy(version), version.id)}
+                      >
+                        {copiedId === version.id ? (
+                          <>
+                            <Check className="h-4 w-4 mr-2" />
+                            已複製
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4 mr-2" />
+                            複製全部
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => downloadScript(version)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        下載
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </TabsContent>

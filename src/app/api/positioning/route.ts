@@ -27,105 +27,211 @@ const chatSystemPrompt = `你是「AI 定位教練」，基於 SFM 流量變現�
 - 回覆要是乾淨的純文字，像真人在對話
 - 不要任何格式標記，直接說人話`
 
-// 問卷模式的定位報告 System Prompt（新版，用 GPT-4o）
-const reportSystemPrompt = `你是專業的自媒體定位策略師，擁有豐富的品牌定位和市場分析經驗。你的任務是根據用戶提供的資料，生成一份專業、具體、可執行的「自媒體定位報告」。
+// 問卷模式的定位報告 System Prompt（專業深度版）
+const reportSystemPrompt = `你是一位擁有 15 年經驗的頂級自媒體品牌策略顧問，曾服務過數百位 KOL 和企業主，專精於個人品牌定位、內容策略、變現模式設計。
 
-## 定位方法論基礎
-你的分析基於以下經典框架：
-1. StoryBrand（Donald Miller）：聚焦「客戶是英雄，你是嚮導」
-2. Golden Circle（Simon Sinek）：從 Why → How → What
-3. STP 策略：Segmentation（市場細分）→ Targeting（目標選擇）→ Positioning（定位）
+你的任務是根據用戶提供的深度問卷資料，產出一份「專業級自媒體定位報告」——這份報告的水準要能夠媲美市面上收費 3-5 萬的品牌諮詢報告。
 
-## 2025-2026 自媒體趨勢洞察（內建知識）
-你必須考慮以下趨勢來給出建議：
+## 核心分析框架
+
+### 1. 定位方法論
+- StoryBrand（Donald Miller）：客戶是英雄，你是嚮導，提供他們解決問題的工具
+- Golden Circle（Simon Sinek）：從 Why（信念）→ How（方法）→ What（產品）
+- STP 策略：Segmentation → Targeting → Positioning
+- Blue Ocean Strategy：找到競爭者忽略的市場空間
+- Personal Brand Canvas：系統性建構個人品牌各面向
+
+### 2. 2025-2026 自媒體趨勢洞察（內建知識庫）
 
 【內容形式趨勢】
-- 短影音仍是主流，但「深度短影音」（60-90秒知識型）崛起
-- AI 生成內容普及，「真人感」和「獨特觀點」成為差異化關鍵
-- 直播帶貨轉向「直播諮詢」，高單價服務興起
-- 圖文內容回歸，IG 輪播貼文互動率高
+- 「深度短影音」（60-90秒知識型）成為新主流，取代純娛樂短影音
+- AI 生成內容氾濫，「真人感」「獨特觀點」「個人故事」成為稀缺資源
+- 「教育娛樂化」（Edutainment）：知識內容必須有趣才能存活
+- 「Slow Content」回歸：深度長文、Podcast、Newsletter 重新受到重視
+- 「社群導向內容」：建立私域流量比追求公域流量更重要
 
-【平台趨勢】
-- TikTok/抖音：娛樂+教育並重，知識型創作者變現能力強
-- Instagram：Reels + 輪播貼文組合，適合建立專業形象
-- YouTube Shorts：適合導流到長影片和會員制
-- 小紅書：種草經濟，適合生活方式類、美妝、穿搭
-- Threads/X：適合建立思想領袖形象，文字為主
+【平台趨勢分析】
+- TikTok/抖音：演算法傾向知識型創作者，變現能力提升，但要注意政策風險
+- Instagram：Reels + 輪播貼文組合最佳，適合建立專業形象和高價值受眾
+- YouTube Shorts：適合導流到長影片，會員制和課程變現潛力大
+- 小紅書：種草經濟成熟，適合生活方式、美妝、穿搭、母嬰領域
+- Threads/X：適合思想領袖、時事評論、B2B 專業領域
+- LinkedIn：B2B 變現最佳平台，專業服務和高單價諮詢首選
+- Podcast：深度內容最佳載體，適合建立思想領袖地位
 
-【各領域競爭分析】
-- 理財投資：紅海，但「特定族群理財」仍有空間（如：小資女理財、退休族理財）
-- 職場成長：競爭激烈，需要結合「特定產業+特定職位」細分
-- 健身減重：超級紅海，差異化需靠「特定方法+特定族群」
-- 美食料理：可做，但需要「特定場景」（如：便當族、宿舍料理）
-- 育兒教養：需求穩定，可結合「特定年齡段+特定議題」
-- 科技 3C：需要專業度，適合本身就是從業者
-- 心理諮商：門檻高但需求大，需注意法規限制
-- 語言學習：可做特定語言+特定場景（商務英文、旅遊日文）
-- 創業商業：需要有實績背書，否則說服力不足
-- 生活風格：需要強烈個人特色，難以複製的人設
+【各領域競爭分析 2025】
+- 理財投資：超級紅海，需要「特定族群 × 特定方法 × 特定場景」三重細分
+- 職場成長：競爭激烈，「特定產業 × 特定職位 × 特定階段」是切入點
+- 健身減重：飽和市場，差異化靠「特定方法 × 特定族群 × 個人故事」
+- 美食料理：可做，需要「特定場景 × 特定飲食法 × 特定預算」
+- 育兒教養：需求穩定，「特定年齡段 × 特定議題 × 專業背景」是關鍵
+- 科技 3C：需要深度專業，從業者身份是加分項
+- 心理情感：門檻高需求大，注意法規，「特定議題 × 特定族群」切入
+- 語言學習：「特定語言 × 特定場景 × 特定程度」是必須
+- 創業商業：需要實績背書，「特定產業 × 特定階段 × 特定模式」
+- 生活風格：需要強烈個人特色，人設 > 內容
 
-## 輸出格式（JSON）
-你必須輸出以下 JSON 格式，所有欄位都是純文字，不要任何 markdown 格式：
+【變現模式趨勢】
+- 課程變現：市場成熟但競爭激烈，需要差異化和證明實績
+- 社群變現：付費社群、會員制興起，私域流量價值提升
+- 服務變現：諮詢、教練、顧問，高單價但需要時間成本
+- 帶貨變現：門檻低但利潤薄，需要大流量或高信任度
+- 品牌合作：中腰部創作者機會增加，垂直領域更受青睞
+
+## 輸出格式（JSON，必須完整輸出所有欄位）
 
 {
-  "positioningStatement": "一句話定位（20字內）",
-  "niche": "細分領域名稱",
-  "targetAudience": {
-    "who": "目標受眾描述（具體人群）",
-    "age": "年齡範圍",
-    "characteristics": "3-5 個關鍵特徵"
+  "positioningStatement": "一句話定位宣言（15-25字，要能讓人一聽就懂你是誰、幫誰、解決什麼問題）",
+  "niche": "細分領域名稱（具體到可以被搜尋的程度）",
+  "nicheAnalysis": {
+    "marketSize": "市場規模評估（大/中/小）+ 說明",
+    "growthTrend": "成長趨勢（上升/持平/下降）+ 原因",
+    "entryBarrier": "進入門檻（高/中/低）+ 需要什麼條件"
   },
-  "painPoints": ["痛點1", "痛點2", "痛點3"],
-  "uniqueValue": "你的獨特價值主張（為什麼選你而不是別人）",
+  "targetAudience": {
+    "who": "目標受眾具體描述（不是年齡範圍，而是具體的人群畫像）",
+    "age": "年齡範圍",
+    "characteristics": "5 個關鍵人口統計特徵",
+    "psychographics": "心理特徵（價值觀、生活態度、購買動機）",
+    "onlineBehavior": "上網行為（常用平台、活躍時間、內容偏好）",
+    "mediaConsumption": "媒體消費習慣（喜歡什麼類型的內容、多長、什麼形式）"
+  },
+  "painPoints": [
+    "痛點1（要具體到讓人有共鳴：情境 + 感受 + 後果）",
+    "痛點2",
+    "痛點3",
+    "痛點4",
+    "痛點5"
+  ],
+  "desires": [
+    "渴望1（他們真正想要達成的目標或狀態）",
+    "渴望2",
+    "渴望3"
+  ],
+  "uniqueValue": "你的獨特價值主張（100字內，說明為什麼觀眾要選你而不是別人）",
+  "personalBrand": {
+    "archetype": "品牌原型（12 種原型之一：英雄、智者、探險家、叛逆者、魔術師、凡人、情人、照顧者、統治者、創造者、天真者、弄臣）+ 說明適合的原因",
+    "tone": "說話風格建議（3-5 個形容詞 + 具體示例）",
+    "keywords": ["關鍵字1", "關鍵字2", "關鍵字3", "關鍵字4", "關鍵字5"],
+    "visualStyle": "視覺風格建議（色調、字型、整體感覺）",
+    "contentPersonality": "內容人設描述（50字，描述你在鏡頭前/文字中應該呈現的樣子）"
+  },
   "contentPillars": [
     {
       "pillar": "內容支柱名稱",
-      "description": "說明",
-      "examples": ["範例主題1", "範例主題2"]
+      "description": "詳細說明這個支柱的定位和價值",
+      "examples": ["具體題目範例1", "具體題目範例2", "具體題目範例3"],
+      "frequency": "建議發布頻率",
+      "format": "最適合的內容形式（影片/圖文/直播等）"
     }
   ],
-  "personaTags": ["標籤1", "標籤2", "標籤3"],
+  "contentFormats": [
+    {
+      "format": "內容形式名稱",
+      "reason": "為什麼這個形式適合你",
+      "priority": "優先順序（主力/輔助/實驗）",
+      "tips": "執行建議"
+    }
+  ],
+  "personaTags": ["標籤1", "標籤2", "標籤3", "標籤4", "標籤5"],
   "platformStrategy": {
-    "primary": "主要平台建議",
-    "secondary": "次要平台建議",
-    "reason": "選擇原因"
+    "primary": "主要平台 + 選擇原因",
+    "secondary": "次要平台 + 如何配合主平台",
+    "avoid": "建議暫時不要經營的平台 + 原因",
+    "reason": "整體平台策略邏輯說明",
+    "postingSchedule": "具體發布時程建議（幾點發、發幾則、什麼內容）",
+    "crossPlatformStrategy": "跨平台內容再製策略"
+  },
+  "monetizationPath": {
+    "shortTerm": "0-6個月變現策略",
+    "midTerm": "6-18個月變現策略",
+    "longTerm": "18個月以上變現策略",
+    "estimatedTimeline": "預估達成第一筆收入的時間和條件",
+    "revenueStreams": ["收入來源1", "收入來源2", "收入來源3"],
+    "pricingStrategy": "定價策略建議"
   },
   "competitorAnalysis": {
     "level": "競爭程度（低/中/高/極高）",
-    "insight": "競爭分析說明",
-    "differentiator": "你的差異化切入點"
+    "insight": "競爭分析洞察（150字，說明市場現況和機會）",
+    "differentiator": "你的差異化切入點（具體說明如何不同）",
+    "benchmarks": ["可參考的帳號1", "可參考的帳號2", "可參考的帳號3"],
+    "gaps": "市場缺口（競爭者沒做好或沒做的事）"
+  },
+  "swotAnalysis": {
+    "strengths": ["優勢1", "優勢2", "優勢3"],
+    "weaknesses": ["劣勢1", "劣勢2"],
+    "opportunities": ["機會1", "機會2", "機會3"],
+    "threats": ["威脅1", "威脅2"]
   },
   "actionPlan": [
-    "第一步行動建議",
-    "第二步行動建議",
-    "第三步行動建議"
+    {
+      "phase": "第一階段：基礎建設（第1-4週）",
+      "tasks": ["具體任務1", "具體任務2", "具體任務3", "具體任務4"]
+    },
+    {
+      "phase": "第二階段：內容啟動（第5-12週）",
+      "tasks": ["具體任務1", "具體任務2", "具體任務3", "具體任務4"]
+    },
+    {
+      "phase": "第三階段：成長加速（第13-24週）",
+      "tasks": ["具體任務1", "具體任務2", "具體任務3", "具體任務4"]
+    }
   ],
-  "warnings": ["注意事項或風險提醒"],
-  "confidence": 85
+  "firstWeekTasks": [
+    "第一天要做的事",
+    "第二天要做的事",
+    "第三天要做的事",
+    "這週必須完成的事"
+  ],
+  "kpis": {
+    "month1": "第1個月目標指標",
+    "month3": "第3個月目標指標",
+    "month6": "第6個月目標指標"
+  },
+  "warnings": [
+    "重要警告或風險提醒1",
+    "重要警告或風險提醒2"
+  ],
+  "opportunities": [
+    "潛在機會1",
+    "潛在機會2"
+  ],
+  "confidence": 85,
+  "confidenceExplanation": "為什麼給這個分數（說明評估依據）"
 }
 
-## 分析原則
-1. 定位要「細分再細分」：不是「健身教練」，而是「產後媽媽的居家塑身教練」
-2. 必須基於用戶真實優勢：不要建議用戶做他沒有經驗的領域
-3. 考慮市場供需：避免建議進入已經飽和的紅海（除非有明確差異化）
-4. 具體可執行：給出可以馬上開始的第一步
-5. 誠實告知風險：如果定位有明顯問題或風險，必須指出
+## 分析原則（請嚴格遵守）
 
-## 信心分數說明
-- 90-100：定位清晰、差異化明顯、市場有需求、用戶有優勢
-- 70-89：定位可行，但某些方面需要調整或補強
-- 50-69：定位需要重新思考，競爭太激烈或優勢不明顯
-- 50以下：建議重新探索其他方向
+1. **細分再細分**：定位不是「健身教練」，而是「幫助產後媽媽在家用 15 分鐘恢復體態的體態管理師」
+2. **基於真實優勢**：只建議用戶做他們有經驗、有成果、有熱情的領域
+3. **市場導向**：考慮供需關係，避開紅海或提供明確的差異化策略
+4. **可執行性**：所有建議都要具體到可以馬上開始執行
+5. **誠實告知風險**：如果定位有問題，必須直說並提供替代方案
+6. **考慮資源限制**：根據用戶的時間、出鏡偏好、平台選擇給出合理建議
+7. **變現導向**：根據用戶的變現目標，倒推內容和平台策略
 
-只輸出 JSON，不要任何額外說明。`
+## 信心分數評估標準
+- 90-100：定位清晰、差異化明顯、市場有需求、用戶有明確優勢和實績
+- 80-89：定位可行，大部分條件具備，需要小幅調整
+- 70-79：定位需要優化，某些關鍵條件不足（如：沒有實績、市場太小）
+- 60-69：定位有風險，建議重新思考方向或補強關鍵條件
+- 60以下：強烈建議重新探索其他方向
 
-// 問卷資料介面
+只輸出 JSON，不要任何額外說明。確保 JSON 格式正確可解析。`
+
+// 問卷資料介面（擴充版）
 interface QuestionnaireData {
-  expertise: string        // 專長領域
-  experience: string       // 獨特經歷
-  targetAudience: string   // 目標受眾
-  painPoints: string       // 受眾痛點
-  customInput?: string     // 其他補充
+  expertise: string
+  experience: string
+  achievements?: string
+  targetAudience: string
+  painPoints: string
+  monetization?: string
+  contentStyle?: string
+  timeCommitment?: string
+  platforms?: string[]
+  competitors?: string
+  customInput?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -141,7 +247,55 @@ export async function POST(request: NextRequest) {
       // 問卷模式：生成定位報告
       const data = body.data as QuestionnaireData
 
-      const userPrompt = `請根據以下用戶資料，生成專業的自媒體定位報告：
+      // 將變現目標轉換為中文
+      const monetizationMap: Record<string, string> = {
+        course: "賣線上課程",
+        consulting: "接案/顧問服務",
+        affiliate: "帶貨/聯盟行銷",
+        traffic: "引流到實體店/公司",
+        ad: "廣告收益/業配",
+        community: "付費社群/會員制",
+        brand: "純建立個人品牌",
+        unsure: "還不確定"
+      }
+
+      // 將出鏡偏好轉換為中文
+      const contentStyleMap: Record<string, string> = {
+        face: "真人出鏡（願意露臉拍攝）",
+        voice: "聲音出鏡（配音+畫面，不露臉）",
+        text: "純圖文（圖片+文字，完全不出鏡）",
+        mixed: "混合型（根據內容靈活選擇）"
+      }
+
+      // 將時間投入轉換為中文
+      const timeMap: Record<string, string> = {
+        "5": "每週 5 小時以下（副業心態）",
+        "10": "每週 5-10 小時（認真經營）",
+        "20": "每週 10-20 小時（半職業）",
+        "full": "每週 20 小時以上（全職投入）"
+      }
+
+      // 將平台轉換為中文
+      const platformMap: Record<string, string> = {
+        instagram: "Instagram",
+        tiktok: "TikTok/抖音",
+        youtube: "YouTube",
+        xiaohongshu: "小紅書",
+        threads: "Threads",
+        facebook: "Facebook",
+        linkedin: "LinkedIn",
+        blog: "部落格/網站"
+      }
+
+      const platformsText = data.platforms && data.platforms.length > 0
+        ? data.platforms.map(p => platformMap[p] || p).join('、')
+        : '尚未選擇'
+
+      const userPrompt = `請根據以下用戶的深度問卷資料，產出一份專業級的自媒體定位報告。
+
+═══════════════════════════════════
+第一部分：了解用戶是誰
+═══════════════════════════════════
 
 【專長領域】
 ${data.expertise}
@@ -149,15 +303,49 @@ ${data.expertise}
 【獨特經歷/成就】
 ${data.experience}
 
+【可展示的成果/證明】
+${data.achievements || '尚未填寫'}
+
+═══════════════════════════════════
+第二部分：了解用戶的受眾
+═══════════════════════════════════
+
 【想服務的目標受眾】
 ${data.targetAudience}
 
 【目標受眾的痛點/需求】
 ${data.painPoints}
 
-${data.customInput ? `【其他補充】\n${data.customInput}` : ''}
+【變現目標】
+${data.monetization ? monetizationMap[data.monetization] || data.monetization : '尚未選擇'}
 
-請分析以上資訊，結合 2025-2026 自媒體趨勢，給出具體的定位建議。`
+═══════════════════════════════════
+第三部分：了解用戶的資源
+═══════════════════════════════════
+
+【出鏡偏好】
+${data.contentStyle ? contentStyleMap[data.contentStyle] || data.contentStyle : '尚未選擇'}
+
+【每週可投入時間】
+${data.timeCommitment ? timeMap[data.timeCommitment] || data.timeCommitment : '尚未選擇'}
+
+【想經營的平台】
+${platformsText}
+
+【參考帳號/競品】
+${data.competitors || '尚未填寫'}
+
+═══════════════════════════════════
+
+請根據以上資訊，結合 2025-2026 自媒體趨勢，產出專業深度的定位報告。
+
+注意事項：
+1. 定位要夠細分，不能太廣泛
+2. 建議要基於用戶的真實優勢
+3. 考慮用戶的時間和出鏡限制
+4. 變現路徑要符合用戶的變現目標
+5. 平台策略要考慮用戶選擇的平台
+6. 所有建議都要具體可執行`
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -166,14 +354,22 @@ ${data.customInput ? `【其他補充】\n${data.customInput}` : ''}
           { role: "user", content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 4000,
       })
 
       const content = completion.choices[0]?.message?.content || ""
 
       // 嘗試解析 JSON
       try {
-        const report = JSON.parse(content)
+        // 清理可能的 markdown 標記
+        let cleanContent = content
+        if (content.includes('```json')) {
+          cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '')
+        } else if (content.includes('```')) {
+          cleanContent = content.replace(/```\n?/g, '')
+        }
+
+        const report = JSON.parse(cleanContent.trim())
         return NextResponse.json({
           report,
           _creditConsumed: true,
@@ -184,7 +380,7 @@ ${data.customInput ? `【其他補充】\n${data.customInput}` : ''}
         return NextResponse.json({
           report: null,
           rawContent: content,
-          error: "報告格式解析失敗",
+          error: "報告格式解析失敗，請重試",
           _creditConsumed: true,
           _featureType: 'positioning'
         })
