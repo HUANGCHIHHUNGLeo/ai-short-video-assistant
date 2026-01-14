@@ -50,7 +50,8 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
     features: [
       '每月 5 次腳本生成',
       '每月 2 次輪播貼文（20則/次）',
-      '全功能體驗',
+      '基礎定位分析報告',
+      '基礎腳本生成',
       '無歷史記錄',
     ],
   },
@@ -66,6 +67,8 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
     features: [
       '每月 15 次腳本生成',
       '每月 10 次輪播貼文（20則/次）',
+      '基礎定位分析報告',
+      '基礎腳本生成',
       '30 天歷史記錄',
       '優先客服支援',
     ],
@@ -82,8 +85,11 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
     features: [
       '每月 100 次腳本生成',
       '每月 50 次輪播貼文（20則/次）',
+      '完整定位分析（含 SWOT、變現路徑）',
+      'KPI 目標與第一週任務規劃',
+      '個人品牌建議與潛在機會分析',
+      '專業分鏡表視圖',
       '永久歷史記錄',
-      'API 存取權限',
       '優先新功能體驗',
     ],
   },
@@ -99,6 +105,10 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
     features: [
       '無限次腳本生成',
       '無限次輪播貼文',
+      '完整定位分析（含 SWOT、變現路徑）',
+      'KPI 目標與第一週任務規劃',
+      '個人品牌建議與潛在機會分析',
+      '專業分鏡表視圖',
       '永久歷史記錄',
       '不定時更新維護',
       '終身使用權',

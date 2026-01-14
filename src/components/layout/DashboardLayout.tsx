@@ -92,12 +92,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <CreditsBadge showDetails className="w-full justify-center" />
           </div>
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+            <div className={cn(
+              "h-9 w-9 rounded-full flex items-center justify-center text-white font-bold shadow-lg",
+              credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
+              credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+              credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
+              "bg-gradient-to-br from-gray-500 to-gray-600"
+            )}>
               U
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">訪客</p>
-              <p className="text-xs text-muted-foreground truncate">{currentPlan.name}</p>
+              <div className={cn(
+                "text-xs px-2 py-0.5 rounded-full w-fit",
+                credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
+                credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
+                credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
+                "bg-gray-500/20 text-gray-600"
+              )}>
+                {currentPlan.name}
+              </div>
             </div>
           </div>
         </div>
@@ -112,17 +126,43 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 bg-[var(--sidebar)] border-r border-border/40">
+            <SheetContent side="left" className="w-72 p-0 bg-[var(--sidebar)] border-r border-border/40 flex flex-col">
               <div className="h-16 flex items-center px-6 border-b border-border/40">
                 <span className="font-bold text-xl">選單</span>
               </div>
-              <ScrollArea className="h-[calc(100vh-4rem)] py-6 px-3">
+              <ScrollArea className="flex-1 py-6 px-3">
                 <div className="space-y-2">
                   {navigation.map((item) => (
                     <NavItem key={item.name} item={item} mobile />
                   ))}
                 </div>
               </ScrollArea>
+              {/* 手機版底部方案顯示 */}
+              <div className="p-4 border-t border-border/40">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "h-9 w-9 rounded-full flex items-center justify-center text-white font-bold shadow-lg",
+                    credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
+                    credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+                    credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
+                    "bg-gradient-to-br from-gray-500 to-gray-600"
+                  )}>
+                    U
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">訪客</p>
+                    <div className={cn(
+                      "text-xs px-2 py-0.5 rounded-full w-fit",
+                      credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
+                      credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
+                      credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
+                      "bg-gray-500/20 text-gray-600"
+                    )}>
+                      {currentPlan.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2 ml-2 flex-1">
