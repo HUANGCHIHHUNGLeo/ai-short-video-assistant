@@ -1035,23 +1035,32 @@ export default function PositioningPage() {
           </CardHeader>
           <CardContent className="space-y-4 px-4 sm:px-6">
             <div className="grid grid-cols-2 gap-3">
-              {platformOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={cn(
-                    "p-3 rounded-lg border-2 cursor-pointer transition-all",
-                    formData.platforms.includes(option.value)
-                      ? "border-primary bg-primary/5"
-                      : "border-muted hover:border-primary/50"
-                  )}
-                  onClick={() => handleOptionSelect("platforms", option.value)}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{option.icon}</span>
-                    <span className="font-medium text-sm">{option.label}</span>
+              {platformOptions.map((option) => {
+                const isSelected = formData.platforms.includes(option.value)
+                return (
+                  <div
+                    key={option.value}
+                    className={cn(
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all",
+                      isSelected
+                        ? "border-green-500 bg-green-500/10 ring-2 ring-green-500/20"
+                        : "border-muted hover:border-primary/50"
+                    )}
+                    onClick={() => handleOptionSelect("platforms", option.value)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isSelected && (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      )}
+                      <span className="text-xl">{option.icon}</span>
+                      <span className={cn(
+                        "font-medium text-sm",
+                        isSelected && "text-green-700 dark:text-green-400"
+                      )}>{option.label}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             <p className="text-xs text-muted-foreground">
               已選擇：{formData.platforms.length > 0
