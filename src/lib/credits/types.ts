@@ -131,3 +131,11 @@ export const FEATURE_CREDIT_MAP: Record<FeatureType, 'script' | 'carousel'> = {
   copy_optimizer: 'script',   // 文案優化算腳本類
   topic_ideas: 'script',      // 選題靈感算腳本類
 }
+
+// 訂閱等級資訊（供 UI 使用）
+export const SUBSCRIPTION_TIERS: Record<SubscriptionTier, { name: string; color: string }> = {
+  free: { name: '免費版', color: 'gray' },
+  creator: { name: '創作者版', color: 'blue' },
+  pro: { name: '專業版', color: 'purple' },
+  lifetime: { name: '買斷版', color: 'amber' },
+}

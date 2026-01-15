@@ -12,14 +12,19 @@ import {
   Lightbulb,
   Menu,
   Video,
-  CreditCard
+  CreditCard,
+  LogIn,
+  Shield
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { CreditsBadge } from "@/components/billing"
 import { useCredits } from "@/hooks/useCredits"
+import { useUser } from "@/hooks/useUser"
 import { PLANS } from "@/lib/credits"
+import { AuthModal, UserMenu } from "@/components/auth"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -28,8 +33,10 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { credits } = useCredits()
+  const { profile, isLoading: isUserLoading, isAuthenticated } = useUser()
   const currentPlan = credits ? PLANS[credits.tier] : PLANS.free
 
   const navigation = [
@@ -40,6 +47,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "文案覆盤優化", href: "/copy-optimizer", icon: FileText },
     { name: "熱門選題靈感", href: "/topic-ideas", icon: Lightbulb },
     { name: "升級方案", href: "/pricing", icon: CreditCard },
+    // 管理員專用
+    ...(profile?.is_admin ? [{ name: "管理後台", href: "/admin", icon: Shield }] : []),
   ]
 
   const NavItem = ({ item, mobile = false }: { item: typeof navigation[0], mobile?: boolean }) => {
@@ -64,8 +73,78 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     )
   }
 
+  // 用戶資訊區塊
+  const UserSection = ({ mobile = false }: { mobile?: boolean }) => {
+    if (isUserLoading) {
+      return (
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+          <div className="flex-1 min-w-0">
+            <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+            <div className="h-3 w-16 bg-muted animate-pulse rounded mt-1" />
+          </div>
+        </div>
+      )
+    }
+
+    if (isAuthenticated && profile) {
+      const initials = profile.display_name
+        ? profile.display_name.slice(0, 2).toUpperCase()
+        : profile.email.slice(0, 2).toUpperCase()
+
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={profile.avatar_url || undefined} />
+            <AvatarFallback className={cn(
+              "text-white font-bold",
+              credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
+              credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+              credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
+              "bg-gradient-to-br from-gray-500 to-gray-600"
+            )}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {profile.display_name || profile.email.split('@')[0]}
+            </p>
+            <div className={cn(
+              "text-xs px-2 py-0.5 rounded-full w-fit",
+              credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
+              credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
+              credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
+              "bg-gray-500/20 text-gray-600"
+            )}>
+              {currentPlan.name}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // 未登入狀態
+    return (
+      <Button
+        variant="outline"
+        className="w-full justify-start gap-2"
+        onClick={() => {
+          if (mobile) setIsMobileOpen(false)
+          setShowAuthModal(true)
+        }}
+      >
+        <LogIn className="h-4 w-4" />
+        登入 / 註冊
+      </Button>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border/40 bg-[var(--sidebar)] fixed inset-y-0 z-50">
         <div className="h-16 flex items-center px-6 border-b border-border/40">
@@ -91,29 +170,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="mb-3">
             <CreditsBadge showDetails className="w-full justify-center" />
           </div>
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "h-9 w-9 rounded-full flex items-center justify-center text-white font-bold shadow-lg",
-              credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
-              credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
-              credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
-              "bg-gradient-to-br from-gray-500 to-gray-600"
-            )}>
-              U
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">訪客</p>
-              <div className={cn(
-                "text-xs px-2 py-0.5 rounded-full w-fit",
-                credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
-                credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
-                credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
-                "bg-gray-500/20 text-gray-600"
-              )}>
-                {currentPlan.name}
-              </div>
-            </div>
-          </div>
+          <UserSection />
         </div>
       </aside>
 
@@ -139,29 +196,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </ScrollArea>
               {/* 手機版底部方案顯示 */}
               <div className="p-4 border-t border-border/40">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "h-9 w-9 rounded-full flex items-center justify-center text-white font-bold shadow-lg",
-                    credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
-                    credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
-                    credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
-                    "bg-gradient-to-br from-gray-500 to-gray-600"
-                  )}>
-                    U
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">訪客</p>
-                    <div className={cn(
-                      "text-xs px-2 py-0.5 rounded-full w-fit",
-                      credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
-                      credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
-                      credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
-                      "bg-gray-500/20 text-gray-600"
-                    )}>
-                      {currentPlan.name}
-                    </div>
-                  </div>
-                </div>
+                <UserSection mobile />
               </div>
             </SheetContent>
           </Sheet>
@@ -171,8 +206,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <span className="font-bold text-lg">AI 助理</span>
           </div>
-          {/* 手機版額度顯示 */}
-          <CreditsBadge className="ml-auto" />
+          {/* 手機版右側：額度 + 用戶選單 */}
+          <div className="flex items-center gap-2 ml-auto">
+            <CreditsBadge />
+            {isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowAuthModal(true)}
+              >
+                <LogIn className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </header>
 
         <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in">
