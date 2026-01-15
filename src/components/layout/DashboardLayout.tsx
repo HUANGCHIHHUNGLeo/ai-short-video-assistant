@@ -15,7 +15,8 @@ import {
   CreditCard,
   LogIn,
   LogOut,
-  Shield
+  Shield,
+  History
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -48,6 +49,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "輪播貼文生成", href: "/carousel-post", icon: Images },
     { name: "文案覆盤優化", href: "/copy-optimizer", icon: FileText },
     { name: "熱門選題靈感", href: "/topic-ideas", icon: Lightbulb },
+    { name: "生成記錄", href: "/history", icon: History },
     { name: "升級方案", href: "/pricing", icon: CreditCard },
     // 管理員專用
     ...(profile?.is_admin ? [{ name: "管理後台", href: "/admin", icon: Shield }] : []),

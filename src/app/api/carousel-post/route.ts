@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
-import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { checkApiAuth, recordUsage, authError, saveGeneration } from "@/lib/auth/api-guard"
 import { trackApiCost } from "@/lib/cost-tracking"
 
 const systemPrompt = `你是台灣頂尖社群內容策劃師，專精 IG/小紅書輪播貼文，擅長創作有深度、有價值的內容。
@@ -162,8 +162,23 @@ ${topic ? `主題：${topic}` : ""}
         })
       }
 
+      // Pro/Lifetime 用戶保存生成記錄到 generations 表
+      let generationId: string | null = null
+      if (isPremium && result.carouselPosts?.length > 0) {
+        generationId = await saveGeneration({
+          userId: authResult.userId,
+          featureType: 'carousel',
+          title: `輪播貼文 - ${niche}（${result.carouselPosts.length}組）`,
+          inputData: { niche, targetAudience, topic, carouselCount },
+          outputData: result,
+          modelUsed: modelToUse,
+          tokensUsed: completion.usage?.total_tokens
+        })
+      }
+
       return NextResponse.json({
         ...result,
+        generationId,
         _creditConsumed: true,
         _featureType: 'carousel',
         _remainingCredits: authResult.remainingCredits,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 import { buildSystemPrompt } from "@/lib/prompts"
-import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { checkApiAuth, recordUsage, authError, saveGeneration } from "@/lib/auth/api-guard"
 import { trackApiCost } from "@/lib/cost-tracking"
 
 // Vercel 超時設定（Hobby 方案最多 60 秒，Pro 方案可到 300 秒）
@@ -178,8 +178,24 @@ ${generateVersions > 3 ? '- 版本 D：故事敘事版（情感共鳴）\n- 版�
         })
       }
 
+      // Pro/Lifetime 用戶保存生成記錄到 generations 表
+      const isPremium = authResult.tier === 'pro' || authResult.tier === 'lifetime'
+      let generationId: string | null = null
+      if (isPremium && result.versions?.length > 0) {
+        generationId = await saveGeneration({
+          userId: authResult.userId,
+          featureType: 'script',
+          title: `腳本 - ${videoSettings.topic}（${result.versions.length}版本）`,
+          inputData: { creatorBackground, videoSettings, generateVersions },
+          outputData: result,
+          modelUsed: 'gpt-4o',
+          tokensUsed: completion.usage?.total_tokens
+        })
+      }
+
       return NextResponse.json({
         ...result,
+        generationId,
         _creditConsumed: true,
         _featureType: 'script',
         _remainingCredits: authResult.remainingCredits,
