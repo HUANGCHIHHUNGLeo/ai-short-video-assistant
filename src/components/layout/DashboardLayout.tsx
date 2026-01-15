@@ -23,7 +23,7 @@ import { CreditsBadge } from "@/components/billing"
 import { useCredits } from "@/hooks/useCredits"
 import { useUser } from "@/hooks/useUser"
 import { PLANS } from "@/lib/credits"
-import { UserMenu } from "@/components/auth"
+import { AuthModal, UserMenu } from "@/components/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface DashboardLayoutProps {
@@ -33,6 +33,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { credits } = useCredits()
   const { profile, isLoading: isUserLoading, isAuthenticated } = useUser()
@@ -125,23 +126,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     // 未登入狀態
     return (
-      <Link href="/login">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-2"
-          onClick={() => {
-            if (mobile) setIsMobileOpen(false)
-          }}
-        >
-          <LogIn className="h-4 w-4" />
-          登入 / 註冊
-        </Button>
-      </Link>
+      <Button
+        variant="outline"
+        className="w-full justify-start gap-2"
+        onClick={() => {
+          if (mobile) setIsMobileOpen(false)
+          setShowAuthModal(true)
+        }}
+      >
+        <LogIn className="h-4 w-4" />
+        登入 / 註冊
+      </Button>
     )
   }
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border/40 bg-[var(--sidebar)] fixed inset-y-0 z-50">
         <div className="h-16 flex items-center px-6 border-b border-border/40">
@@ -209,14 +212,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {isAuthenticated ? (
               <UserMenu />
             ) : (
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                >
-                  <LogIn className="h-5 w-5" />
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowAuthModal(true)}
+              >
+                <LogIn className="h-5 w-5" />
+              </Button>
             )}
           </div>
         </header>
