@@ -192,8 +192,9 @@ export function useCredits() {
   }, [credits, isAuthenticated, canUseFeature])
 
   // 升級方案（重新載入以取得最新狀態）
-  const upgrade = useCallback(async () => {
-    // 實際升級應該由後端處理，這裡只重新載入
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const upgrade = useCallback(async (_tier?: SubscriptionTier) => {
+    // 實際升級應該由後端處理（Stripe webhook），這裡只重新載入
     await loadCredits()
   }, [loadCredits])
 
