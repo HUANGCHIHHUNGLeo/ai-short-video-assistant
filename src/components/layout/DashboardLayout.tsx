@@ -14,6 +14,7 @@ import {
   Video,
   CreditCard,
   LogIn,
+  LogOut,
   Shield
 } from "lucide-react"
 import Link from "next/link"
@@ -36,7 +37,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { credits } = useCredits()
-  const { profile, isLoading: isUserLoading, isAuthenticated } = useUser()
+  const { profile, isLoading: isUserLoading, isAuthenticated, signOut } = useUser()
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const currentPlan = credits ? PLANS[credits.tier] : PLANS.free
 
   const navigation = [
@@ -92,34 +94,52 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         ? profile.display_name.slice(0, 2).toUpperCase()
         : profile.email.slice(0, 2).toUpperCase()
 
+      const handleSignOut = async () => {
+        setIsSigningOut(true)
+        await signOut()
+        setIsSigningOut(false)
+      }
+
       return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={profile.avatar_url || undefined} />
-            <AvatarFallback className={cn(
-              "text-white font-bold",
-              credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
-              credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
-              credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
-              "bg-gradient-to-br from-gray-500 to-gray-600"
-            )}>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {profile.display_name || profile.email.split('@')[0]}
-            </p>
-            <div className={cn(
-              "text-xs px-2 py-0.5 rounded-full w-fit",
-              credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
-              credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
-              credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
-              "bg-gray-500/20 text-gray-600"
-            )}>
-              {currentPlan.name}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarFallback className={cn(
+                "text-white font-bold",
+                credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
+                credits?.tier === 'pro' ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+                credits?.tier === 'creator' ? "bg-gradient-to-br from-blue-500 to-cyan-500" :
+                "bg-gradient-to-br from-gray-500 to-gray-600"
+              )}>
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {profile.display_name || profile.email.split('@')[0]}
+              </p>
+              <div className={cn(
+                "text-xs px-2 py-0.5 rounded-full w-fit",
+                credits?.tier === 'lifetime' ? "bg-amber-500/20 text-amber-600" :
+                credits?.tier === 'pro' ? "bg-purple-500/20 text-purple-600" :
+                credits?.tier === 'creator' ? "bg-blue-500/20 text-blue-600" :
+                "bg-gray-500/20 text-gray-600"
+              )}>
+                {currentPlan.name}
+              </div>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {isSigningOut ? '登出中...' : '登出'}
+          </Button>
         </div>
       )
     }
