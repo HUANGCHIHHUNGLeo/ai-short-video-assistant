@@ -227,11 +227,31 @@ export function useCredits() {
     return true
   }, [credits, isAuthenticated, canUseFeature])
 
-  // 升級方案（重新載入以取得最新狀態）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const upgrade = useCallback(async (_tier?: SubscriptionTier) => {
-    // 實際升級應該由後端處理（Stripe webhook），這裡只重新載入
-    await loadCredits()
+  // 升級方案（測試版本直接呼叫 API 升級，正式版改接 Stripe）
+  const upgrade = useCallback(async (tier?: SubscriptionTier) => {
+    if (!tier) {
+      await loadCredits()
+      return
+    }
+
+    try {
+      const response = await fetch('/api/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || '升級失敗')
+      }
+
+      // Realtime 會自動更新，但也手動 reload 確保同步
+      await loadCredits()
+    } catch (error) {
+      console.error('Upgrade error:', error)
+      throw error
+    }
   }, [loadCredits])
 
   // 格式化顯示
