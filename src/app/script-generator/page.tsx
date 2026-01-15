@@ -136,6 +136,8 @@ export default function ScriptGeneratorPage() {
   const [creditError, setCreditError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"simple" | "professional">("simple") // 檢視模式
   const [selectedPositioningId, setSelectedPositioningId] = useState<string | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [positioningData, setPositioningData] = useState<Record<string, any> | null>(null) // 完整定位報告
 
   const { canUseFeature, useCredit, display, credits } = useCredits()
 
@@ -169,6 +171,9 @@ export default function ScriptGeneratorPage() {
       if (data.records) {
         const record = data.records.find((r: { id: string }) => r.id === positioningId)
         if (record) {
+          // 保存完整的定位報告資料（用於傳給腳本 API）
+          setPositioningData(record.output_data)
+
           handlePositioningSelect({
             id: record.id,
             niche: record.output_data.niche || record.input_data.expertise || '',
@@ -262,7 +267,8 @@ export default function ScriptGeneratorPage() {
         body: JSON.stringify({
           creatorBackground,
           videoSettings,
-          generateVersions: generateCount
+          generateVersions: generateCount,
+          positioningData: positioningData || undefined // 如果有定位報告，傳給 API
         })
       })
 

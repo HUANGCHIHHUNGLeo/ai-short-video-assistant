@@ -43,7 +43,7 @@ interface QuestionnaireData {
   experience: string          // Q2: 獨特經歷/成就
   achievements: string        // Q3: 可展示的成果
   // 第二階段：了解你的受眾
-  targetAudience: string      // Q4: 目標受眾
+  targetAudience: string[]    // Q4: 目標受眾（支援複選）
   painPoints: string          // Q5: 受眾痛點
   monetization: string        // Q6: 變現目標
   // 第三階段：了解你的資源
@@ -114,6 +114,7 @@ interface PositioningReport {
     level: string
     insight: string
     differentiator: string
+    referenceStyles?: string[]
     benchmarks?: string[]
     gaps?: string
   }
@@ -129,9 +130,9 @@ interface PositioningReport {
   }[] | string[]
   firstWeekTasks?: string[]
   kpis?: {
-    month1: string
-    month3: string
-    month6: string
+    month1: string | { target: string; howToAchieve: string; keyMetrics: string }
+    month3: string | { target: string; howToAchieve: string; milestone: string }
+    month6: string | { target: string; howToAchieve: string; revenueBreakdown: string }
   }
   warnings: string[]
   opportunities?: string[]
@@ -238,7 +239,7 @@ export default function PositioningPage() {
     expertise: "",
     experience: "",
     achievements: "",
-    targetAudience: "",
+    targetAudience: [],
     painPoints: "",
     monetization: "",
     contentStyle: "",
@@ -276,13 +277,23 @@ export default function PositioningPage() {
 
   const handleOptionSelect = (field: keyof QuestionnaireData, value: string) => {
     if (field === 'platforms') {
-      // 多選邏輯
+      // 多選邏輯 - 平台
       setFormData(prev => {
         const currentPlatforms = prev.platforms || []
         if (currentPlatforms.includes(value)) {
           return { ...prev, platforms: currentPlatforms.filter(p => p !== value) }
         } else {
           return { ...prev, platforms: [...currentPlatforms, value] }
+        }
+      })
+    } else if (field === 'targetAudience') {
+      // 多選邏輯 - 目標受眾
+      setFormData(prev => {
+        const currentAudience = prev.targetAudience || []
+        if (currentAudience.includes(value)) {
+          return { ...prev, targetAudience: currentAudience.filter(a => a !== value) }
+        } else {
+          return { ...prev, targetAudience: [...currentAudience, value] }
         }
       })
     } else {
@@ -302,7 +313,7 @@ export default function PositioningPage() {
       case 1: return formData.expertise.trim() !== ""
       case 2: return formData.experience.trim() !== ""
       case 3: return true // 成就可選填
-      case 4: return formData.targetAudience.trim() !== ""
+      case 4: return formData.targetAudience.length > 0
       case 5: return formData.painPoints.trim() !== ""
       case 6: return formData.monetization.trim() !== ""
       case 7: return formData.contentStyle.trim() !== ""
@@ -357,7 +368,7 @@ export default function PositioningPage() {
       expertise: "",
       experience: "",
       achievements: "",
-      targetAudience: "",
+      targetAudience: [],
       painPoints: "",
       monetization: "",
       contentStyle: "",
@@ -855,39 +866,51 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 4: 目標受眾 */}
+      {/* Step 4: 目標受眾（可多選） */}
       {currentStep === 4 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Users className="h-5 w-5 text-primary" />
-              Q4. 你想幫助誰？
+              Q4. 你想幫助誰？（可多選）
             </CardTitle>
             <CardDescription>
-              定義你的目標受眾，越具體越好
+              選擇你的目標受眾，可選擇多個族群
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 px-4 sm:px-6">
-            <div className="flex flex-wrap gap-2">
-              {audienceOptions.map((option) => (
-                <Badge
-                  key={option}
-                  variant={formData.targetAudience === option ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors py-1.5 px-3 text-sm"
-                  onClick={() => handleOptionSelect("targetAudience", option)}
-                >
-                  {option}
-                </Badge>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {audienceOptions.map((option) => {
+                const isSelected = formData.targetAudience.includes(option)
+                return (
+                  <div
+                    key={option}
+                    className={cn(
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all",
+                      isSelected
+                        ? "border-green-500 bg-green-500/10 ring-2 ring-green-500/20"
+                        : "border-muted hover:border-primary/50"
+                    )}
+                    onClick={() => handleOptionSelect("targetAudience", option)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isSelected && (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      )}
+                      <span className={cn(
+                        "font-medium text-sm",
+                        isSelected && "text-green-700 dark:text-green-400"
+                      )}>{option}</span>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <div className="space-y-2">
-              <Label>或更具體描述</Label>
-              <Input
-                placeholder="例如：想轉職的 30 歲工程師、剛生完小孩的新手媽媽..."
-                value={audienceOptions.includes(formData.targetAudience) ? "" : formData.targetAudience}
-                onChange={(e) => handleInputChange("targetAudience", e.target.value)}
-              />
-            </div>
+            <p className="text-xs text-muted-foreground">
+              已選擇：{formData.targetAudience.length > 0
+                ? formData.targetAudience.join('、')
+                : '尚未選擇'}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -1438,16 +1461,31 @@ export default function PositioningPage() {
                     <p className="text-sm font-medium text-primary">差異化切入點：</p>
                     <p className="text-sm">{report.competitorAnalysis?.differentiator}</p>
                   </div>
-                  {report.competitorAnalysis?.benchmarks && report.competitorAnalysis.benchmarks.length > 0 && (
+                  {report.competitorAnalysis?.referenceStyles && report.competitorAnalysis.referenceStyles.length > 0 ? (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">參考標竿：</p>
-                      <div className="flex flex-wrap gap-1">
-                        {report.competitorAnalysis.benchmarks.map((b, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">{b}</Badge>
+                      <p className="text-sm text-muted-foreground mb-2">可參考的內容風格：</p>
+                      <ul className="space-y-1">
+                        {report.competitorAnalysis.referenceStyles.map((style, i) => (
+                          <li key={i} className="text-sm flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{style}</span>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </div>
-                  )}
+                  ) : report.competitorAnalysis?.benchmarks && report.competitorAnalysis.benchmarks.length > 0 ? (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">可參考的內容風格：</p>
+                      <ul className="space-y-1">
+                        {report.competitorAnalysis.benchmarks.map((b, i) => (
+                          <li key={i} className="text-sm flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
 
@@ -1674,20 +1712,75 @@ export default function PositioningPage() {
                         <Badge className="bg-purple-500 text-[10px]">PRO</Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="px-4 sm:px-6">
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <Badge variant="outline" className="min-w-[60px] justify-center">1 個月</Badge>
-                          <span className="text-sm">{report.kpis.month1}</span>
+                    <CardContent className="px-4 sm:px-6 space-y-4">
+                      {/* 1 個月 */}
+                      <div className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-500">1 個月</Badge>
+                          <span className="font-medium text-sm">
+                            {typeof report.kpis.month1 === 'string'
+                              ? report.kpis.month1
+                              : report.kpis.month1.target}
+                          </span>
                         </div>
-                        <div className="flex items-start gap-3">
-                          <Badge variant="outline" className="min-w-[60px] justify-center">3 個月</Badge>
-                          <span className="text-sm">{report.kpis.month3}</span>
+                        {typeof report.kpis.month1 === 'object' && (
+                          <div className="space-y-1 pl-2 border-l-2 border-green-500/30">
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">怎麼達成：</span>
+                              {report.kpis.month1.howToAchieve}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">追蹤指標：</span>
+                              {report.kpis.month1.keyMetrics}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {/* 3 個月 */}
+                      <div className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-yellow-500">3 個月</Badge>
+                          <span className="font-medium text-sm">
+                            {typeof report.kpis.month3 === 'string'
+                              ? report.kpis.month3
+                              : report.kpis.month3.target}
+                          </span>
                         </div>
-                        <div className="flex items-start gap-3">
-                          <Badge variant="outline" className="min-w-[60px] justify-center">6 個月</Badge>
-                          <span className="text-sm">{report.kpis.month6}</span>
+                        {typeof report.kpis.month3 === 'object' && (
+                          <div className="space-y-1 pl-2 border-l-2 border-yellow-500/30">
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">怎麼達成：</span>
+                              {report.kpis.month3.howToAchieve}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">里程碑：</span>
+                              {report.kpis.month3.milestone}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {/* 6 個月 */}
+                      <div className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-blue-500">6 個月</Badge>
+                          <span className="font-medium text-sm">
+                            {typeof report.kpis.month6 === 'string'
+                              ? report.kpis.month6
+                              : report.kpis.month6.target}
+                          </span>
                         </div>
+                        {typeof report.kpis.month6 === 'object' && (
+                          <div className="space-y-1 pl-2 border-l-2 border-blue-500/30">
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">怎麼達成：</span>
+                              {report.kpis.month6.howToAchieve}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground">收入組成：</span>
+                              {report.kpis.month6.revenueBreakdown}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

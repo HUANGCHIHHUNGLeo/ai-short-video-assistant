@@ -15,10 +15,36 @@ export async function POST(request: NextRequest) {
       return authError(authResult)
     }
 
-    const { creatorBackground, videoSettings, generateVersions = 3 } = await request.json()
+    const { creatorBackground, videoSettings, generateVersions = 3, positioningData } = await request.json()
 
     if (!creatorBackground?.niche || !videoSettings?.topic) {
       return NextResponse.json({ error: "請提供完整的創作者背景和影片設定" }, { status: 400 })
+    }
+
+    // 如果有定位報告資料，建立額外的上下文
+    let positioningContext = ""
+    if (positioningData) {
+      positioningContext = `
+## 已完成的定位分析（重要！請據此設計腳本）
+這位創作者已經完成了專業的定位分析，請根據以下定位報告來設計腳本：
+
+- 定位宣言：${positioningData.positioningStatement || ''}
+- 細分領域：${positioningData.niche || ''}
+- 獨特價值：${positioningData.uniqueValue || ''}
+- 目標受眾：${positioningData.targetAudience?.who || ''} (${positioningData.targetAudience?.age || ''})
+- 受眾特徵：${positioningData.targetAudience?.characteristics || ''}
+- 受眾痛點：${Array.isArray(positioningData.painPoints) ? positioningData.painPoints.join('、') : ''}
+- 內容支柱：${Array.isArray(positioningData.contentPillars) ? positioningData.contentPillars.map((p: { pillar: string }) => p.pillar).join('、') : ''}
+- 個人品牌風格：${positioningData.personalBrand?.tone || ''}
+- 人設關鍵字：${Array.isArray(positioningData.personaTags) ? positioningData.personaTags.join('、') : ''}
+
+請確保腳本：
+1. 符合定位宣言的方向
+2. 針對指定的目標受眾說話（用他們的語言、解決他們的問題）
+3. 痛點要戳到他們的真實困擾
+4. 使用建議的品牌風格和語調
+5. 內容主題符合內容支柱方向
+`
     }
 
     const openai = new OpenAI({
@@ -89,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     const userPrompt = `
 請幫我生成 ${generateVersions} 個不同風格的短影音腳本：
-
+${positioningContext}
 ## 創作者資訊
 - 領域：${creatorBackground.niche}
 - 專業背景：${creatorBackground.expertise || "一般素人"}
