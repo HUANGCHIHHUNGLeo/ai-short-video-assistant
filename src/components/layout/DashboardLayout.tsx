@@ -79,6 +79,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // 用戶資訊區塊
   const UserSection = ({ mobile = false }: { mobile?: boolean }) => {
+    // 載入中顯示骨架屏
     if (isUserLoading) {
       return (
         <div className="flex items-center gap-3">
@@ -91,10 +92,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       )
     }
 
-    if (isAuthenticated && profile) {
-      const initials = profile.display_name
-        ? profile.display_name.slice(0, 2).toUpperCase()
-        : profile.email.slice(0, 2).toUpperCase()
+    // 已登入
+    if (isAuthenticated) {
+      const displayName = profile?.display_name || profile?.email?.split('@')[0] || '用戶'
+      const initials = displayName.slice(0, 2).toUpperCase()
 
       const handleSignOut = async () => {
         setIsSigningOut(true)
@@ -106,7 +107,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback className={cn(
                 "text-white font-bold",
                 credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :
@@ -119,7 +120,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
-                {profile.display_name || profile.email.split('@')[0]}
+                {displayName}
               </p>
               <div className={cn(
                 "text-xs px-2 py-0.5 rounded-full w-fit",
