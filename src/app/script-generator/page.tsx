@@ -519,6 +519,7 @@ export default function ScriptGeneratorPage() {
                             <SelectValue placeholder="選擇風格" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="relatable">共鳴同理型（推薦）</SelectItem>
                             <SelectItem value="professional">專業權威型</SelectItem>
                             <SelectItem value="friendly">親切朋友型</SelectItem>
                             <SelectItem value="energetic">熱血激勵型</SelectItem>
@@ -715,6 +716,7 @@ export default function ScriptGeneratorPage() {
                       <SelectValue placeholder="選擇氛圍" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="relatable">共鳴感（推薦）</SelectItem>
                       <SelectItem value="professional">專業嚴謹</SelectItem>
                       <SelectItem value="casual">輕鬆隨性</SelectItem>
                       <SelectItem value="humorous">幽默搞笑</SelectItem>
