@@ -230,19 +230,19 @@ export default function HistoryPage() {
           {/* 快速預覽 */}
           {record.feature_type === 'positioning' && record.output_data.positioningStatement && (
             <p className="text-xs text-muted-foreground line-clamp-2">
-              {record.output_data.positioningStatement as string}
+              {String(record.output_data.positioningStatement)}
             </p>
           )}
           {record.feature_type === 'script' && record.output_data.versions && (
             <p className="text-xs text-muted-foreground">
               {(record.output_data.versions as Array<{style?: string}>).length} 個版本
-              {record.input_data.videoSettings && ` - ${(record.input_data.videoSettings as {topic?: string}).topic}`}
+              {record.input_data.videoSettings && ` - ${String((record.input_data.videoSettings as {topic?: string}).topic || '')}`}
             </p>
           )}
           {record.feature_type === 'carousel' && record.output_data.carouselPosts && (
             <p className="text-xs text-muted-foreground">
               {(record.output_data.carouselPosts as Array<unknown>).length} 組貼文
-              {record.input_data.niche && ` - ${record.input_data.niche}`}
+              {record.input_data.niche && ` - ${String(record.input_data.niche)}`}
             </p>
           )}
 
@@ -302,13 +302,13 @@ export default function HistoryPage() {
           {output.niche && (
             <div>
               <span className="text-xs font-medium text-muted-foreground">定位：</span>
-              <span className="text-sm ml-1">{output.niche as string}</span>
+              <span className="text-sm ml-1">{String(output.niche)}</span>
             </div>
           )}
           {output.positioningStatement && (
             <div>
               <span className="text-xs font-medium text-muted-foreground">定位宣言：</span>
-              <p className="text-sm mt-1">{output.positioningStatement as string}</p>
+              <p className="text-sm mt-1">{String(output.positioningStatement)}</p>
             </div>
           )}
           {output.contentPillars && (
