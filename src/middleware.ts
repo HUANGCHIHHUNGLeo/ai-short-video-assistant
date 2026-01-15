@@ -5,6 +5,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+// Cookie 有效期：30 天（秒）
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30
+
 export async function middleware(request: NextRequest) {
   // 如果環境變數未設定，直接跳過 middleware
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -30,9 +33,16 @@ export async function middleware(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // 確保 cookie 有足夠長的有效期（30天）
+            const enhancedOptions = {
+              ...options,
+              maxAge: options?.maxAge || COOKIE_MAX_AGE,
+              sameSite: 'lax' as const,
+              secure: process.env.NODE_ENV === 'production',
+            }
+            supabaseResponse.cookies.set(name, value, enhancedOptions)
+          })
         },
       },
     }
