@@ -679,6 +679,7 @@ export default function ScriptGeneratorPage() {
                       <SelectItem value="vlog">Vlog - 生活記錄風格</SelectItem>
                       <SelectItem value="tutorial">教學型 - 邊做邊說</SelectItem>
                       <SelectItem value="interview">訪談型 - 對談聊天</SelectItem>
+                      <SelectItem value="storytime">說故事 - 敘事型內容</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
