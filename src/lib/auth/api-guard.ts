@@ -6,11 +6,15 @@ import type { FeatureType } from '@/lib/credits/types'
 // 訪客每日免費試用次數
 const GUEST_DAILY_LIMIT = 2
 
+// 訂閱等級類型
+type SubscriptionTier = 'free' | 'creator' | 'pro' | 'lifetime'
+
 // 檢查結果類型
 interface AuthCheckResult {
   allowed: boolean
   userId: string | null
   isGuest: boolean
+  tier?: SubscriptionTier
   error?: string
   statusCode?: number
   remainingCredits?: number
@@ -128,6 +132,7 @@ async function checkUserCredits(
       allowed: true,
       userId,
       isGuest: false,
+      tier: tier as SubscriptionTier,
       remainingCredits: -1
     }
   }
@@ -138,6 +143,7 @@ async function checkUserCredits(
       allowed: false,
       userId,
       isGuest: false,
+      tier: tier as SubscriptionTier,
       error: '本月額度已用完，請升級方案或下月再試',
       statusCode: 403,
       remainingCredits: 0
@@ -148,6 +154,7 @@ async function checkUserCredits(
     allowed: true,
     userId,
     isGuest: false,
+    tier: tier as SubscriptionTier,
     remainingCredits: limit - used
   }
 }
@@ -270,4 +277,52 @@ export function authError(result: AuthCheckResult): NextResponse {
     },
     { status: result.statusCode || 403 }
   )
+}
+
+/**
+ * 保存生成記錄到 generations 表
+ */
+export async function saveGeneration(params: {
+  userId: string | null
+  featureType: FeatureType
+  title?: string
+  inputData: Record<string, unknown>
+  outputData: Record<string, unknown>
+  modelUsed?: string
+  tokensUsed?: number
+}): Promise<string | null> {
+  // 只有登入用戶才保存
+  if (!params.userId) {
+    return null
+  }
+
+  try {
+    const serviceClient = createServiceClient()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (serviceClient as any)
+      .from('generations')
+      .insert({
+        user_id: params.userId,
+        feature_type: params.featureType,
+        title: params.title || null,
+        input_data: params.inputData,
+        output_data: params.outputData,
+        model_used: params.modelUsed || null,
+        tokens_used: params.tokensUsed || null,
+        is_favorite: false
+      })
+      .select('id')
+      .single() as { data: { id: string } | null; error: Error | null }
+
+    if (error) {
+      console.error('Save generation error:', error)
+      return null
+    }
+
+    return data?.id || null
+  } catch (error) {
+    console.error('Save generation error:', error)
+    return null
+  }
 }

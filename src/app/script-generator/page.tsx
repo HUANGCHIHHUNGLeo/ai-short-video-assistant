@@ -32,8 +32,10 @@ import {
   Video
 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { useCredits } from "@/hooks/useCredits"
 import { CreditsAlert } from "@/components/billing"
+import { PositioningSelector, type SelectedPositioning } from "@/components/positioning"
 
 // 升級版分鏡結構 - 支援更多專業欄位
 interface ScriptSegment {
@@ -125,6 +127,7 @@ const TIER_SCRIPT_LIMITS = {
 } as const
 
 export default function ScriptGeneratorPage() {
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedVersions, setGeneratedVersions] = useState<ScriptVersion[]>([])
@@ -132,6 +135,7 @@ export default function ScriptGeneratorPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [creditError, setCreditError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"simple" | "professional">("simple") // 檢視模式
+  const [selectedPositioningId, setSelectedPositioningId] = useState<string | null>(null)
 
   const { canUseFeature, useCredit, display, credits } = useCredits()
 
@@ -146,6 +150,61 @@ export default function ScriptGeneratorPage() {
       setGenerateCount(limit)
     }
   }, [credits?.tier])
+
+  // 從 URL 參數載入定位 ID
+  useEffect(() => {
+    const positioningId = searchParams.get('positioning')
+    if (positioningId) {
+      setSelectedPositioningId(positioningId)
+      // 載入定位資料
+      loadPositioningData(positioningId)
+    }
+  }, [searchParams])
+
+  // 載入指定的定位資料
+  const loadPositioningData = async (positioningId: string) => {
+    try {
+      const response = await fetch('/api/positioning/history')
+      const data = await response.json()
+      if (data.records) {
+        const record = data.records.find((r: { id: string }) => r.id === positioningId)
+        if (record) {
+          handlePositioningSelect({
+            id: record.id,
+            niche: record.output_data.niche || record.input_data.expertise || '',
+            expertise: record.input_data.expertise || '',
+            targetAudience: record.output_data.targetAudience?.who || record.input_data.targetAudience || '',
+            audiencePainPoints: record.input_data.painPoints || '',
+            contentStyle: record.input_data.contentStyle || 'mixed',
+            platforms: record.input_data.platforms || [],
+            positioningStatement: record.output_data.positioningStatement || '',
+            contentPillars: record.output_data.contentPillars?.map((p: { pillar: string }) => p.pillar) || [],
+            personaTags: record.output_data.personaTags || []
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load positioning data:', error)
+    }
+  }
+
+  // 處理定位選擇
+  const handlePositioningSelect = (positioning: SelectedPositioning | null) => {
+    if (positioning) {
+      setSelectedPositioningId(positioning.id)
+      setCreatorBackground({
+        ...creatorBackground,
+        niche: positioning.niche,
+        expertise: positioning.expertise,
+        targetAudience: positioning.targetAudience,
+        audiencePainPoints: positioning.audiencePainPoints,
+        contentStyle: positioning.contentStyle,
+        platforms: positioning.platforms
+      })
+    } else {
+      setSelectedPositioningId(null)
+    }
+  }
 
   const [creatorBackground, setCreatorBackground] = useState({
     niche: "",
@@ -443,6 +502,25 @@ export default function ScriptGeneratorPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* 定位選擇器 - 快速帶入過去的定位分析 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  快速帶入定位
+                </Label>
+                <PositioningSelector
+                  onSelect={handlePositioningSelect}
+                  selectedId={selectedPositioningId}
+                />
+                {selectedPositioningId && (
+                  <p className="text-xs text-muted-foreground">
+                    已自動帶入定位資料，你仍可以手動調整下方欄位
+                  </p>
+                )}
+              </div>
+
+              <Separator />
+
               <div className="space-y-3">
                 <Label className="text-sm font-medium">
                   你的領域 / 定位 <span className="text-destructive">*</span>

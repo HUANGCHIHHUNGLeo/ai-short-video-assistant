@@ -27,7 +27,8 @@ import {
   Clock,
   Globe,
   Eye,
-  Download
+  Download,
+  History
 } from "lucide-react"
 import { useState } from "react"
 import { useCredits } from "@/hooks/useCredits"
@@ -720,21 +721,29 @@ export default function PositioningPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       {/* Header */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md flex-shrink-0">
-          <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+      <div className="flex items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md flex-shrink-0">
+            <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              AI 定位教練
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              深度問卷 + AI 專業分析
+              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                剩餘 {display.script}
+              </span>
+            </p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            AI 定位教練
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            深度問卷 + AI 專業分析
-            <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-              剩餘 {display.script}
-            </span>
-          </p>
-        </div>
+        <Link href="/positioning/history">
+          <Button variant="outline" size="sm" className="gap-2">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">歷史記錄</span>
+          </Button>
+        </Link>
       </div>
 
       {/* Progress */}

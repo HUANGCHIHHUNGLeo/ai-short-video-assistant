@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
-import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { checkApiAuth, recordUsage, authError, saveGeneration } from "@/lib/auth/api-guard"
 import { trackApiCost } from "@/lib/cost-tracking"
 
 // 對話模式的 System Prompt（保留向後兼容）
@@ -393,8 +393,20 @@ ${data.competitors || '尚未填寫'}
           })
         }
 
+        // 保存生成記錄到 generations 表
+        const generationId = await saveGeneration({
+          userId: authResult.userId,
+          featureType: 'positioning',
+          title: report.positioningStatement || report.niche || '我的定位分析',
+          inputData: data as unknown as Record<string, unknown>,
+          outputData: report,
+          modelUsed: 'gpt-4o',
+          tokensUsed: completion.usage?.total_tokens
+        })
+
         return NextResponse.json({
           report,
+          generationId,
           _creditConsumed: true,
           _featureType: 'positioning',
           _remainingCredits: authResult.remainingCredits,

@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Check,
   Download,
   ExternalLink,
   Eye,
@@ -109,6 +110,7 @@ export default function CarouselPostPage() {
   const [selectedPost, setSelectedPost] = useState<CarouselPost | null>(null)
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
   const [creditError, setCreditError] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const { canUseFeature, useCredit, display } = useCredits()
 
@@ -166,8 +168,12 @@ export default function CarouselPostPage() {
     }
   }
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, id?: string) => {
     navigator.clipboard.writeText(text)
+    if (id) {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    }
   }
 
   // 下載單一輪播貼文為 TXT
@@ -717,11 +723,15 @@ export default function CarouselPostPage() {
                                 {post.hashtags?.map((tag, i) => (
                                   <Badge
                                     key={i}
-                                    variant="secondary"
-                                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs"
-                                    onClick={() => copyToClipboard(`#${tag}`)}
+                                    variant={copiedId === `tag-${post.id}-${i}` ? "default" : "secondary"}
+                                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground text-xs transition-colors"
+                                    onClick={() => copyToClipboard(`#${tag}`, `tag-${post.id}-${i}`)}
                                   >
-                                    #{tag}
+                                    {copiedId === `tag-${post.id}-${i}` ? (
+                                      <><Check className="h-3 w-3 mr-1" />已複製</>
+                                    ) : (
+                                      `#${tag}`
+                                    )}
                                   </Badge>
                                 ))}
                               </div>
@@ -740,8 +750,12 @@ export default function CarouselPostPage() {
                                     {post.quizResults.map((quizResult, i) => (
                                       <div
                                         key={i}
-                                        className="p-2 rounded-lg bg-muted/50 hover:bg-primary/10 cursor-pointer transition-colors group"
-                                        onClick={() => copyToClipboard(`${quizResult.title}\n${quizResult.description}`)}
+                                        className={`p-2 rounded-lg cursor-pointer transition-colors group ${
+                                          copiedId === `quiz-${post.id}-${i}`
+                                            ? 'bg-green-500/10 border border-green-500/30'
+                                            : 'bg-muted/50 hover:bg-primary/10'
+                                        }`}
+                                        onClick={() => copyToClipboard(`${quizResult.title}\n${quizResult.description}`, `quiz-${post.id}-${i}`)}
                                       >
                                         <div className="flex items-start justify-between gap-2">
                                           <div className="flex-1 min-w-0">
@@ -757,7 +771,11 @@ export default function CarouselPostPage() {
                                               {quizResult.description}
                                             </p>
                                           </div>
-                                          <Copy className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0" />
+                                          {copiedId === `quiz-${post.id}-${i}` ? (
+                                            <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                                          ) : (
+                                            <Copy className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0" />
+                                          )}
                                         </div>
                                       </div>
                                     ))}
@@ -772,10 +790,19 @@ export default function CarouselPostPage() {
                               <Button
                                 className="flex-1"
                                 size="sm"
-                                onClick={() => copyToClipboard(formatPostForCopy(post))}
+                                onClick={() => copyToClipboard(formatPostForCopy(post), `dialog-${post.id}`)}
                               >
-                                <Copy className="h-4 w-4 mr-2" />
-                                複製全部
+                                {copiedId === `dialog-${post.id}` ? (
+                                  <>
+                                    <Check className="h-4 w-4 mr-2 text-green-500" />
+                                    已複製！
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-4 w-4 mr-2" />
+                                    複製全部
+                                  </>
+                                )}
                               </Button>
                               <Button
                                 variant="outline"
@@ -794,9 +821,14 @@ export default function CarouselPostPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(formatPostForCopy(post))}
+                      onClick={() => copyToClipboard(formatPostForCopy(post), `card-${post.id}`)}
+                      className="transition-colors"
                     >
-                      <Copy className="h-4 w-4" />
+                      {copiedId === `card-${post.id}` ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </CardContent>
