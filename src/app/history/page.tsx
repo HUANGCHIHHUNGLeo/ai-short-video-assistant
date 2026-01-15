@@ -227,24 +227,23 @@ export default function HistoryPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-3">
-          {/* 快速預覽 */}
-          {record.feature_type === 'positioning' && record.output_data.positioningStatement && (
+          {record.feature_type === 'positioning' && record.output_data.positioningStatement ? (
             <p className="text-xs text-muted-foreground line-clamp-2">
               {String(record.output_data.positioningStatement)}
             </p>
-          )}
-          {record.feature_type === 'script' && record.output_data.versions && (
+          ) : null}
+          {record.feature_type === 'script' && record.output_data.versions ? (
             <p className="text-xs text-muted-foreground">
               {(record.output_data.versions as Array<{style?: string}>).length} 個版本
-              {record.input_data.videoSettings && ` - ${String((record.input_data.videoSettings as {topic?: string}).topic || '')}`}
+              {record.input_data.videoSettings ? ` - ${String((record.input_data.videoSettings as {topic?: string}).topic || '')}` : ''}
             </p>
-          )}
-          {record.feature_type === 'carousel' && record.output_data.carouselPosts && (
+          ) : null}
+          {record.feature_type === 'carousel' && record.output_data.carouselPosts ? (
             <p className="text-xs text-muted-foreground">
               {(record.output_data.carouselPosts as Array<unknown>).length} 組貼文
-              {record.input_data.niche && ` - ${String(record.input_data.niche)}`}
+              {record.input_data.niche ? ` - ${String(record.input_data.niche)}` : ''}
             </p>
-          )}
+          ) : null}
 
           {/* 操作按鈕 */}
           <div className="flex items-center gap-2">
