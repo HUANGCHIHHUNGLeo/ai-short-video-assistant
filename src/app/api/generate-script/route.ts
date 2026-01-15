@@ -82,12 +82,13 @@ export async function POST(request: NextRequest) {
 
     const shootingTypeMap: Record<string, string> = {
       talking_head: "口播型 - 真人出鏡對著鏡頭說話，要自然像跟朋友聊天",
-      voiceover: "藏鏡人 - 只有聲音，畫面是 B-roll 或素材，旁白要有節奏感",
+      behind_camera: "藏鏡人 - 一人在鏡頭後以觀眾視角提問/吐槽/引導，另一人出鏡回答互動。藏鏡人的聲音入鏡但不露臉，像街訪、IP問答、開箱那種形式。腳本要設計好兩人對話的節奏、提問點和反轉點，讓互動自然有趣",
+      voiceover: "純配音 - 只有聲音旁白，畫面是 B-roll 素材、螢幕錄製或圖片輪播，適合不想露臉的創作者。旁白要有節奏感，搭配畫面轉場",
       acting: "演戲/情境劇 - 有劇情、角色、對話，要有衝突和轉折",
-      vlog: "Vlog - 生活記錄風格，最自然的呈現方式",
-      tutorial: "教學示範 - 邊做邊說，步驟清楚",
-      interview: "訪談/對談 - 兩人以上對話，要有來有往",
-      storytime: "說故事 - narrative 敘事，有起承轉合"
+      vlog: "Vlog - 生活記錄風格，邊走邊拍邊說，最自然的呈現方式",
+      tutorial: "教學示範 - 邊做邊說，步驟清楚，適合知識技能類內容",
+      interview: "訪談/對談 - 兩人以上正式對話，有來有往的討論",
+      storytime: "說故事 - narrative 敘事，有起承轉合，用故事帶出觀點"
     }
 
     const castCountMap: Record<string, string> = {

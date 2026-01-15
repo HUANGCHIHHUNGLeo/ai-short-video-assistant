@@ -758,7 +758,8 @@ export default function ScriptGeneratorPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="talking_head">口播型 - 對著鏡頭說話</SelectItem>
-                      <SelectItem value="voiceover">藏鏡人 - 只有聲音配畫面</SelectItem>
+                      <SelectItem value="behind_camera">藏鏡人 - 一人掌鏡提問，一人出鏡回答</SelectItem>
+                      <SelectItem value="voiceover">純配音 - 只有聲音旁白配畫面</SelectItem>
                       <SelectItem value="acting">演戲型 - 有劇情有對話</SelectItem>
                       <SelectItem value="vlog">Vlog - 生活記錄風格</SelectItem>
                       <SelectItem value="tutorial">教學型 - 邊做邊說</SelectItem>

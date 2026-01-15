@@ -7,7 +7,7 @@ import { FRAMEWORKS_LIST } from './frameworks'
 import { OUTPUT_FORMAT } from './output-format'
 
 export interface BuildPromptOptions {
-  shootingType: string      // 'talking_head' | 'voiceover' | 'acting' | 'vlog' | 'tutorial' | 'interview' | 'storytime'
+  shootingType: string      // 'talking_head' | 'behind_camera' | 'voiceover' | 'acting' | 'vlog' | 'tutorial' | 'interview' | 'storytime'
   includeFrameworks?: boolean  // 是否包含框架列表（讓 AI 自選）
 }
 
