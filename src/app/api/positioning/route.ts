@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
+import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { trackApiCost } from "@/lib/cost-tracking"
 
 // 對話模式的 System Prompt（保留向後兼容）
 const chatSystemPrompt = `你是「AI 定位教練」，基於 SFM 流量變現系統來幫助用戶找到自媒體定位。
@@ -236,6 +238,12 @@ interface QuestionnaireData {
 
 export async function POST(request: NextRequest) {
   try {
+    // 檢查認證和額度
+    const authResult = await checkApiAuth(request, 'positioning')
+    if (!authResult.allowed) {
+      return authError(authResult)
+    }
+
     const body = await request.json()
 
     const openai = new OpenAI({
@@ -370,10 +378,27 @@ ${data.competitors || '尚未填寫'}
         }
 
         const report = JSON.parse(cleanContent.trim())
+
+        // 記錄使用量
+        await recordUsage(request, authResult.userId, 'positioning')
+
+        // 追蹤 API 成本
+        if (completion.usage) {
+          await trackApiCost({
+            userId: authResult.userId || undefined,
+            featureType: 'positioning',
+            modelName: 'gpt-4o',
+            inputTokens: completion.usage.prompt_tokens,
+            outputTokens: completion.usage.completion_tokens,
+          })
+        }
+
         return NextResponse.json({
           report,
           _creditConsumed: true,
-          _featureType: 'positioning'
+          _featureType: 'positioning',
+          _remainingCredits: authResult.remainingCredits,
+          _isGuest: authResult.isGuest
         })
       } catch {
         // 如果 JSON 解析失敗，返回原始內容
@@ -408,10 +433,26 @@ ${data.competitors || '尚未填寫'}
 
       const reply = completion.choices[0]?.message?.content || "抱歉，我現在無法回應。"
 
+      // 記錄使用量
+      await recordUsage(request, authResult.userId, 'positioning')
+
+      // 追蹤 API 成本
+      if (completion.usage) {
+        await trackApiCost({
+          userId: authResult.userId || undefined,
+          featureType: 'positioning',
+          modelName: 'gpt-4o',
+          inputTokens: completion.usage.prompt_tokens,
+          outputTokens: completion.usage.completion_tokens,
+        })
+      }
+
       return NextResponse.json({
         reply,
         _creditConsumed: true,
-        _featureType: 'positioning'
+        _featureType: 'positioning',
+        _remainingCredits: authResult.remainingCredits,
+        _isGuest: authResult.isGuest
       })
     }
   } catch (error) {

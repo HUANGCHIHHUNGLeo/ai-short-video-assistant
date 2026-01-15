@@ -23,6 +23,8 @@ export interface Database {
           credits_script: number
           credits_carousel: number
           credits_reset_date: string | null
+          script_credits_used: number
+          carousel_credits_used: number
           is_admin: boolean
           created_at: string
           updated_at: string
@@ -40,6 +42,8 @@ export interface Database {
           credits_script?: number
           credits_carousel?: number
           credits_reset_date?: string | null
+          script_credits_used?: number
+          carousel_credits_used?: number
           is_admin?: boolean
           created_at?: string
           updated_at?: string
@@ -57,6 +61,8 @@ export interface Database {
           credits_script?: number
           credits_carousel?: number
           credits_reset_date?: string | null
+          script_credits_used?: number
+          carousel_credits_used?: number
           is_admin?: boolean
           updated_at?: string
         }
@@ -98,18 +104,20 @@ export interface Database {
       usage_logs: {
         Row: {
           id: string
-          user_id: string
+          user_id: string | null
           feature_type: FeatureType
           credits_consumed: number
           generation_id: string | null
+          guest_ip: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          user_id: string
+          user_id?: string | null
           feature_type: FeatureType
           credits_consumed?: number
           generation_id?: string | null
+          guest_ip?: string | null
           created_at?: string
         }
         Update: never

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
+import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { trackApiCost } from "@/lib/cost-tracking"
 
 const systemPrompt = `你是「AI 文案診斷師」，基於 SFM 流量變現系統來幫用戶診斷和優化文案。
 
@@ -68,6 +70,12 @@ const systemPrompt = `你是「AI 文案診斷師」，基於 SFM 流量變現�
 
 export async function POST(request: NextRequest) {
   try {
+    // 檢查認證和額度
+    const authResult = await checkApiAuth(request, 'copy_optimizer')
+    if (!authResult.allowed) {
+      return authError(authResult)
+    }
+
     const { copy } = await request.json()
 
     if (!copy) {
@@ -93,11 +101,27 @@ export async function POST(request: NextRequest) {
 
     try {
       const result = JSON.parse(content)
-      // 加入額度扣除標記，讓前端知道需要扣除額度
+
+      // 記錄使用量
+      await recordUsage(request, authResult.userId, 'copy_optimizer')
+
+      // 追蹤 API 成本
+      if (completion.usage) {
+        await trackApiCost({
+          userId: authResult.userId || undefined,
+          featureType: 'copy_optimizer',
+          modelName: 'gpt-4o',
+          inputTokens: completion.usage.prompt_tokens,
+          outputTokens: completion.usage.completion_tokens,
+        })
+      }
+
       return NextResponse.json({
         ...result,
         _creditConsumed: true,
-        _featureType: 'script'
+        _featureType: 'copy_optimizer',
+        _remainingCredits: authResult.remainingCredits,
+        _isGuest: authResult.isGuest
       })
     } catch {
       return NextResponse.json({

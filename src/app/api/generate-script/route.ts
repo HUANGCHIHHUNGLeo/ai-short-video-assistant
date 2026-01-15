@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 import { buildSystemPrompt } from "@/lib/prompts"
+import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { trackApiCost } from "@/lib/cost-tracking"
 
 // Vercel 超時設定（Hobby 方案最多 60 秒，Pro 方案可到 300 秒）
 export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
+    // 檢查認證和額度
+    const authResult = await checkApiAuth(request, 'script')
+    if (!authResult.allowed) {
+      return authError(authResult)
+    }
+
     const { creatorBackground, videoSettings, generateVersions = 3 } = await request.json()
 
     if (!creatorBackground?.niche || !videoSettings?.topic) {
@@ -155,10 +163,27 @@ ${generateVersions > 3 ? '- 版本 D：故事敘事版（情感共鳴）\n- 版�
 
     try {
       const result = JSON.parse(content)
+
+      // 記錄使用量
+      await recordUsage(request, authResult.userId, 'script')
+
+      // 追蹤 API 成本
+      if (completion.usage) {
+        await trackApiCost({
+          userId: authResult.userId || undefined,
+          featureType: 'script',
+          modelName: 'gpt-4o',
+          inputTokens: completion.usage.prompt_tokens,
+          outputTokens: completion.usage.completion_tokens,
+        })
+      }
+
       return NextResponse.json({
         ...result,
         _creditConsumed: true,
-        _featureType: 'script'
+        _featureType: 'script',
+        _remainingCredits: authResult.remainingCredits,
+        _isGuest: authResult.isGuest
       })
     } catch {
       return NextResponse.json({

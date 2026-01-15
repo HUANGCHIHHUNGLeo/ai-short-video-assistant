@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 import { searchTrends, formatSearchResultsForPrompt } from "@/lib/serper"
+import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { trackApiCost } from "@/lib/cost-tracking"
 
 const systemPrompt = `你是「AI 選題策劃師」，基於 SFM 流量變現系統來幫用戶找到爆款選題。你擁有最新的網路趨勢資訊，能幫用戶找到當下最熱門的選題方向。
 
@@ -75,6 +77,12 @@ const systemPrompt = `你是「AI 選題策劃師」，基於 SFM 流量變現�
 
 export async function POST(request: NextRequest) {
   try {
+    // 檢查認證和額度
+    const authResult = await checkApiAuth(request, 'topic_ideas')
+    if (!authResult.allowed) {
+      return authError(authResult)
+    }
+
     const { niche, targetAudience, useRealTimeSearch = true } = await request.json()
 
     if (!niche) {
@@ -134,11 +142,28 @@ ${searchContext ? `\n${searchContext}\n\n請特別參考以上即時搜尋結果
 
     try {
       const result = JSON.parse(content)
+
+      // 記錄使用量
+      await recordUsage(request, authResult.userId, 'topic_ideas')
+
+      // 追蹤 API 成本
+      if (completion.usage) {
+        await trackApiCost({
+          userId: authResult.userId || undefined,
+          featureType: 'topic_ideas',
+          modelName: 'gpt-4o-mini',
+          inputTokens: completion.usage.prompt_tokens,
+          outputTokens: completion.usage.completion_tokens,
+        })
+      }
+
       return NextResponse.json({
         ...result,
         _creditConsumed: true,
-        _featureType: 'script',
-        _searchPerformed: searchPerformed
+        _featureType: 'topic_ideas',
+        _searchPerformed: searchPerformed,
+        _remainingCredits: authResult.remainingCredits,
+        _isGuest: authResult.isGuest
       })
     } catch {
       return NextResponse.json({

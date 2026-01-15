@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
+import { checkApiAuth, recordUsage, authError } from "@/lib/auth/api-guard"
+import { trackApiCost } from "@/lib/cost-tracking"
 
 const systemPrompt = `你是台灣頂尖社群內容策劃師，專精 IG/小紅書輪播貼文。
 
@@ -64,6 +66,12 @@ slides 結構說明：
 
 export async function POST(request: NextRequest) {
   try {
+    // 檢查認證和額度
+    const authResult = await checkApiAuth(request, 'carousel')
+    if (!authResult.allowed) {
+      return authError(authResult)
+    }
+
     const { niche, targetAudience, topic, carouselCount = 10 } = await request.json()
 
     if (!niche) {
@@ -102,11 +110,27 @@ ${topic ? `主題：${topic}` : ""}
 
     try {
       const result = JSON.parse(content)
-      // 加入額度扣除標記，讓前端知道需要扣除額度
+
+      // 記錄使用量
+      await recordUsage(request, authResult.userId, 'carousel')
+
+      // 追蹤 API 成本
+      if (completion.usage) {
+        await trackApiCost({
+          userId: authResult.userId || undefined,
+          featureType: 'carousel',
+          modelName: 'gpt-4o-mini',
+          inputTokens: completion.usage.prompt_tokens,
+          outputTokens: completion.usage.completion_tokens,
+        })
+      }
+
       return NextResponse.json({
         ...result,
         _creditConsumed: true,
-        _featureType: 'carousel'
+        _featureType: 'carousel',
+        _remainingCredits: authResult.remainingCredits,
+        _isGuest: authResult.isGuest
       })
     } catch {
       return NextResponse.json({

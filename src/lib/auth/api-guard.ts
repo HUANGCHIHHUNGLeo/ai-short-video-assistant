@@ -49,6 +49,14 @@ export async function checkApiAuth(
   }
 }
 
+// Profile 查詢結果類型
+interface ProfileCredits {
+  subscription_tier: string | null
+  script_credits_used: number
+  carousel_credits_used: number
+  credits_reset_date: string | null
+}
+
 /**
  * 檢查已登入用戶的額度
  */
@@ -59,11 +67,12 @@ async function checkUserCredits(
   const serviceClient = createServiceClient()
 
   // 取得用戶 profile
-  const { data: profile } = await serviceClient
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: profile } = await (serviceClient as any)
     .from('profiles')
     .select('subscription_tier, script_credits_used, carousel_credits_used, credits_reset_date')
     .eq('id', userId)
-    .single()
+    .single() as { data: ProfileCredits | null }
 
   if (!profile) {
     return {
@@ -82,7 +91,8 @@ async function checkUserCredits(
 
   if (shouldReset) {
     // 重置額度
-    await serviceClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (serviceClient as any)
       .from('profiles')
       .update({
         script_credits_used: 0,
@@ -205,22 +215,25 @@ export async function recordUsage(
       const creditColumn = featureType === 'carousel' ? 'carousel_credits_used' : 'script_credits_used'
 
       // 使用 RPC 或直接更新
-      const { data: profile } = await serviceClient
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (serviceClient as any)
         .from('profiles')
         .select(creditColumn)
         .eq('id', userId)
-        .single()
+        .single() as { data: Record<string, number> | null }
 
       if (profile) {
-        const currentUsed = (profile as Record<string, number>)[creditColumn] || 0
-        await serviceClient
+        const currentUsed = profile[creditColumn] || 0
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (serviceClient as any)
           .from('profiles')
           .update({ [creditColumn]: currentUsed + 1 })
           .eq('id', userId)
       }
 
       // 同時記錄到 usage_logs
-      await serviceClient.from('usage_logs').insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (serviceClient as any).from('usage_logs').insert({
         user_id: userId,
         feature_type: featureType,
         credits_consumed: 1
@@ -231,7 +244,8 @@ export async function recordUsage(
                  request.headers.get('x-real-ip') ||
                  'unknown'
 
-      await serviceClient.from('usage_logs').insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (serviceClient as any).from('usage_logs').insert({
         user_id: null,
         feature_type: featureType,
         credits_consumed: 1,
