@@ -14,7 +14,7 @@ import { useUser } from '@/hooks/useUser'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user, loading: userLoading, signInWithPassword, signUp } = useUser()
+  const { user, isLoading: userLoading, signInWithPassword, signUp } = useUser()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
