@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Lightbulb, RefreshCw, Sparkles, TrendingUp, Target, Zap } from "lucide-react"
+import { Lightbulb, RefreshCw, Sparkles, TrendingUp, Target, Zap, ArrowRight } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useCredits } from "@/hooks/useCredits"
 import { CreditsAlert } from "@/components/billing"
 
@@ -19,6 +20,7 @@ interface TopicIdea {
 }
 
 export default function TopicIdeasPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [niche, setNiche] = useState("")
   const [targetAudience, setTargetAudience] = useState("")
@@ -27,6 +29,21 @@ export default function TopicIdeasPage() {
   const [creditError, setCreditError] = useState<string | null>(null)
 
   const { canUseFeature, useCredit, display } = useCredits()
+
+  // 使用選題生成腳本
+  const handleUseForScript = (idea: TopicIdea) => {
+    // 將選題資訊存到 sessionStorage，讓腳本頁面可以讀取
+    sessionStorage.setItem('topic_idea', JSON.stringify({
+      title: idea.title,
+      type: idea.type,
+      description: idea.description,
+      hookSuggestion: idea.hookSuggestion,
+      niche: niche,
+      targetAudience: targetAudience || idea.targetAudience,
+    }))
+    // 導航到腳本生成頁面
+    router.push('/script-generator?from=topic')
+  }
 
   const handleGenerate = async () => {
     if (!niche.trim()) return
@@ -204,19 +221,29 @@ export default function TopicIdeasPage() {
                   <div className="p-2.5 sm:p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-primary mb-1">
                       <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      建議開頭
+                      開頭引導
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground">{idea.hookSuggestion}</p>
                   </div>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors text-sm"
-                  onClick={() => navigator.clipboard.writeText(idea.title)}
-                >
-                  複製選題標題
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-sm"
+                    onClick={() => navigator.clipboard.writeText(idea.title)}
+                  >
+                    複製方向
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-1 text-sm"
+                    onClick={() => handleUseForScript(idea)}
+                  >
+                    生成腳本
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

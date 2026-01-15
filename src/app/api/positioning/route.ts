@@ -302,11 +302,13 @@ const reportSystemPrompt = `你是一位擁有 15 年經驗的頂級自媒體品
 
 // 問卷資料介面（擴充版）
 interface QuestionnaireData {
+  personalBackground?: string  // 個人背景故事
   expertise: string
   experience: string
   achievements?: string
-  targetAudience: string
-  painPoints: string
+  targetAudience: string | string[]  // 支援陣列（多選）
+  painPoints: string | string[]      // 支援陣列（多選）
+  painPointsCustom?: string          // 痛點自定義補充
   monetization?: string
   contentStyle?: string
   timeCommitment?: string
@@ -378,7 +380,40 @@ export async function POST(request: NextRequest) {
         ? data.platforms.map(p => platformMap[p] || p).join('、')
         : '尚未選擇'
 
+      // 處理目標受眾（可能是陣列或字串）
+      const targetAudienceText = Array.isArray(data.targetAudience)
+        ? data.targetAudience.join('、')
+        : data.targetAudience
+
+      // 處理痛點（可能是陣列或字串）+ 自定義補充
+      const painPointsText = Array.isArray(data.painPoints)
+        ? data.painPoints.join('、')
+        : data.painPoints
+      const painPointsWithCustom = data.painPointsCustom
+        ? `${painPointsText}\n\n補充說明：${data.painPointsCustom}`
+        : painPointsText
+
       const userPrompt = `請根據以下用戶的深度問卷資料，產出一份專業級的自媒體定位報告。
+
+═══════════════════════════════════
+第零部分：用戶的個人背景故事（極重要！）
+═══════════════════════════════════
+
+${data.personalBackground || '用戶尚未填寫個人背景'}
+
+★★★ 背景故事分析指引 ★★★
+請從用戶的背景故事中提取以下元素，並在定位報告中體現：
+1. 「轉折點」：用戶經歷過哪些人生轉變？這些轉變如何成為共鳴的素材？
+2. 「痛過的路」：用戶曾經歷過什麼困難？這些經歷如何證明他能幫助別人？
+3. 「成長弧線」：用戶從哪裡到哪裡？這個過程本身就是最好的內容素材
+4. 「做自媒體的動機」：用戶為什麼想做這件事？動機越清晰，定位越有力量
+5. 「獨特視角」：基於這個背景，用戶看事情的角度有什麼不同？
+
+這些元素必須反映在：
+- 定位宣言（positioningStatement）：要能看出這個人的故事
+- 獨特價值（uniqueValue）：要說明為什麼是「他」而不是別人
+- 個人品牌（personalBrand）：人設要基於真實經歷
+- 內容方向（contentPillars）：至少有一個支柱要是分享個人經歷/故事
 
 ═══════════════════════════════════
 第一部分：了解用戶是誰
@@ -398,10 +433,10 @@ ${data.achievements || '尚未填寫'}
 ═══════════════════════════════════
 
 【想服務的目標受眾】
-${data.targetAudience}
+${targetAudienceText}
 
 【目標受眾的痛點/需求】
-${data.painPoints}
+${painPointsWithCustom}
 
 【變現目標】
 ${data.monetization ? monetizationMap[data.monetization] || data.monetization : '尚未選擇'}
@@ -428,11 +463,12 @@ ${data.competitors || '尚未填寫'}
 
 注意事項：
 1. 定位要夠細分，不能太廣泛
-2. 建議要基於用戶的真實優勢
+2. 建議要基於用戶的真實優勢和背景故事
 3. 考慮用戶的時間和出鏡限制
 4. 變現路徑要符合用戶的變現目標
 5. 平台策略要考慮用戶選擇的平台
-6. 所有建議都要具體可執行`
+6. 所有建議都要具體可執行
+7. 【重要】定位和內容方向要能體現用戶的個人故事，讓觀眾感受到「這個人」而不只是「這個知識」`
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",

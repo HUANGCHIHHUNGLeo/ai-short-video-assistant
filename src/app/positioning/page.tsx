@@ -39,18 +39,20 @@ import Link from "next/link"
 // 問卷資料類型（擴充版）
 interface QuestionnaireData {
   // 第一階段：了解你是誰
-  expertise: string           // Q1: 專長領域
-  experience: string          // Q2: 獨特經歷/成就
-  achievements: string        // Q3: 可展示的成果
+  personalBackground: string  // Q1: 個人背景故事（讓 AI 能分析共鳴點）
+  expertise: string           // Q2: 專長領域
+  experience: string          // Q3: 獨特經歷/成就
+  achievements: string        // Q4: 可展示的成果
   // 第二階段：了解你的受眾
-  targetAudience: string[]    // Q4: 目標受眾（支援複選）
-  painPoints: string          // Q5: 受眾痛點
-  monetization: string        // Q6: 變現目標
+  targetAudience: string[]    // Q5: 目標受眾（支援複選）
+  painPoints: string[]        // Q6: 受眾痛點（多選）
+  painPointsCustom: string    // Q6: 受眾痛點（自定輸入）
+  monetization: string        // Q7: 變現目標
   // 第三階段：了解你的資源
-  contentStyle: string        // Q7: 出鏡偏好
-  timeCommitment: string      // Q8: 可投入時間
-  platforms: string[]         // Q9: 想經營的平台
-  competitors: string         // Q10: 內容風格偏好
+  contentStyle: string        // Q8: 出鏡偏好
+  timeCommitment: string      // Q9: 可投入時間
+  platforms: string[]         // Q10: 想經營的平台
+  competitors: string         // Q11: 內容風格偏好
 }
 
 // 定位報告類型（擴充版 - 支援更多欄位）
@@ -236,11 +238,13 @@ export default function PositioningPage() {
   const [copied, setCopied] = useState(false)
 
   const [formData, setFormData] = useState<QuestionnaireData>({
+    personalBackground: "",
     expertise: "",
     experience: "",
     achievements: "",
     targetAudience: [],
-    painPoints: "",
+    painPoints: [],
+    painPointsCustom: "",
     monetization: "",
     contentStyle: "",
     timeCommitment: "",
@@ -253,13 +257,13 @@ export default function PositioningPage() {
   // 檢查是否為專業版或買斷版用戶
   const isPro = credits?.tier === 'pro' || credits?.tier === 'lifetime'
 
-  const totalSteps = 10
+  const totalSteps = 11
 
   // 計算階段
   const getPhase = (step: number) => {
-    if (step <= 3) return { name: "了解你是誰", phase: 1 }
-    if (step <= 6) return { name: "了解你的受眾", phase: 2 }
-    if (step <= 10) return { name: "了解你的資源", phase: 3 }
+    if (step <= 4) return { name: "了解你是誰", phase: 1 }
+    if (step <= 7) return { name: "了解你的受眾", phase: 2 }
+    if (step <= 11) return { name: "了解你的資源", phase: 3 }
     return { name: "報告", phase: 4 }
   }
 
@@ -296,6 +300,16 @@ export default function PositioningPage() {
           return { ...prev, targetAudience: [...currentAudience, value] }
         }
       })
+    } else if (field === 'painPoints') {
+      // 多選邏輯 - 痛點
+      setFormData(prev => {
+        const currentPainPoints = prev.painPoints || []
+        if (currentPainPoints.includes(value)) {
+          return { ...prev, painPoints: currentPainPoints.filter(p => p !== value) }
+        } else {
+          return { ...prev, painPoints: [...currentPainPoints, value] }
+        }
+      })
     } else {
       setFormData(prev => ({
         ...prev,
@@ -310,16 +324,17 @@ export default function PositioningPage() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return formData.expertise.trim() !== ""
-      case 2: return formData.experience.trim() !== ""
-      case 3: return true // 成就可選填
-      case 4: return formData.targetAudience.length > 0
-      case 5: return formData.painPoints.trim() !== ""
-      case 6: return formData.monetization.trim() !== ""
-      case 7: return formData.contentStyle.trim() !== ""
-      case 8: return formData.timeCommitment.trim() !== ""
-      case 9: return formData.platforms.length > 0
-      case 10: return true // 競品可選填
+      case 1: return formData.personalBackground.trim() !== ""  // 個人背景必填
+      case 2: return formData.expertise.trim() !== ""
+      case 3: return formData.experience.trim() !== ""
+      case 4: return true // 成就可選填
+      case 5: return formData.targetAudience.length > 0
+      case 6: return formData.painPoints.length > 0 || formData.painPointsCustom.trim() !== ""  // 痛點：多選或自定義至少一個
+      case 7: return formData.monetization.trim() !== ""
+      case 8: return formData.contentStyle.trim() !== ""
+      case 9: return formData.timeCommitment.trim() !== ""
+      case 10: return formData.platforms.length > 0
+      case 11: return true // 競品可選填
       default: return false
     }
   }
@@ -351,7 +366,7 @@ export default function PositioningPage() {
           useCredit('positioning')
         }
         setReport(data.report)
-        setCurrentStep(11)
+        setCurrentStep(12)
       } else if (data.error) {
         setCreditError(data.error)
       }
@@ -365,11 +380,13 @@ export default function PositioningPage() {
 
   const handleReset = () => {
     setFormData({
+      personalBackground: "",
       expertise: "",
       experience: "",
       achievements: "",
       targetAudience: [],
-      painPoints: "",
+      painPoints: [],
+      painPointsCustom: "",
       monetization: "",
       contentStyle: "",
       timeCommitment: "",
@@ -780,13 +797,39 @@ export default function PositioningPage() {
         </div>
       )}
 
-      {/* Step 1: 專長領域 */}
+      {/* Step 1: 個人背景故事 */}
       {currentStep === 1 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Users className="h-5 w-5 text-primary" />
+              Q1. 介紹一下你自己
+            </CardTitle>
+            <CardDescription>
+              告訴我你的背景、故事、為什麼想做自媒體？這能讓 AI 更了解你，產出更有共鳴的內容
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <Textarea
+              placeholder="例如：&#10;我是一個 35 歲的雙寶媽，以前是外商公司的行銷主管。生完第二個孩子後決定離職當全職媽媽，但一直覺得自己還有價值可以分享。&#10;&#10;我的人生經歷過幾次重大轉折：&#10;- 大學畢業後花了 3 年才找到方向&#10;- 曾經負債 50 萬，用 2 年時間還清&#10;- 從月薪 3 萬的助理做到年薪百萬的主管&#10;&#10;我想做自媒體是因為：想在照顧家庭的同時，也能有自己的事業和收入，證明媽媽也可以活出精彩的自己。"
+              className="min-h-[250px] sm:min-h-[280px]"
+              value={formData.personalBackground}
+              onChange={(e) => handleInputChange("personalBackground", e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              提示：你的故事越具體，AI 越能幫你找到能引起共鳴的定位角度。不用完美，真實就好。
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Step 2: 專長領域 */}
+      {currentStep === 2 && (
+        <Card>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Target className="h-5 w-5 text-primary" />
-              Q1. 你的專長領域是什麼？
+              Q2. 你的專長領域是什麼？
             </CardTitle>
             <CardDescription>
               選擇最接近的選項，或直接輸入你的專長
@@ -817,13 +860,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 2: 獨特經歷 */}
-      {currentStep === 2 && (
+      {/* Step 3: 獨特經歷 */}
+      {currentStep === 3 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Lightbulb className="h-5 w-5 text-primary" />
-              Q2. 你有什麼獨特經歷或成就？
+              Q3. 你有什麼獨特經歷或成就？
             </CardTitle>
             <CardDescription>
               這是你與眾不同的關鍵，越具體越好（數字、時間、成果）
@@ -843,13 +886,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 3: 可展示的成果 */}
-      {currentStep === 3 && (
+      {/* Step 4: 可展示的成果 */}
+      {currentStep === 4 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Trophy className="h-5 w-5 text-primary" />
-              Q3. 你有什麼可展示的成果？（選填）
+              Q4. 你有什麼可展示的成果？（選填）
             </CardTitle>
             <CardDescription>
               證照、作品集、數據、案例...這些能增加你的說服力
@@ -866,13 +909,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 4: 目標受眾（可多選） */}
-      {currentStep === 4 && (
+      {/* Step 5: 目標受眾（可多選） */}
+      {currentStep === 5 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Users className="h-5 w-5 text-primary" />
-              Q4. 你想幫助誰？（可多選）
+              Q5. 你想幫助誰？（可多選）
             </CardTitle>
             <CardDescription>
               選擇你的目標受眾，可選擇多個族群
@@ -915,51 +958,71 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 5: 受眾痛點 */}
-      {currentStep === 5 && (
+      {/* Step 6: 受眾痛點（多選+自定輸入） */}
+      {currentStep === 6 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <AlertTriangle className="h-5 w-5 text-primary" />
-              Q5. 他們面臨什麼痛點？
+              Q6. 他們面臨什麼痛點？（可多選+補充）
             </CardTitle>
             <CardDescription>
-              你的目標受眾最困擾的問題是什麼？
+              選擇常見痛點，也可以在下方補充更具體的描述
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 px-4 sm:px-6">
-            <div className="flex flex-wrap gap-2">
-              {painPointOptions.map((option) => (
-                <Badge
-                  key={option}
-                  variant={formData.painPoints === option ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors py-1.5 px-3 text-sm"
-                  onClick={() => handleOptionSelect("painPoints", option)}
-                >
-                  {option}
-                </Badge>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {painPointOptions.map((option) => {
+                const isSelected = formData.painPoints.includes(option)
+                return (
+                  <div
+                    key={option}
+                    className={cn(
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all",
+                      isSelected
+                        ? "border-green-500 bg-green-500/10 ring-2 ring-green-500/20"
+                        : "border-muted hover:border-primary/50"
+                    )}
+                    onClick={() => handleOptionSelect("painPoints", option)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isSelected && (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      )}
+                      <span className={cn(
+                        "font-medium text-sm",
+                        isSelected && "text-green-700 dark:text-green-400"
+                      )}>{option}</span>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
+            <p className="text-xs text-muted-foreground">
+              已選擇：{formData.painPoints.length > 0
+                ? formData.painPoints.join('、')
+                : '尚未選擇'}
+            </p>
             <div className="space-y-2">
-              <Label>或更具體描述</Label>
+              <Label>補充更具體的痛點（選填）</Label>
               <Textarea
-                placeholder="例如：想理財但不知道從哪開始、看了很多教學影片還是學不會..."
+                placeholder="例如：想理財但不知道從哪開始、看了很多教學影片還是學不會、每次下定決心都堅持不到一個月..."
                 className="min-h-[100px]"
-                value={painPointOptions.includes(formData.painPoints) ? "" : formData.painPoints}
-                onChange={(e) => handleInputChange("painPoints", e.target.value)}
+                value={formData.painPointsCustom}
+                onChange={(e) => handleInputChange("painPointsCustom", e.target.value)}
               />
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Step 6: 變現目標 */}
-      {currentStep === 6 && (
+      {/* Step 7: 變現目標 */}
+      {currentStep === 7 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <DollarSign className="h-5 w-5 text-primary" />
-              Q6. 你的變現目標是什麼？
+              Q7. 你的變現目標是什麼？
             </CardTitle>
             <CardDescription>
               你希望透過自媒體達成什麼商業目標？
@@ -989,13 +1052,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 7: 出鏡偏好 */}
-      {currentStep === 7 && (
+      {/* Step 8: 出鏡偏好 */}
+      {currentStep === 8 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Video className="h-5 w-5 text-primary" />
-              Q7. 你願意怎麼出鏡？
+              Q8. 你願意怎麼出鏡？
             </CardTitle>
             <CardDescription>
               這會影響內容形式和平台選擇建議
@@ -1021,13 +1084,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 8: 時間投入 */}
-      {currentStep === 8 && (
+      {/* Step 9: 時間投入 */}
+      {currentStep === 9 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Clock className="h-5 w-5 text-primary" />
-              Q8. 你每週能投入多少時間？
+              Q9. 你每週能投入多少時間？
             </CardTitle>
             <CardDescription>
               這會影響內容產量和平台策略建議
@@ -1053,13 +1116,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 9: 想經營的平台 */}
-      {currentStep === 9 && (
+      {/* Step 10: 想經營的平台 */}
+      {currentStep === 10 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Globe className="h-5 w-5 text-primary" />
-              Q9. 你想經營哪些平台？（可多選）
+              Q10. 你想經營哪些平台？（可多選）
             </CardTitle>
             <CardDescription>
               選擇你有興趣或已經在使用的平台
@@ -1103,13 +1166,13 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 10: 內容風格偏好 */}
-      {currentStep === 10 && (
+      {/* Step 11: 內容風格偏好 */}
+      {currentStep === 11 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Eye className="h-5 w-5 text-primary" />
-              Q10. 你喜歡什麼風格的內容？（選填）
+              Q11. 你喜歡什麼風格的內容？（選填）
             </CardTitle>
             <CardDescription>
               描述你欣賞的內容風格，幫助我們找出適合你的差異化方向
@@ -1130,7 +1193,7 @@ export default function PositioningPage() {
       )}
 
       {/* Report View */}
-      {currentStep === 11 && report && (
+      {currentStep === 12 && report && (
         <div className="space-y-4 sm:space-y-6">
           {/* 定位宣言 */}
           <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-emerald-500/5">

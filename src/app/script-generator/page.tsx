@@ -119,12 +119,12 @@ const EXAMPLE_TOPICS = [
 ]
 
 // 各方案的腳本版本數上限
-const TIER_SCRIPT_LIMITS = {
+const TIER_SCRIPT_LIMITS: Record<string, number> = {
   free: 2,
   creator: 3,
   pro: 5,
   lifetime: 5,
-} as const
+}
 
 export default function ScriptGeneratorPage() {
   const searchParams = useSearchParams()
@@ -139,19 +139,24 @@ export default function ScriptGeneratorPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [positioningData, setPositioningData] = useState<Record<string, any> | null>(null) // 完整定位報告
 
-  const { canUseFeature, useCredit, display, credits } = useCredits()
+  const { canUseFeature, useCredit, display, credits, isLoading: creditsLoading } = useCredits()
 
-  // 根據訂閱等級決定可生成的版本數
-  const maxVersions = TIER_SCRIPT_LIMITS[credits?.tier || 'free']
+  // 根據訂閱等級決定可生成的版本數（等 credits 載入後才能確定）
+  const tier = credits?.tier || 'free'
+  const maxVersions = creditsLoading ? 5 : (TIER_SCRIPT_LIMITS[tier] || 2) // 載入中時預設顯示最高值，避免誤導
   const [generateCount, setGenerateCount] = useState(2) // 預設值，會在 useEffect 中更新
 
   // 當 credits 載入後，更新 generateCount 為該方案的上限
   useEffect(() => {
-    if (credits) {
-      const limit = TIER_SCRIPT_LIMITS[credits.tier]
+    if (credits?.tier) {
+      const limit = TIER_SCRIPT_LIMITS[credits.tier] || 5
       setGenerateCount(limit)
+      // 清除「載入中」的錯誤訊息
+      if (creditError === '載入中...') {
+        setCreditError(null)
+      }
     }
-  }, [credits?.tier])
+  }, [credits?.tier, creditError])
 
   // 從 URL 參數載入定位 ID
   useEffect(() => {
@@ -160,6 +165,39 @@ export default function ScriptGeneratorPage() {
       setSelectedPositioningId(positioningId)
       // 載入定位資料
       loadPositioningData(positioningId)
+    }
+  }, [searchParams])
+
+  // 從選題靈感頁面載入選題資料
+  useEffect(() => {
+    const fromTopic = searchParams.get('from') === 'topic'
+    if (fromTopic) {
+      const topicData = sessionStorage.getItem('topic_idea')
+      if (topicData) {
+        try {
+          const topic = JSON.parse(topicData)
+          // 自動填入 step1 的領域和受眾
+          if (topic.niche || topic.targetAudience) {
+            setCreatorBackground(prev => ({
+              ...prev,
+              niche: topic.niche || prev.niche,
+              targetAudience: topic.targetAudience || prev.targetAudience,
+            }))
+          }
+          // 自動填入 step2 的影片主題和建議開頭
+          setVideoSettings(prev => ({
+            ...prev,
+            topic: topic.description || topic.title || '',  // 用描述或標題作為主題引導
+            keyMessage: topic.hookSuggestion || '',         // 建議開頭放到核心訊息
+          }))
+          // 清除 sessionStorage
+          sessionStorage.removeItem('topic_idea')
+          // 自動跳到 step2
+          setStep(2)
+        } catch (e) {
+          console.error('Failed to parse topic data:', e)
+        }
+      }
     }
   }, [searchParams])
 
@@ -249,9 +287,15 @@ export default function ScriptGeneratorPage() {
   }
 
   const handleGenerate = async () => {
+    // 如果 credits 還在載入，等待一下
+    if (creditsLoading) {
+      setCreditError('額度資料載入中，請稍候再試')
+      return
+    }
+
     // 檢查額度
     const creditCheck = canUseFeature('script')
-    if (!creditCheck.canUse) {
+    if (!creditCheck.canUse && creditCheck.message !== '載入中...') {
       setCreditError(creditCheck.message || '額度不足')
       return
     }
@@ -866,13 +910,18 @@ export default function ScriptGeneratorPage() {
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     生成版本數
-                    {maxVersions < 5 && (
+                    {!creditsLoading && maxVersions < 5 && (
                       <Badge variant="outline" className="text-xs font-normal">
                         上限 {maxVersions} 個
                       </Badge>
                     )}
                   </Label>
-                  {maxVersions <= 2 ? (
+                  {creditsLoading ? (
+                    // 載入中
+                    <div className="h-11 px-3 border rounded-md flex items-center justify-center bg-muted/50">
+                      <span className="text-sm text-muted-foreground">載入中...</span>
+                    </div>
+                  ) : maxVersions <= 2 ? (
                     // 免費版固定 2 個，不能選擇
                     <div className="h-11 px-3 border rounded-md flex items-center justify-between bg-muted/50">
                       <span className="text-sm">{maxVersions} 個版本</span>
@@ -906,8 +955,8 @@ export default function ScriptGeneratorPage() {
                 />
               </div>
 
-              {/* 額度不足提示 */}
-              {creditError && (
+              {/* 額度不足提示 - 載入中時不顯示錯誤，避免誤導 */}
+              {creditError && !creditsLoading && creditError !== '載入中...' && (
                 <CreditsAlert message={creditError} featureType="script" />
               )}
 
