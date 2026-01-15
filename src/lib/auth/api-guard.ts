@@ -32,7 +32,19 @@ export async function checkApiAuth(
   try {
     // 取得用戶認證狀態
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    // Debug: 記錄認證狀態
+    if (process.env.NODE_ENV === 'development' || !user) {
+      console.log('[checkApiAuth]', {
+        featureType,
+        hasUser: !!user,
+        userId: user?.id?.slice(0, 8),
+        userEmail: user?.email,
+        authError: authError?.message,
+        hasCookies: request.cookies.size > 0
+      })
+    }
 
     if (user) {
       // 已登入用戶：檢查額度
