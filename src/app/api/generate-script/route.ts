@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
       relatable: "引發共鳴 - 開頭用具體生活場景描述觀眾的處境，讓他們一聽就覺得『對，就是在說我』。場景要具體有畫面感（不是抽象的『很累』，而是『加班到 11 點回家只想躺著』）。拉近距離的方式要多變化，不要公式化"
     }
 
-    // 計算目標字數（每秒 4.5 字）
+    // 計算目標字數（每秒 5.5 字，短影音節奏較快）
     const targetDuration = videoSettings.duration || 45
-    const targetWordCount = Math.round(targetDuration * 4.5)
-    const minWordCount = Math.round(targetWordCount * 0.9)
-    const maxWordCount = Math.round(targetWordCount * 1.1)
+    const targetWordCount = Math.round(targetDuration * 5.5)
+    const minWordCount = Math.round(targetWordCount * 0.85)
+    const maxWordCount = Math.round(targetWordCount * 1.15)
 
     const userPrompt = `
 請幫我生成 ${generateVersions} 個不同風格的短影音腳本：
