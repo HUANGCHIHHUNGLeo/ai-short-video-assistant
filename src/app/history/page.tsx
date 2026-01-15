@@ -298,19 +298,19 @@ export default function HistoryPage() {
       const output = record.output_data
       return (
         <div className="space-y-3">
-          {output.niche && (
+          {output.niche ? (
             <div>
               <span className="text-xs font-medium text-muted-foreground">定位：</span>
               <span className="text-sm ml-1">{String(output.niche)}</span>
             </div>
-          )}
-          {output.positioningStatement && (
+          ) : null}
+          {output.positioningStatement ? (
             <div>
               <span className="text-xs font-medium text-muted-foreground">定位宣言：</span>
               <p className="text-sm mt-1">{String(output.positioningStatement)}</p>
             </div>
-          )}
-          {output.contentPillars && (
+          ) : null}
+          {output.contentPillars ? (
             <div>
               <span className="text-xs font-medium text-muted-foreground">內容支柱：</span>
               <div className="flex flex-wrap gap-1 mt-1">
@@ -319,7 +319,7 @@ export default function HistoryPage() {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
           <div className="flex gap-2">
             <Link href={`/script-generator?positioning=${record.id}`}>
               <Button size="sm" className="h-8">用此定位生成腳本</Button>
