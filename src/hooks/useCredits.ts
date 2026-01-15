@@ -114,6 +114,42 @@ export function useCredits() {
     }
   }, [supabase, loadCredits])
 
+  // 監聽 profile 資料庫變化（升級後即時更新額度顯示）
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      channel = supabase
+        .channel(`credits-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
+          },
+          () => {
+            // 當 profile 被更新時（例如升級方案），重新載入額度
+            console.log('[useCredits] Profile updated, reloading credits')
+            loadCredits()
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtimeSubscription()
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [supabase, loadCredits])
+
   // 檢查某功能是否可用
   const canUseFeature = useCallback((feature: FeatureType): CreditCheckResult => {
     if (!credits) {

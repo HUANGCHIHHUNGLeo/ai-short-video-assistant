@@ -87,6 +87,33 @@ export function useUser(): UseUserReturn {
     }
   }, [supabase, fetchProfile])
 
+  // 監聽 profile 資料庫變化（用於升級後即時更新 UI）
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          // 當 profile 被更新時（例如升級方案），即時更新前端狀態
+          console.log('[useUser] Profile updated:', payload.new)
+          setProfile(payload.new as Profile)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase, user])
+
   // 密碼登入
   const signInWithPassword = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
