@@ -24,10 +24,12 @@ export function useUser(): UseUserReturn {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // 使用 useMemo 確保 supabase client 只創建一次
   const supabase = createClient()
 
   // 取得用戶 profile
   const fetchProfile = useCallback(async (userId: string) => {
+    console.log('[useUser] Fetching profile for:', userId)
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -35,9 +37,10 @@ export function useUser(): UseUserReturn {
       .single()
 
     if (error) {
-      console.error('Error fetching profile:', error)
+      console.error('[useUser] Error fetching profile:', error)
       return null
     }
+    console.log('[useUser] Profile fetched:', data)
     return data as Profile
   }, [supabase])
 
@@ -51,19 +54,24 @@ export function useUser(): UseUserReturn {
     }
   }, [user, fetchProfile])
 
-  // 初始化：監聽認證狀態變化
+  // 初始化：監聯認證狀態變化
   useEffect(() => {
     const initAuth = async () => {
-      // 取得目前 session
-      const { data: { session } } = await supabase.auth.getSession()
+      console.log('[useUser] Initializing auth...')
 
-      if (session?.user) {
-        setUser(session.user)
-        const userProfile = await fetchProfile(session.user.id)
+      // 使用 getUser() 而不是 getSession()，確保 token 是有效的
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser()
+
+      console.log('[useUser] getUser result:', { user: currentUser?.id, error: error?.message })
+
+      if (currentUser) {
+        setUser(currentUser)
+        const userProfile = await fetchProfile(currentUser.id)
         setProfile(userProfile)
       }
 
       setIsLoading(false)
+      console.log('[useUser] Init complete, isAuthenticated:', !!currentUser)
     }
 
     initAuth()
