@@ -79,6 +79,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // 用戶資訊區塊
   const UserSection = ({ mobile = false }: { mobile?: boolean }) => {
+    // Debug: 檢查認證狀態
+    console.log('[UserSection]', { isUserLoading, isAuthenticated, hasProfile: !!profile })
+
     // 載入中顯示骨架屏
     if (isUserLoading) {
       return (
