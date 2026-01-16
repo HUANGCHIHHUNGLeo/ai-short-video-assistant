@@ -31,8 +31,10 @@ export async function POST(request: NextRequest) {
     // 使用 service client 更新資料庫
     const serviceClient = createServiceClient()
 
+    console.log(`[Upgrade API] Upgrading user ${user.id} to tier: ${tier}`)
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (serviceClient as any)
+    const { data: updateData, error: updateError } = await (serviceClient as any)
       .from('profiles')
       .update({
         subscription_tier: tier,
@@ -42,12 +44,24 @@ export async function POST(request: NextRequest) {
         credits_reset_date: new Date().toISOString(),
       })
       .eq('id', user.id)
+      .select()
+
+    console.log(`[Upgrade API] Update result:`, { updateData, updateError })
 
     if (updateError) {
       console.error('Upgrade error:', updateError)
       return NextResponse.json(
         { error: '升級失敗，請稍後再試' },
         { status: 500 }
+      )
+    }
+
+    // 確認更新成功
+    if (!updateData || updateData.length === 0) {
+      console.error('Upgrade failed: No rows updated. User profile may not exist.')
+      return NextResponse.json(
+        { error: '找不到用戶資料，請重新登入' },
+        { status: 404 }
       )
     }
 

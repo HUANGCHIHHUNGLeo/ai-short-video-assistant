@@ -26,7 +26,7 @@ export default function PricingPage() {
   const { credits, upgrade } = useCredits()
   const currentTier = credits?.tier || 'free'
 
-  const handleUpgrade = (tier: SubscriptionTier) => {
+  const handleUpgrade = async (tier: SubscriptionTier) => {
     // 暫時直接升級（未來接 Stripe）
     if (tier === 'free') return
 
@@ -38,8 +38,14 @@ export default function PricingPage() {
     )
 
     if (confirmed) {
-      upgrade(tier)
-      alert(`已升級到 ${PLANS[tier].name}！`)
+      try {
+        await upgrade(tier)
+        alert(`已升級到 ${PLANS[tier].name}！頁面將重新整理。`)
+        window.location.reload()
+      } catch (error) {
+        console.error('Upgrade failed:', error)
+        alert(`升級失敗：${error instanceof Error ? error.message : '請稍後再試'}`)
+      }
     }
   }
 
