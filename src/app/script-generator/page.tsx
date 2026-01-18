@@ -316,6 +316,24 @@ export default function ScriptGeneratorPage() {
         })
       })
 
+      // 處理 HTTP 錯誤
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMsg = errorData.error || `伺服器錯誤 (${response.status})`
+
+        // 針對不同錯誤碼給出更具體的提示
+        if (response.status === 504 || response.status === 408) {
+          alert("生成超時，請稍後再試。\n\n提示：可以嘗試減少生成版本數量")
+        } else if (response.status === 401) {
+          alert("登入狀態已過期，請重新登入")
+        } else if (response.status === 429) {
+          alert("請求太頻繁，請稍後再試")
+        } else {
+          alert(`生成失敗：${errorMsg}`)
+        }
+        return
+      }
+
       const data = await response.json()
 
       if (data.versions && data.versions.length > 0) {
@@ -326,12 +344,19 @@ export default function ScriptGeneratorPage() {
         setGeneratedVersions(data.versions)
         setActiveVersion(data.versions[0].id)
         setStep(3)
+      } else if (data.error) {
+        alert(`生成失敗：${data.error}`)
       } else {
         alert("生成失敗，請稍後再試")
       }
     } catch (error) {
       console.error("Error:", error)
-      alert("發生錯誤，請檢查網路連線")
+      // 區分網路錯誤和其他錯誤
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        alert("網路連線失敗，請檢查網路狀態")
+      } else {
+        alert("發生錯誤，請稍後再試")
+      }
     } finally {
       setIsGenerating(false)
     }
@@ -1030,16 +1055,25 @@ export default function ScriptGeneratorPage() {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setStep(2)
-                    setGeneratedVersions([])
-                  }}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  重新生成
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    換框架重生
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setStep(1)
+                      setGeneratedVersions([])
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    重新開始
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
