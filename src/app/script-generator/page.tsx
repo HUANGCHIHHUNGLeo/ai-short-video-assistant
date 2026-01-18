@@ -1061,7 +1061,7 @@ export default function ScriptGeneratorPage() {
                     onClick={() => setStep(2)}
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    換框架重生
+                    調整設定
                   </Button>
                   <Button
                     variant="ghost"
