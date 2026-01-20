@@ -120,10 +120,10 @@ const EXAMPLE_TOPICS = [
 
 // 各方案的腳本版本數上限
 const TIER_SCRIPT_LIMITS: Record<string, number> = {
-  free: 2,
-  creator: 3,
-  pro: 5,
-  lifetime: 5,
+  free: 2,      // 免費版固定 2 個
+  creator: 3,   // 創作者 3 個
+  pro: 5,       // 專業版 5 個
+  lifetime: 5,  // 終身版 5 個
 }
 
 export default function ScriptGeneratorPage() {
