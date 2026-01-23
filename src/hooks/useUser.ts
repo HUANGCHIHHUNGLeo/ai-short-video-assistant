@@ -59,19 +59,33 @@ export function useUser(): UseUserReturn {
     const initAuth = async () => {
       console.log('[useUser] Initializing auth...')
 
-      // 使用 getUser() 而不是 getSession()，確保 token 是有效的
-      const { data: { user: currentUser }, error } = await supabase.auth.getUser()
+      try {
+        // 使用 getUser() 而不是 getSession()，確保 token 是有效的
+        // 加上 timeout 保護，避免無限等待
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 5000)
+        )
 
-      console.log('[useUser] getUser result:', { user: currentUser?.id, error: error?.message })
+        const authPromise = supabase.auth.getUser()
 
-      if (currentUser) {
-        setUser(currentUser)
-        const userProfile = await fetchProfile(currentUser.id)
-        setProfile(userProfile)
+        const { data: { user: currentUser }, error } = await Promise.race([
+          authPromise,
+          timeoutPromise
+        ]) as Awaited<ReturnType<typeof supabase.auth.getUser>>
+
+        console.log('[useUser] getUser result:', { user: currentUser?.id, error: error?.message })
+
+        if (currentUser) {
+          setUser(currentUser)
+          const userProfile = await fetchProfile(currentUser.id)
+          setProfile(userProfile)
+        }
+      } catch (err) {
+        console.error('[useUser] Auth init error:', err)
+      } finally {
+        setIsLoading(false)
+        console.log('[useUser] Init complete')
       }
-
-      setIsLoading(false)
-      console.log('[useUser] Init complete, isAuthenticated:', !!currentUser)
     }
 
     initAuth()
