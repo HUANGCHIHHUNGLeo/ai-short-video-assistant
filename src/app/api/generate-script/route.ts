@@ -175,6 +175,10 @@ ${generateVersions > 3 ? '- 版本 D：故事敘事版（情感共鳴）\n- 版�
       includeFrameworks: true,
     })
 
+    // 根據訂閱等級設定 token 上限：付費版可生成更完整的內容
+    const isPremium = authResult.tier === 'pro' || authResult.tier === 'lifetime'
+    const maxTokens = isPremium ? 16000 : 12000
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -182,7 +186,7 @@ ${generateVersions > 3 ? '- 版本 D：故事敘事版（情感共鳴）\n- 版�
         { role: "user", content: userPrompt }
       ],
       temperature: 0.85,
-      max_tokens: 12000,  // 增加 token 上限確保不被截斷
+      max_tokens: maxTokens,
       response_format: { type: "json_object" }
     })
 
