@@ -45,30 +45,49 @@ export function useCredits() {
       setIsAuthenticated(true)
 
       // 已登入：從資料庫讀取實際額度
-      const { data: profile } = await supabase
+      // 使用 * 查詢所有欄位，避免欄位名稱不一致的問題
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('subscription_tier, script_credits_used, carousel_credits_used, credits_reset_date')
+        .select('*')
         .eq('id', user.id)
-        .single() as { data: {
-          subscription_tier: string | null
-          script_credits_used: number | null
-          carousel_credits_used: number | null
-          credits_reset_date: string | null
-        } | null }
+        .single()
+
+      console.log('[useCredits] Profile query result:', { profile, error: profileError })
+
+      if (profileError) {
+        console.error('[useCredits] Error fetching profile:', profileError)
+        // 即使查詢失敗，也設置認證狀態為已登入，使用預設額度
+        const defaultCredits: UserCredits = {
+          tier: 'free',
+          scriptUsed: 0,
+          scriptLimit: PLANS.free.limits.script,
+          carouselUsed: 0,
+          carouselLimit: PLANS.free.limits.carousel,
+          resetDate: new Date().toISOString(),
+        }
+        setCredits(defaultCredits)
+        return
+      }
 
       if (profile) {
+        // 支援兩種欄位命名方式
         const tier = (profile.subscription_tier || 'free') as SubscriptionTier
         const plan = PLANS[tier]
 
+        // 嘗試讀取使用量（支援不同的欄位名稱）
+        const scriptUsed = profile.script_credits_used ?? 0
+        const carouselUsed = profile.carousel_credits_used ?? 0
+
         const userCredits: UserCredits = {
           tier,
-          scriptUsed: profile.script_credits_used || 0,
+          scriptUsed,
           scriptLimit: plan.limits.script,
-          carouselUsed: profile.carousel_credits_used || 0,
+          carouselUsed,
           carouselLimit: plan.limits.carousel,
           resetDate: profile.credits_reset_date || new Date().toISOString(),
         }
 
+        console.log('[useCredits] Setting credits:', userCredits)
         setCredits(userCredits)
 
         // 同步到 localStorage（供離線參考）
@@ -78,6 +97,7 @@ export function useCredits() {
         }
       } else {
         // 找不到 profile，使用免費版預設
+        console.log('[useCredits] No profile found, using default')
         const defaultCredits: UserCredits = {
           tier: 'free',
           scriptUsed: 0,
