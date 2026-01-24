@@ -33,8 +33,8 @@ export default function PricingPage() {
     // 模擬付款成功
     const confirmed = window.confirm(
       tier === 'lifetime'
-        ? `確定要購買買斷版（NT$19,800）嗎？\n\n（目前為測試模式，點擊確定將直接升級）`
-        : `確定要升級到${PLANS[tier].name}（NT$${PLANS[tier].monthlyPrice}/月）嗎？\n\n（目前為測試模式，點擊確定將直接升級）`
+        ? `確定要購買買斷版（$${PLANS[tier].lifetimePrice}）嗎？\n\n（目前為測試模式，點擊確定將直接升級）`
+        : `確定要升級到${PLANS[tier].name}（$${PLANS[tier].monthlyPrice}/月）嗎？\n\n（目前為測試模式，點擊確定將直接升級）`
     )
 
     if (confirmed) {
@@ -103,19 +103,29 @@ export default function PricingPage() {
                 <div className="text-center">
                   {isLifetime ? (
                     <div>
-                      <div className="text-4xl font-bold">NT${plan.lifetimePrice?.toLocaleString()}</div>
+                      {plan.originalLifetimePrice && (
+                        <div className="text-lg text-muted-foreground line-through">
+                          ${plan.originalLifetimePrice.toLocaleString()}
+                        </div>
+                      )}
+                      <div className="text-4xl font-bold text-green-600">${plan.lifetimePrice?.toLocaleString()}</div>
                       <div className="text-muted-foreground text-sm mt-1">一次買斷</div>
+                    </div>
+                  ) : tier === 'free' ? (
+                    <div>
+                      <span className="text-4xl font-bold">$0</span>
+                      <span className="text-muted-foreground ml-1">/月</span>
                     </div>
                   ) : (
                     <div>
-                      <span className="text-4xl font-bold">NT${plan.monthlyPrice}</span>
+                      {plan.originalPrice && (
+                        <span className="text-lg text-muted-foreground line-through mr-2">
+                          ${plan.originalPrice}
+                        </span>
+                      )}
+                      <span className="text-4xl font-bold text-green-600">${plan.monthlyPrice}</span>
                       <span className="text-muted-foreground ml-1">/月</span>
                     </div>
-                  )}
-                  {plan.yearlyPrice && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      年繳 NT${plan.yearlyPrice.toLocaleString()}（省 {Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100)}%）
-                    </p>
                   )}
                 </div>
 

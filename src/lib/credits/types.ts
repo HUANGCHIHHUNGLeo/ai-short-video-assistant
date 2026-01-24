@@ -9,8 +9,10 @@ export interface PlanConfig {
   name: string
   nameEn: string
   monthlyPrice: number
+  originalPrice?: number      // 原價（用於顯示刪除線）
   yearlyPrice?: number
   lifetimePrice?: number
+  originalLifetimePrice?: number  // 買斷版原價
   limits: {
     script: number      // 腳本生成次數
     carousel: number    // 輪播貼文次數（每次20則）
@@ -60,8 +62,8 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
   creator: {
     name: '創作者版',
     nameEn: 'Creator',
-    monthlyPrice: 299,
-    yearlyPrice: 2490,
+    monthlyPrice: 29,
+    originalPrice: 49,
     limits: {
       script: 15,
       carousel: 10,
@@ -79,8 +81,8 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
   pro: {
     name: '專業版',
     nameEn: 'Pro',
-    monthlyPrice: 699,
-    yearlyPrice: 5990,
+    monthlyPrice: 98,
+    originalPrice: 198,
     limits: {
       script: 100,
       carousel: 50,
@@ -102,7 +104,8 @@ export const PLANS: Record<SubscriptionTier, PlanConfig> = {
     name: '買斷版',
     nameEn: 'Lifetime',
     monthlyPrice: 0,
-    lifetimePrice: 19800,
+    lifetimePrice: 699,
+    originalLifetimePrice: 1888,
     limits: {
       script: -1,   // -1 表示無限
       carousel: -1,
