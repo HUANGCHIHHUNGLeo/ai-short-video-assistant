@@ -292,11 +292,20 @@ consultantNote 的語氣要符合用戶在 Q3 選擇的螢幕形象風格。
 只輸出 JSON，不要任何額外說明。確保 JSON 格式正確可解析。`
 }
 
+// 背景故事結構化資料
+interface BackgroundStoryData {
+  growthEnvironment: string   // 成長經歷
+  turningPoint: string        // 轉折點
+  challenges: string          // 挫折與成長
+  values: string              // 價值觀
+  motivation: string          // 動機
+}
+
 // 問卷資料介面（專業代操公司版本 - 15 題）
 interface QuestionnaireData {
   // 第一階段：目標與定位
   goals: string               // Q1: 希望藉由代操達成的目標
-  targetDirection: string     // Q2: 希望代操的目標導向
+  targetDirections: string[]  // Q2: 希望代操的目標導向（多選）
   imageStyle: string          // Q3: 螢幕形象呈現
   // 第二階段：個人特色挖掘
   hobbies: string             // Q4: 特別的愛好或興趣
@@ -313,7 +322,7 @@ interface QuestionnaireData {
   workHistory: string         // Q12: 曾經的工作經歷
   education: string           // Q13: 大學讀的科系
   clubExperience: string      // Q14: 曾經的社團、興趣經歷
-  backgroundStory: string     // Q15: 個人背景故事
+  backgroundStory: BackgroundStoryData  // Q15: 個人背景故事（結構化）
 }
 
 export async function POST(request: NextRequest) {
@@ -366,8 +375,10 @@ export async function POST(request: NextRequest) {
 【Q1. 希望藉由代操達成的目標】
 ${data.goals || '尚未填寫'}
 
-【Q2. 希望代操的目標導向】
-${data.targetDirection ? targetDirectionMap[data.targetDirection] || data.targetDirection : '尚未選擇'}
+【Q2. 希望代操的目標導向】（可複選）
+${data.targetDirections && data.targetDirections.length > 0
+  ? data.targetDirections.map(d => targetDirectionMap[d] || d).join('\n- ')
+  : '尚未選擇'}
 
 【Q3. 希望的螢幕形象呈現】
 ${data.imageStyle ? imageStyleMap[data.imageStyle] || data.imageStyle : '尚未選擇'}
@@ -421,8 +432,22 @@ ${data.education || '尚未填寫'}
 【Q14. 曾經的社團、興趣經歷】
 ${data.clubExperience || '尚未填寫'}
 
-【Q15. 個人背景故事】（最重要！）
-${data.backgroundStory || '尚未填寫'}
+【Q15. 個人背景故事】（最重要！結構化資料）
+
+〔成長經歷〕
+${data.backgroundStory?.growthEnvironment || '尚未填寫'}
+
+〔人生轉折點〕
+${data.backgroundStory?.turningPoint || '尚未填寫'}
+
+〔挫折與成長〕
+${data.backgroundStory?.challenges || '尚未填寫'}
+
+〔價值觀〕
+${data.backgroundStory?.values || '尚未填寫'}
+
+〔創業/工作動機〕
+${data.backgroundStory?.motivation || '尚未填寫'}
 
 ═══════════════════════════════════
 

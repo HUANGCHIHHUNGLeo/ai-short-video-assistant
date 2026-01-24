@@ -36,11 +36,20 @@ import { CreditsAlert } from "@/components/billing"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
+// 背景故事結構化資料
+interface BackgroundStoryData {
+  growthEnvironment: string   // 成長經歷：在什麼環境下長大
+  turningPoint: string        // 轉折點：人生重大轉折
+  challenges: string          // 挫折與成長：遇過的挫折
+  values: string              // 價值觀：最在乎什麼
+  motivation: string          // 動機：為什麼做現在的事業
+}
+
 // 問卷資料類型（專業代操公司版本）
 interface QuestionnaireData {
   // 第一階段：目標與定位
   goals: string               // Q1: 希望藉由代操達成的目標
-  targetDirection: string     // Q2: 希望代操的目標導向
+  targetDirections: string[]  // Q2: 希望代操的目標導向（多選）
   imageStyle: string          // Q3: 螢幕形象呈現
   // 第二階段：個人特色挖掘
   hobbies: string             // Q4: 特別的愛好或興趣
@@ -57,7 +66,7 @@ interface QuestionnaireData {
   workHistory: string         // Q12: 曾經的工作經歷
   education: string           // Q13: 大學讀的科系
   clubExperience: string      // Q14: 曾經的社團、興趣經歷
-  backgroundStory: string     // Q15: 個人背景故事
+  backgroundStory: BackgroundStoryData  // Q15: 個人背景故事（結構化）
 }
 
 // 定位報告類型（專業代操公司版本）
@@ -256,7 +265,7 @@ export default function PositioningPage() {
   const [formData, setFormData] = useState<QuestionnaireData>({
     // 第一階段：目標與定位
     goals: "",
-    targetDirection: "",
+    targetDirections: [],
     imageStyle: "",
     // 第二階段：個人特色挖掘
     hobbies: "",
@@ -273,7 +282,13 @@ export default function PositioningPage() {
     workHistory: "",
     education: "",
     clubExperience: "",
-    backgroundStory: ""
+    backgroundStory: {
+      growthEnvironment: "",
+      turningPoint: "",
+      challenges: "",
+      values: "",
+      motivation: ""
+    }
   })
 
   const { canUseFeature, useCredit, display, credits } = useCredits()
@@ -319,7 +334,7 @@ export default function PositioningPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return formData.goals.trim() !== ""              // Q1: 目標必填
-      case 2: return formData.targetDirection.trim() !== ""     // Q2: 目標導向必填
+      case 2: return formData.targetDirections.length > 0       // Q2: 目標導向至少選一個
       case 3: return formData.imageStyle.trim() !== ""          // Q3: 形象必填
       case 4: return true                                        // Q4: 愛好選填
       case 5: return true                                        // Q5: 特色選填
@@ -332,7 +347,7 @@ export default function PositioningPage() {
       case 12: return true                                       // Q12: 工作經歷選填
       case 13: return true                                       // Q13: 教育背景選填
       case 14: return true                                       // Q14: 社團經歷選填
-      case 15: return formData.backgroundStory.trim() !== ""     // Q15: 背景故事必填
+      case 15: return true                                       // Q15: 背景故事選填（結構化）
       default: return false
     }
   }
@@ -379,7 +394,7 @@ export default function PositioningPage() {
   const handleReset = () => {
     setFormData({
       goals: "",
-      targetDirection: "",
+      targetDirections: [],
       imageStyle: "",
       hobbies: "",
       uniqueTraits: "",
@@ -392,7 +407,13 @@ export default function PositioningPage() {
       workHistory: "",
       education: "",
       clubExperience: "",
-      backgroundStory: ""
+      backgroundStory: {
+        growthEnvironment: "",
+        turningPoint: "",
+        challenges: "",
+        values: "",
+        motivation: ""
+      }
     })
     setReport(null)
     setCurrentStep(1)
@@ -840,7 +861,7 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 2: 目標導向 */}
+      {/* Step 2: 目標導向（多選） */}
       {currentStep === 2 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
@@ -849,25 +870,50 @@ export default function PositioningPage() {
               Q2. 希望代操的目標導向？
             </CardTitle>
             <CardDescription>
-              選擇最符合您需求的目標導向
+              可複選，選擇所有符合您需求的目標導向
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 px-4 sm:px-6">
-            {targetDirectionOptions.map((option) => (
-              <div
-                key={option.value}
-                className={cn(
-                  "p-4 rounded-lg border-2 cursor-pointer transition-all",
-                  formData.targetDirection === option.value
-                    ? "border-primary bg-primary/5"
-                    : "border-muted hover:border-primary/50"
-                )}
-                onClick={() => handleOptionSelect("targetDirection", option.value)}
-              >
-                <div className="font-medium">{option.label}</div>
-                <div className="text-sm text-muted-foreground">{option.description}</div>
-              </div>
-            ))}
+            {targetDirectionOptions.map((option) => {
+              const isSelected = formData.targetDirections.includes(option.value)
+              return (
+                <div
+                  key={option.value}
+                  className={cn(
+                    "p-4 rounded-lg border-2 cursor-pointer transition-all",
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-muted hover:border-primary/50"
+                  )}
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      targetDirections: isSelected
+                        ? prev.targetDirections.filter(v => v !== option.value)
+                        : [...prev.targetDirections, option.value]
+                    }))
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
+                      isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                    )}>
+                      {isSelected && <CheckCircle2 className="h-4 w-4 text-white" />}
+                    </div>
+                    <div>
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-sm text-muted-foreground">{option.description}</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+            {formData.targetDirections.length > 0 && (
+              <p className="text-sm text-primary">
+                已選擇 {formData.targetDirections.length} 項
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
@@ -1159,25 +1205,109 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 15: 背景故事 */}
+      {/* Step 15: 背景故事（結構化填空） */}
       {currentStep === 15 && (
         <Card className="border-amber-500/30">
           <CardHeader className="px-4 sm:px-6">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Sparkles className="h-5 w-5 text-amber-500" />
-              Q15. 請詳細描述你的背景故事
+              Q15. 請描述你的背景故事
             </CardTitle>
             <CardDescription>
-              這是最重要的一題！你的故事會成為內容的靈魂，請盡可能詳細描述你的人生經歷、轉折點、成長歷程
+              你的故事會成為內容的靈魂，請依照以下提示填寫（選填，但填越多 AI 分析越精準）
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            <Textarea
-              placeholder="請詳細描述你的背景故事，可以包含：&#10;&#10;【成長經歷】&#10;- 你在什麼環境下長大？家庭背景如何？&#10;- 小時候發生過什麼影響你的事情？&#10;&#10;【轉折點】&#10;- 人生中有沒有重大的轉折點？&#10;- 是什麼事件讓你決定走上現在這條路？&#10;&#10;【挫折與成長】&#10;- 遇過什麼重大挫折？怎麼走過來的？&#10;- 這些經歷如何塑造了現在的你？&#10;&#10;【價值觀】&#10;- 你最在乎什麼？為什麼做現在的事業？&#10;- 什麼信念在支撐著你？&#10;&#10;例如：&#10;「我從小在市場長大，爸媽都是攤販。小時候常被同學看不起，但這讓我更努力證明自己。大學畢業後進入知名企業，但工作 3 年後覺得太安逸，決定辭職創業。第一次創業失敗負債 200 萬，當時差點放棄，但想到父母辛苦的背影，咬牙撐過來了。現在公司營收破億，但我始終沒忘記當初那個在市場幫忙叫賣的自己...」&#10;&#10;寫得越詳細，AI 能幫你挖掘的故事線就越多！"
-              className="min-h-[350px]"
-              value={formData.backgroundStory}
-              onChange={(e) => handleInputChange("backgroundStory", e.target.value)}
-            />
+          <CardContent className="space-y-5 px-4 sm:px-6">
+            {/* 成長經歷 */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-xs">1</span>
+                成長經歷
+              </label>
+              <p className="text-xs text-muted-foreground">你在什麼環境下長大？家庭背景如何？小時候有什麼特別的經歷？</p>
+              <Textarea
+                placeholder="例如：我從小在市場長大，爸媽都是攤販。小時候常被同學看不起，但這讓我更努力證明自己..."
+                className="min-h-[100px]"
+                value={formData.backgroundStory.growthEnvironment}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  backgroundStory: { ...prev.backgroundStory, growthEnvironment: e.target.value }
+                }))}
+              />
+            </div>
+
+            {/* 轉折點 */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-xs">2</span>
+                人生轉折點
+              </label>
+              <p className="text-xs text-muted-foreground">人生中有沒有重大的轉折點？是什麼事件讓你決定走上現在這條路？</p>
+              <Textarea
+                placeholder="例如：工作 3 年後覺得太安逸，決定辭職創業。那是改變我人生的關鍵決定..."
+                className="min-h-[100px]"
+                value={formData.backgroundStory.turningPoint}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  backgroundStory: { ...prev.backgroundStory, turningPoint: e.target.value }
+                }))}
+              />
+            </div>
+
+            {/* 挫折與成長 */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-xs">3</span>
+                挫折與成長
+              </label>
+              <p className="text-xs text-muted-foreground">遇過什麼重大挫折？怎麼走過來的？這些經歷如何塑造了現在的你？</p>
+              <Textarea
+                placeholder="例如：第一次創業失敗負債 200 萬，當時差點放棄，但想到父母辛苦的背影，咬牙撐過來了..."
+                className="min-h-[100px]"
+                value={formData.backgroundStory.challenges}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  backgroundStory: { ...prev.backgroundStory, challenges: e.target.value }
+                }))}
+              />
+            </div>
+
+            {/* 價值觀 */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-xs">4</span>
+                價值觀
+              </label>
+              <p className="text-xs text-muted-foreground">你最在乎什麼？什麼信念在支撐著你？</p>
+              <Textarea
+                placeholder="例如：我相信努力會有回報，始終沒忘記當初那個在市場幫忙叫賣的自己..."
+                className="min-h-[100px]"
+                value={formData.backgroundStory.values}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  backgroundStory: { ...prev.backgroundStory, values: e.target.value }
+                }))}
+              />
+            </div>
+
+            {/* 動機 */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-xs">5</span>
+                創業/工作動機
+              </label>
+              <p className="text-xs text-muted-foreground">為什麼做現在的事業？想要達成什麼目標？</p>
+              <Textarea
+                placeholder="例如：我想幫助更多年輕人少走彎路，把我這些年學到的經驗分享出去..."
+                className="min-h-[100px]"
+                value={formData.backgroundStory.motivation}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  backgroundStory: { ...prev.backgroundStory, motivation: e.target.value }
+                }))}
+              />
+            </div>
+
             <div className="bg-amber-500/10 p-4 rounded-lg">
               <p className="text-sm text-amber-700 font-medium mb-2">為什麼背景故事很重要？</p>
               <ul className="text-xs text-muted-foreground space-y-1">
