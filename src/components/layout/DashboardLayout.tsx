@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { credits } = useCredits()
-  const { profile, isLoading: isUserLoading, isAuthenticated, signOut } = useUser()
+  const { user, profile, isLoading: isUserLoading, isAuthenticated, signOut } = useUser()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const currentPlan = credits ? PLANS[credits.tier] : PLANS.free
 
@@ -95,9 +95,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       )
     }
 
-    // 已登入
-    if (isAuthenticated) {
-      const displayName = profile?.display_name || profile?.email?.split('@')[0] || '用戶'
+    // 已登入 - 優先從 user (session) 取得資訊，不依賴 profile 查詢
+    if (isAuthenticated && user) {
+      // 優先順序：profile > user.user_metadata > user.email
+      const displayName = profile?.display_name
+        || user.user_metadata?.full_name
+        || user.user_metadata?.name
+        || user.email?.split('@')[0]
+        || '用戶'
+      const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url
       const initials = displayName.slice(0, 2).toUpperCase()
 
       const handleSignOut = async () => {
@@ -117,7 +123,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarImage src={avatarUrl || undefined} />
               <AvatarFallback className={cn(
                 "text-white font-bold",
                 credits?.tier === 'lifetime' ? "bg-gradient-to-br from-amber-500 to-orange-500" :

@@ -30,9 +30,19 @@ export function useCredits() {
 
   // 從 Supabase 載入用戶額度
   const loadCredits = useCallback(async () => {
+    console.log('[useCredits] loadCredits called, supabase exists:', !!supabase)
+
+    if (!supabase) {
+      console.error('[useCredits] Supabase client is null!')
+      setCredits(GUEST_CREDITS)
+      setIsLoading(false)
+      return
+    }
+
     try {
       // 先檢查是否已登入
       const { data: { user } } = await supabase.auth.getUser()
+      console.log('[useCredits] getUser result:', user?.id)
 
       if (!user) {
         // 未登入：顯示訪客狀態
@@ -45,7 +55,7 @@ export function useCredits() {
       setIsAuthenticated(true)
 
       // 已登入：從資料庫讀取實際額度
-      // 使用 * 查詢所有欄位，避免欄位名稱不一致的問題
+      console.log('[useCredits] Starting profile query for user:', user.id)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')

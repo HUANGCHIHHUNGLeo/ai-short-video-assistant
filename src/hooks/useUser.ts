@@ -30,18 +30,33 @@ export function useUser(): UseUserReturn {
   // 取得用戶 profile
   const fetchProfile = useCallback(async (userId: string) => {
     console.log('[useUser] Fetching profile for:', userId)
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    console.log('[useUser] Supabase client exists:', !!supabase)
 
-    if (error) {
-      console.error('[useUser] Error fetching profile:', error)
+    if (!supabase) {
+      console.error('[useUser] Supabase client is null!')
       return null
     }
-    console.log('[useUser] Profile fetched:', data)
-    return data as Profile
+
+    try {
+      console.log('[useUser] Starting query...')
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      console.log('[useUser] Query completed, data:', data, 'error:', error)
+
+      if (error) {
+        console.error('[useUser] Error fetching profile:', error)
+        return null
+      }
+      console.log('[useUser] Profile fetched:', data)
+      return data as Profile
+    } catch (err) {
+      console.error('[useUser] Exception in fetchProfile:', err)
+      return null
+    }
   }, [supabase])
 
   // 刷新 profile
