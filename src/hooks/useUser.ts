@@ -69,37 +69,48 @@ export function useUser(): UseUserReturn {
     }
   }, [user, fetchProfile])
 
-  // 初始化：監聯認證狀態變化
+  // 初始化：立即檢查 + 監聽變化
   useEffect(() => {
     let isMounted = true
 
-    // 監聽認證狀態變化（包含初始化）
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('[useUser] Auth state change:', event, session?.user?.id)
-
+    // 立即檢查當前登入狀態
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
         if (!isMounted) return
 
-        // 處理所有需要更新用戶狀態的事件
-        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
-          console.log('[useUser] Setting user from session:', session.user.id)
+        if (session?.user) {
           setUser(session.user)
-
-          // 獲取 profile
           const userProfile = await fetchProfile(session.user.id)
           if (isMounted) {
             setProfile(userProfile)
-            setIsLoading(false)
+          }
+        }
+      } catch (err) {
+        console.error('[useUser] Init error:', err)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    initAuth()
+
+    // 監聽後續的認證狀態變化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          setUser(session.user)
+          const userProfile = await fetchProfile(session.user.id)
+          if (isMounted) {
+            setProfile(userProfile)
           }
         } else if (event === 'SIGNED_OUT') {
-          console.log('[useUser] User signed out')
           setUser(null)
           setProfile(null)
-          setIsLoading(false)
-        } else if (event === 'INITIAL_SESSION' && !session) {
-          // 沒有 session 的初始狀態
-          console.log('[useUser] No initial session')
-          setIsLoading(false)
         }
       }
     )
