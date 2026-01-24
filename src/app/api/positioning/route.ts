@@ -98,12 +98,13 @@ ${toneSetting}
 
 ## 你的核心任務
 
-根據用戶填寫的 14 題問卷，產出一份「像真人顧問寫的定位報告」。
+根據用戶填寫的 15 題問卷，產出一份「像真人顧問寫的定位報告」。
 
 這份報告的重點是：
 1. 【人設定位】讓觀眾一看就記住這個人的獨特記憶點
 2. 【內容方向】具體到「這週可以拍什麼」的主題建議
 3. 【資源運用】把用戶提供的場地、人物、物品變成內容素材
+4. 【背景故事分析】深度挖掘用戶的人生故事，找出最有共鳴的內容角度
 
 ## 人設定位的核心方法論
 
@@ -187,6 +188,15 @@ ${toneSetting}
     "otherExperience": "其他經歷可以變成什麼內容"
   },
 
+  "backgroundStoryAnalysis": {
+    "summary": "用戶背景故事的精華摘要（100字內，要有畫面感）",
+    "keyMoments": ["人生中的關鍵轉折點1", "轉折點2", "轉折點3"],
+    "emotionalHooks": ["可以打動觀眾的情感點1", "情感點2", "情感點3"],
+    "contentAngles": ["可以發展的內容角度1：具體怎麼拍", "角度2", "角度3", "角度4", "角度5"],
+    "authenticityScore": 85,
+    "resonancePoints": ["容易引起觀眾共鳴的點1", "共鳴點2", "共鳴點3"]
+  },
+
   "first10Videos": [
     {
       "title": "影片標題（要吸睛）",
@@ -257,6 +267,15 @@ ${toneSetting}
 consultantNote 的語氣要符合用戶在 Q3 選擇的螢幕形象風格。
 內容要具體、有針對性，而不是通用的鼓勵話語。
 
+### 7. backgroundStoryAnalysis 是報告的靈魂
+用戶的背景故事是最有價值的內容素材，分析時要：
+- summary：用一段話概括用戶的人生故事，要有畫面感
+- keyMoments：找出 3-5 個人生轉折點（挫折、突破、覺醒）
+- emotionalHooks：挖掘可以打動觀眾的情感點（共鳴、勵志、感動）
+- contentAngles：設計 5 個以上可以拍成影片的具體角度
+- authenticityScore：根據故事的真實感和感染力打分
+- resonancePoints：找出最容易引起目標受眾共鳴的點
+
 ## 禁止的輸出
 
 ❌ 空泛的建議：「定期發布內容」「與受眾互動」「建立個人品牌」
@@ -273,7 +292,7 @@ consultantNote 的語氣要符合用戶在 Q3 選擇的螢幕形象風格。
 只輸出 JSON，不要任何額外說明。確保 JSON 格式正確可解析。`
 }
 
-// 問卷資料介面（專業代操公司版本 - 14 題）
+// 問卷資料介面（專業代操公司版本 - 15 題）
 interface QuestionnaireData {
   // 第一階段：目標與定位
   goals: string               // Q1: 希望藉由代操達成的目標
@@ -294,6 +313,7 @@ interface QuestionnaireData {
   workHistory: string         // Q12: 曾經的工作經歷
   education: string           // Q13: 大學讀的科系
   clubExperience: string      // Q14: 曾經的社團、興趣經歷
+  backgroundStory: string     // Q15: 個人背景故事
 }
 
 export async function POST(request: NextRequest) {
@@ -401,6 +421,9 @@ ${data.education || '尚未填寫'}
 【Q14. 曾經的社團、興趣經歷】
 ${data.clubExperience || '尚未填寫'}
 
+【Q15. 個人背景故事】（最重要！）
+${data.backgroundStory || '尚未填寫'}
+
 ═══════════════════════════════════
 
 ★★★ 分析指引 ★★★
@@ -413,6 +436,11 @@ ${data.clubExperience || '尚未填寫'}
 4. 【專業背書】：工作挑戰和競爭優勢如何轉化為內容價值
 5. 【內容素材】：場地、互動、物品資源可以拍出什麼類型的內容
 6. 【故事線】：工作經歷、教育背景、社團經歷可以講什麼故事
+7. 【背景故事深度分析】：這是最重要的分析！
+   - 找出用戶人生中的關鍵轉折點（挫折、突破、成長）
+   - 挖掘可以打動觀眾的情感連結點
+   - 分析哪些故事片段最能引起共鳴
+   - 設計如何把這些故事轉化為具體的內容主題
 
 這些元素必須反映在：
 - 定位宣言（positioningStatement）：要能看出這個人的核心價值

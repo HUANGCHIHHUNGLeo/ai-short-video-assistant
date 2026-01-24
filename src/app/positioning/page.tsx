@@ -57,6 +57,7 @@ interface QuestionnaireData {
   workHistory: string         // Q12: 曾經的工作經歷
   education: string           // Q13: 大學讀的科系
   clubExperience: string      // Q14: 曾經的社團、興趣經歷
+  backgroundStory: string     // Q15: 個人背景故事
 }
 
 // 定位報告類型（專業代操公司版本）
@@ -122,6 +123,16 @@ interface PositioningReport {
     workExperience: string
     education: string
     otherExperience: string
+  }
+
+  // 背景故事分析
+  backgroundStoryAnalysis?: {
+    summary: string           // 背景故事摘要
+    keyMoments: string[]      // 關鍵轉折點
+    emotionalHooks: string[]  // 可用的情感連結點
+    contentAngles: string[]   // 可以發展的內容角度
+    authenticityScore: number // 真實感分數 (0-100)
+    resonancePoints: string[] // 容易引起共鳴的點
   }
 
   // 前 10 支影片建議
@@ -261,7 +272,8 @@ export default function PositioningPage() {
     // 第五階段：背景經歷
     workHistory: "",
     education: "",
-    clubExperience: ""
+    clubExperience: "",
+    backgroundStory: ""
   })
 
   const { canUseFeature, useCredit, display, credits } = useCredits()
@@ -269,7 +281,7 @@ export default function PositioningPage() {
   // 檢查是否為專業版或買斷版用戶
   const isPro = credits?.tier === 'pro' || credits?.tier === 'lifetime'
 
-  const totalSteps = 14
+  const totalSteps = 15
 
   // 計算階段
   const getPhase = (step: number) => {
@@ -277,7 +289,7 @@ export default function PositioningPage() {
     if (step <= 6) return { name: "個人特色挖掘", phase: 2 }
     if (step <= 8) return { name: "工作與專業", phase: 3 }
     if (step <= 11) return { name: "可用資源", phase: 4 }
-    if (step <= 14) return { name: "背景經歷", phase: 5 }
+    if (step <= 15) return { name: "背景經歷", phase: 5 }
     return { name: "報告", phase: 6 }
   }
 
@@ -320,6 +332,7 @@ export default function PositioningPage() {
       case 12: return true                                       // Q12: 工作經歷選填
       case 13: return true                                       // Q13: 教育背景選填
       case 14: return true                                       // Q14: 社團經歷選填
+      case 15: return formData.backgroundStory.trim() !== ""     // Q15: 背景故事必填
       default: return false
     }
   }
@@ -351,7 +364,7 @@ export default function PositioningPage() {
           useCredit('positioning')
         }
         setReport(data.report)
-        setCurrentStep(15)  // 報告頁面
+        setCurrentStep(16)  // 報告頁面
       } else if (data.error) {
         setCreditError(data.error)
       }
@@ -378,7 +391,8 @@ export default function PositioningPage() {
       itemResources: "",
       workHistory: "",
       education: "",
-      clubExperience: ""
+      clubExperience: "",
+      backgroundStory: ""
     })
     setReport(null)
     setCurrentStep(1)
@@ -1145,8 +1159,40 @@ export default function PositioningPage() {
         </Card>
       )}
 
+      {/* Step 15: 背景故事 */}
+      {currentStep === 15 && (
+        <Card className="border-amber-500/30">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Sparkles className="h-5 w-5 text-amber-500" />
+              Q15. 請詳細描述你的背景故事
+            </CardTitle>
+            <CardDescription>
+              這是最重要的一題！你的故事會成為內容的靈魂，請盡可能詳細描述你的人生經歷、轉折點、成長歷程
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <Textarea
+              placeholder="請詳細描述你的背景故事，可以包含：&#10;&#10;【成長經歷】&#10;- 你在什麼環境下長大？家庭背景如何？&#10;- 小時候發生過什麼影響你的事情？&#10;&#10;【轉折點】&#10;- 人生中有沒有重大的轉折點？&#10;- 是什麼事件讓你決定走上現在這條路？&#10;&#10;【挫折與成長】&#10;- 遇過什麼重大挫折？怎麼走過來的？&#10;- 這些經歷如何塑造了現在的你？&#10;&#10;【價值觀】&#10;- 你最在乎什麼？為什麼做現在的事業？&#10;- 什麼信念在支撐著你？&#10;&#10;例如：&#10;「我從小在市場長大，爸媽都是攤販。小時候常被同學看不起，但這讓我更努力證明自己。大學畢業後進入知名企業，但工作 3 年後覺得太安逸，決定辭職創業。第一次創業失敗負債 200 萬，當時差點放棄，但想到父母辛苦的背影，咬牙撐過來了。現在公司營收破億，但我始終沒忘記當初那個在市場幫忙叫賣的自己...」&#10;&#10;寫得越詳細，AI 能幫你挖掘的故事線就越多！"
+              className="min-h-[350px]"
+              value={formData.backgroundStory}
+              onChange={(e) => handleInputChange("backgroundStory", e.target.value)}
+            />
+            <div className="bg-amber-500/10 p-4 rounded-lg">
+              <p className="text-sm text-amber-700 font-medium mb-2">為什麼背景故事很重要？</p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• 好的故事能讓觀眾產生情感連結，更容易記住你</li>
+                <li>• 真實的經歷是最有說服力的內容素材</li>
+                <li>• AI 會分析你的故事，找出最有共鳴的切入點</li>
+                <li>• 這些故事可以成為你的人設記憶點和差異化優勢</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Report View */}
-      {currentStep === 15 && report && (
+      {currentStep === 16 && report && (
         <div className="space-y-4 sm:space-y-6">
           {/* 定位宣言 */}
           <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-emerald-500/5">
@@ -1208,6 +1254,98 @@ export default function PositioningPage() {
                   <div className="bg-primary/10 p-3 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-1">口頭禪</p>
                     <p className="font-medium text-primary">「{report.persona.catchphrase}」</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 背景故事分析 */}
+          {report.backgroundStoryAnalysis && (
+            <Card className="border-amber-500/30">
+              <CardHeader className="px-4 sm:px-6 pb-2">
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  你的故事分析
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 sm:px-6 space-y-4">
+                {/* 故事摘要 */}
+                <div className="bg-amber-500/10 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">故事精華</p>
+                  <p className="font-medium">{report.backgroundStoryAnalysis.summary}</p>
+                </div>
+
+                {/* 真實感分數 */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">故事感染力</span>
+                  <div className="flex-1 bg-muted rounded-full h-2">
+                    <div
+                      className="bg-amber-500 h-2 rounded-full transition-all"
+                      style={{ width: `${report.backgroundStoryAnalysis.authenticityScore}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-amber-600">
+                    {report.backgroundStoryAnalysis.authenticityScore}/100
+                  </span>
+                </div>
+
+                {/* 關鍵轉折點 */}
+                {report.backgroundStoryAnalysis.keyMoments && report.backgroundStoryAnalysis.keyMoments.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">人生關鍵轉折點</p>
+                    <div className="space-y-2">
+                      {report.backgroundStoryAnalysis.keyMoments.map((moment, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-amber-500 mt-0.5">★</span>
+                          <span className="text-sm">{moment}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 情感連結點 */}
+                {report.backgroundStoryAnalysis.emotionalHooks && report.backgroundStoryAnalysis.emotionalHooks.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">可打動觀眾的情感點</p>
+                    <div className="flex flex-wrap gap-2">
+                      {report.backgroundStoryAnalysis.emotionalHooks.map((hook, i) => (
+                        <Badge key={i} variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30">
+                          {hook}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 內容角度 */}
+                {report.backgroundStoryAnalysis.contentAngles && report.backgroundStoryAnalysis.contentAngles.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">可以拍成影片的角度</p>
+                    <ul className="space-y-2">
+                      {report.backgroundStoryAnalysis.contentAngles.map((angle, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary mt-0.5">{i + 1}.</span>
+                          <span>{angle}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* 共鳴點 */}
+                {report.backgroundStoryAnalysis.resonancePoints && report.backgroundStoryAnalysis.resonancePoints.length > 0 && (
+                  <div className="bg-primary/5 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">最容易引起共鳴的點</p>
+                    <div className="space-y-1">
+                      {report.backgroundStoryAnalysis.resonancePoints.map((point, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-primary">💡</span>
+                          <span className="text-sm font-medium">{point}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
