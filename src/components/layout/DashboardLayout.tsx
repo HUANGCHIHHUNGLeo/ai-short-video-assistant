@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const { credits } = useCredits()
-  const { user, profile, isLoading: isUserLoading, isAuthenticated, signOut } = useUser()
+  const { user, profile, signOut } = useUser()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const currentPlan = credits ? PLANS[credits.tier] : PLANS.free
 
@@ -79,24 +79,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // 用戶資訊區塊
   const UserSection = ({ mobile = false }: { mobile?: boolean }) => {
-    // Debug: 檢查認證狀態
-    console.log('[UserSection]', { isUserLoading, isAuthenticated, hasProfile: !!profile })
-
-    // 載入中顯示骨架屏
-    if (isUserLoading) {
-      return (
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
-          <div className="flex-1 min-w-0">
-            <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-            <div className="h-3 w-16 bg-muted animate-pulse rounded mt-1" />
-          </div>
-        </div>
-      )
-    }
-
-    // 已登入 - 優先從 user (session) 取得資訊，不依賴 profile 查詢
-    if (isAuthenticated && user) {
+    // 已登入
+    if (user) {
       // 優先順序：profile > user.user_metadata > user.email
       const displayName = profile?.display_name
         || user.user_metadata?.full_name
@@ -248,7 +232,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* 手機版右側：額度 + 用戶選單 */}
           <div className="flex items-center gap-2 ml-auto">
             <CreditsBadge />
-            {isAuthenticated ? (
+            {user ? (
               <UserMenu />
             ) : (
               <Button
