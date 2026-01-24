@@ -1,7 +1,7 @@
 {
-  "name": "AI 短影音助理",
-  "short_name": "AI 助理",
-  "description": "AI 短影音內容創作平台 - 腳本生成、輪播貼文、文案優化",
+  "name": "短影音助理",
+  "short_name": "短影音助理",
+  "description": "短影音內容創作平台 - 腳本生成、輪播貼文、文案優化",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

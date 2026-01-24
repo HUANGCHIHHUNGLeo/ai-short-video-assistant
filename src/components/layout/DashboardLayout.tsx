@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: "儀表板", href: "/", icon: LayoutDashboard },
-    { name: "AI 定位教練", href: "/positioning", icon: Bot },
+    { name: "深度定位教練", href: "/positioning", icon: Bot },
     { name: "爆款腳本生成", href: "/script-generator", icon: Video },
     { name: "輪播貼文生成", href: "/carousel-post", icon: Images },
     { name: "文案覆盤優化", href: "/copy-optimizer", icon: FileText },
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-bold text-lg tracking-tight">AI 短影音助理</span>
+            <span className="font-bold text-lg tracking-tight">短影音助理</span>
           </div>
         </div>
 
@@ -237,7 +237,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
               <Bot className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-bold text-lg">AI 助理</span>
+            <span className="font-bold text-lg">短影音助理</span>
           </div>
           {/* 手機版右側：額度 + 用戶選單 */}
           <div className="flex items-center gap-2 ml-auto">

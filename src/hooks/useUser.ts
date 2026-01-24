@@ -56,55 +56,68 @@ export function useUser(): UseUserReturn {
 
   // 初始化：監聯認證狀態變化
   useEffect(() => {
-    const initAuth = async () => {
-      console.log('[useUser] Initializing auth...')
+    let isMounted = true
 
-      try {
-        // 使用 getUser() 而不是 getSession()，確保 token 是有效的
-        // 加上 timeout 保護，避免無限等待
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 5000)
-        )
-
-        const authPromise = supabase.auth.getUser()
-
-        const { data: { user: currentUser }, error } = await Promise.race([
-          authPromise,
-          timeoutPromise
-        ]) as Awaited<ReturnType<typeof supabase.auth.getUser>>
-
-        console.log('[useUser] getUser result:', { user: currentUser?.id, error: error?.message })
-
-        if (currentUser) {
-          setUser(currentUser)
-          const userProfile = await fetchProfile(currentUser.id)
-          setProfile(userProfile)
-        }
-      } catch (err) {
-        console.error('[useUser] Auth init error:', err)
-      } finally {
-        setIsLoading(false)
-        console.log('[useUser] Init complete')
-      }
-    }
-
-    initAuth()
-
-    // 監聽認證狀態變化
+    // 監聽認證狀態變化（包含初始化）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        console.log('[useUser] Auth state change:', event, session?.user?.id)
+
+        if (!isMounted) return
+
+        // 處理所有需要更新用戶狀態的事件
+        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+          console.log('[useUser] Setting user from session:', session.user.id)
           setUser(session.user)
+
+          // 獲取 profile
           const userProfile = await fetchProfile(session.user.id)
-          setProfile(userProfile)
+          if (isMounted) {
+            setProfile(userProfile)
+            setIsLoading(false)
+          }
         } else if (event === 'SIGNED_OUT') {
+          console.log('[useUser] User signed out')
           setUser(null)
           setProfile(null)
+          setIsLoading(false)
+        } else if (event === 'INITIAL_SESSION' && !session) {
+          // 沒有 session 的初始狀態
+          console.log('[useUser] No initial session')
+          setIsLoading(false)
         }
       }
     )
 
+    // 備用：如果 onAuthStateChange 沒有觸發 INITIAL_SESSION
+    // 5秒後手動檢查一次
+    const fallbackTimer = setTimeout(async () => {
+      if (!isMounted) return
+
+      // 如果還在 loading，手動獲取一次
+      console.log('[useUser] Fallback check...')
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        if (isMounted && currentUser) {
+          console.log('[useUser] Fallback found user:', currentUser.id)
+          setUser(currentUser)
+          const userProfile = await fetchProfile(currentUser.id)
+          if (isMounted) {
+            setProfile(userProfile)
+          }
+        }
+      } catch (err) {
+        console.error('[useUser] Fallback error:', err)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }, 3000)
+
     return () => {
+      isMounted = false
+      clearTimeout(fallbackTimer)
       subscription.unsubscribe()
     }
   }, [supabase, fetchProfile])

@@ -98,16 +98,19 @@ export function useCredits() {
 
   // 初始化 + 監聽認證狀態變化
   useEffect(() => {
-    loadCredits()
-
-    // 監聽登入/登出事件
+    // 監聽登入/登出事件（包含 INITIAL_SESSION）
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event) => {
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        console.log('[useCredits] Auth state change:', event)
+        // INITIAL_SESSION 是頁面重新整理時的初始事件
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           await loadCredits()
         }
       }
     )
+
+    // 立即載入一次（以防 INITIAL_SESSION 已經錯過）
+    loadCredits()
 
     return () => {
       subscription.unsubscribe()

@@ -99,7 +99,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">歡迎使用 AI 短影音助理</DialogTitle>
+          <DialogTitle className="text-xl">歡迎使用短影音助理</DialogTitle>
           <DialogDescription>
             登入後即可使用所有功能並儲存歷史記錄
           </DialogDescription>

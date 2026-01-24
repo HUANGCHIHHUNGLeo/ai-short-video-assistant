@@ -10,13 +10,13 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "AI 短影音助理",
-  description: "AI 驅動的短影音創作智能體，幫你打造爆款內容",
+  title: "短影音助理",
+  description: "短影音創作智能體，幫你打造爆款內容",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "AI 助理",
+    title: "短影音助理",
   },
   icons: {
     icon: "/icon-192.png",

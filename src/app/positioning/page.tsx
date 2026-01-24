@@ -792,7 +792,7 @@ export default function PositioningPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-              AI 定位教練
+              深度定位教練
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               深度問卷 + AI 專業分析

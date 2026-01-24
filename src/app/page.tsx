@@ -32,8 +32,8 @@ export default function Home() {
 
   const tools = [
     {
-      title: "AI 定位教練",
-      desc: "找不到內容方向？讓 AI 幫你分析最適合的定位策略",
+      title: "深度定位教練",
+      desc: "找不到內容方向？深度分析最適合的定位策略",
       icon: Bot,
       href: "/positioning",
       color: "hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/30",

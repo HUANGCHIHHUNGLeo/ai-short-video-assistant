@@ -4,7 +4,7 @@ import { checkApiAuth, recordUsage, authError, saveGeneration } from "@/lib/auth
 import { trackApiCost } from "@/lib/cost-tracking"
 
 // 對話模式的 System Prompt（保留向後兼容）
-const chatSystemPrompt = `你是「AI 定位教練」，基於 SFM 流量變現系統來幫助用戶找到自媒體定位。
+const chatSystemPrompt = `你是「深度定位教練」，基於 SFM 流量變現系統來幫助用戶找到自媒體定位。
 
 ## 你的說話風格
 - 務實、直接、有洞察力
