@@ -183,9 +183,22 @@ export function useUser(): UseUserReturn {
 
   // 登出
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
+    try {
+      // 加入 timeout 保護，避免無限等待
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('SignOut timeout')), 5000)
+      )
+
+      const signOutPromise = supabase.auth.signOut()
+
+      await Promise.race([signOutPromise, timeoutPromise])
+    } catch (err) {
+      console.error('[useUser] SignOut error:', err)
+    } finally {
+      // 無論成功或失敗，都清除本地狀態
+      setUser(null)
+      setProfile(null)
+    }
   }
 
   return {

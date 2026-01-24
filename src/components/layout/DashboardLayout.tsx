@@ -102,8 +102,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       const handleSignOut = async () => {
         setIsSigningOut(true)
-        await signOut()
-        setIsSigningOut(false)
+        try {
+          await signOut()
+        } catch (err) {
+          console.error('[DashboardLayout] SignOut error:', err)
+        } finally {
+          setIsSigningOut(false)
+          // 強制刷新頁面確保狀態清除
+          window.location.reload()
+        }
       }
 
       return (
