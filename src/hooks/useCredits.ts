@@ -50,7 +50,15 @@ export function useCredits() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .single() as {
+          data: {
+            subscription_tier?: string
+            script_credits_used?: number
+            carousel_credits_used?: number
+            credits_reset_date?: string
+          } | null
+          error: unknown
+        }
 
       console.log('[useCredits] Profile query result:', { profile, error: profileError })
 
