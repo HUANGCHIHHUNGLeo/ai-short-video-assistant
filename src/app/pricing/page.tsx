@@ -40,8 +40,7 @@ export default function PricingPage() {
     if (confirmed) {
       try {
         await upgrade(tier)
-        alert(`已升級到 ${PLANS[tier].name}！頁面將重新整理。`)
-        window.location.reload()
+        alert(`已升級到 ${PLANS[tier].name}！`)
       } catch (error) {
         console.error('Upgrade failed:', error)
         alert(`升級失敗：${error instanceof Error ? error.message : '請稍後再試'}`)

@@ -104,35 +104,8 @@ export function useUser(): UseUserReturn {
       }
     )
 
-    // 備用：如果 onAuthStateChange 沒有觸發 INITIAL_SESSION
-    // 5秒後手動檢查一次
-    const fallbackTimer = setTimeout(async () => {
-      if (!isMounted) return
-
-      // 如果還在 loading，手動獲取一次
-      console.log('[useUser] Fallback check...')
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser()
-        if (isMounted && currentUser) {
-          console.log('[useUser] Fallback found user:', currentUser.id)
-          setUser(currentUser)
-          const userProfile = await fetchProfile(currentUser.id)
-          if (isMounted) {
-            setProfile(userProfile)
-          }
-        }
-      } catch (err) {
-        console.error('[useUser] Fallback error:', err)
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }, 3000)
-
     return () => {
       isMounted = false
-      clearTimeout(fallbackTimer)
       subscription.unsubscribe()
     }
   }, [supabase, fetchProfile])
