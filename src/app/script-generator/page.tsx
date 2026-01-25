@@ -476,15 +476,17 @@ function ScriptGeneratorContent() {
       text += `\n`
     }
 
-    text += `════════════════════════════════════════════════════════════\n`
-    text += `  預估表現\n`
-    text += `════════════════════════════════════════════════════════════\n\n`
-    text += `完播率：${version.estimatedMetrics.completionRate}\n`
-    text += `互動率：${version.estimatedMetrics.engagementRate}\n`
-    if (version.estimatedMetrics.saveRate) text += `收藏率：${version.estimatedMetrics.saveRate}\n`
-    if (version.estimatedMetrics.shareability) text += `分享潛力：${version.estimatedMetrics.shareability}\n`
-    text += `最佳發布：${version.estimatedMetrics.bestPostTime}\n`
-    if (version.estimatedMetrics.bestPlatform) text += `最適平台：${version.estimatedMetrics.bestPlatform}\n`
+    if (version.estimatedMetrics) {
+      text += `════════════════════════════════════════════════════════════\n`
+      text += `  預估表現\n`
+      text += `════════════════════════════════════════════════════════════\n\n`
+      text += `完播率：${version.estimatedMetrics.completionRate || '—'}\n`
+      text += `互動率：${version.estimatedMetrics.engagementRate || '—'}\n`
+      if (version.estimatedMetrics.saveRate) text += `收藏率：${version.estimatedMetrics.saveRate}\n`
+      if (version.estimatedMetrics.shareability) text += `分享潛力：${version.estimatedMetrics.shareability}\n`
+      text += `最佳發布：${version.estimatedMetrics.bestPostTime || '—'}\n`
+      if (version.estimatedMetrics.bestPlatform) text += `最適平台：${version.estimatedMetrics.bestPlatform}\n`
+    }
 
     text += `\n════════════════════════════════════════════════════════════\n`
 
@@ -1489,43 +1491,45 @@ function ScriptGeneratorContent() {
                     )}
 
                     {/* 預估表現 */}
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">預估表現</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
-                          <span className="text-muted-foreground">完播率</span>
-                          <span className="font-medium">{version.estimatedMetrics.completionRate}</span>
-                        </div>
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
-                          <span className="text-muted-foreground">互動率</span>
-                          <span className="font-medium">{version.estimatedMetrics.engagementRate}</span>
-                        </div>
-                        {version.estimatedMetrics.saveRate && (
+                    {version.estimatedMetrics && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">預估表現</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
                           <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
-                            <span className="text-muted-foreground">收藏率</span>
-                            <span>{version.estimatedMetrics.saveRate}</span>
+                            <span className="text-muted-foreground">完播率</span>
+                            <span className="font-medium">{version.estimatedMetrics.completionRate || '—'}</span>
                           </div>
-                        )}
-                        {version.estimatedMetrics.shareability && (
                           <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
-                            <span className="text-muted-foreground">分享潛力</span>
-                            <span>{version.estimatedMetrics.shareability}</span>
+                            <span className="text-muted-foreground">互動率</span>
+                            <span className="font-medium">{version.estimatedMetrics.engagementRate || '—'}</span>
                           </div>
-                        )}
-                        <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
-                          <span className="text-muted-foreground">最佳發布</span>
-                          <span>{version.estimatedMetrics.bestPostTime}</span>
-                        </div>
-                        {version.estimatedMetrics.bestPlatform && (
-                          <div className="flex justify-between items-center p-2 rounded bg-primary/10 text-sm">
-                            <span className="text-muted-foreground">最適平台</span>
-                            <span className="font-medium text-primary">{version.estimatedMetrics.bestPlatform}</span>
+                          {version.estimatedMetrics.saveRate && (
+                            <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                              <span className="text-muted-foreground">收藏率</span>
+                              <span>{version.estimatedMetrics.saveRate}</span>
+                            </div>
+                          )}
+                          {version.estimatedMetrics.shareability && (
+                            <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                              <span className="text-muted-foreground">分享潛力</span>
+                              <span>{version.estimatedMetrics.shareability}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
+                            <span className="text-muted-foreground">最佳發布</span>
+                            <span>{version.estimatedMetrics.bestPostTime || '—'}</span>
                           </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                          {version.estimatedMetrics.bestPlatform && (
+                            <div className="flex justify-between items-center p-2 rounded bg-primary/10 text-sm">
+                              <span className="text-muted-foreground">最適平台</span>
+                              <span className="font-medium text-primary">{version.estimatedMetrics.bestPlatform}</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
 
                     {/* 注意事項 */}
                     {version.warnings && version.warnings.length > 0 && (
