@@ -77,6 +77,20 @@ export function useCredits() {
     }
   }
 
+  // 使用額度（本地樂觀更新）
+  const useCredit = (feature: FeatureType) => {
+    if (!credits) return
+    const creditType = FEATURE_CREDIT_MAP[feature]
+    setCredits(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        scriptUsed: creditType === 'script' ? prev.scriptUsed + 1 : prev.scriptUsed,
+        carouselUsed: creditType === 'carousel' ? prev.carouselUsed + 1 : prev.carouselUsed,
+      }
+    })
+  }
+
   // 升級
   const upgrade = async (tier: SubscriptionTier) => {
     const res = await fetch('/api/upgrade', {
@@ -98,6 +112,7 @@ export function useCredits() {
     isLoading,
     isAuthenticated: !!credits,
     canUseFeature,
+    useCredit,
     upgrade,
     refresh: loadCredits,
     display: credits ? {
