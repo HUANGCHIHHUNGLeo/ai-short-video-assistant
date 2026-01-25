@@ -137,7 +137,22 @@ ${positioningContext}
 - 拍攝類型：${shootingTypeMap[videoSettings.shootingType] || "口播型"}
 - 演員人數：${castCountMap[videoSettings.castCount] || "1人"}
 - 特殊需求：${videoSettings.specialRequirements || "無"}
-${videoSettings.shootingType === 'behind_camera' ? `
+
+## ⚠️ 根據「${creatorBackground.niche}」產業設計腳本內容
+這位創作者是「${creatorBackground.niche}」領域的，腳本內容要：
+- 展現這個產業的專業知識和日常
+- 用這個產業的真實情境和案例
+- 解決這個產業目標受眾的真實問題
+- 說話方式符合這個產業的調性
+
+${videoSettings.shootingType === 'talking_head' ? `
+## 口播型特別指引
+根據「${creatorBackground.niche}」產業，口播內容應該：
+- 分享這個領域的實戰經驗和乾貨
+- 用具體案例說明，不要講空泛的道理
+- 可以講自己遇過的問題、怎麼解決的
+- 語氣像在跟同行或有興趣的人聊天
+` : ''}${videoSettings.shootingType === 'behind_camera' ? `
 ## ⚠️ 藏鏡人腳本特別指引（必須遵守！）
 這是藏鏡人模式！藏鏡人要根據創作者的「${creatorBackground.niche}」產業來發問。
 
@@ -162,6 +177,48 @@ ${videoSettings.shootingType === 'behind_camera' ? `
 ✅「欸，這個要弄多久？」
 ✅「真假？那怎麼辦？」
 ✅「這樣不會很累嗎？」
+` : ''}${videoSettings.shootingType === 'voiceover' ? `
+## 純配音特別指引
+根據「${creatorBackground.niche}」產業，旁白內容應該：
+- 用這個產業的真實數據、案例、現象
+- 畫面建議要具體（例如：螢幕錄製工作畫面、產品特寫、工作環境）
+- 旁白節奏要配合畫面切換
+- 用「你看」「這個就是」「重點來了」引導視線
+` : ''}${videoSettings.shootingType === 'acting' ? `
+## 演戲/情境劇特別指引
+根據「${creatorBackground.niche}」產業，情境劇應該：
+- 演出這個產業會遇到的真實情境（客戶互動、工作日常、常見問題）
+- 角色要符合產業特性（例如：設計師 vs 客戶、工程師 vs PM）
+- 對話要自然，像真的會發生的對話
+- 有衝突、有轉折、有解決方案
+` : ''}${videoSettings.shootingType === 'vlog' ? `
+## Vlog 特別指引
+根據「${creatorBackground.niche}」產業，Vlog 應該：
+- 記錄這個產業的真實工作日常
+- 邊做邊說，展現工作過程
+- 可以分享遇到的問題、怎麼解決
+- 最自然的說話方式，像在自言自語
+` : ''}${videoSettings.shootingType === 'tutorial' ? `
+## 教學示範特別指引
+根據「${creatorBackground.niche}」產業，教學內容應該：
+- 教這個領域的實用技巧或知識
+- 步驟要清楚，邊做邊說
+- 用這個產業的真實案例示範
+- 提醒常見錯誤和注意事項
+` : ''}${videoSettings.shootingType === 'interview' ? `
+## 訪談特別指引
+根據「${creatorBackground.niche}」產業，訪談應該：
+- 問這個產業的專業問題
+- 引導受訪者分享經驗和見解
+- 問題要有深度，能挖出乾貨
+- 對話要有來有往，不是單向問答
+` : ''}${videoSettings.shootingType === 'storytime' ? `
+## 說故事特別指引
+根據「${creatorBackground.niche}」產業，故事應該：
+- 講這個產業真實發生的故事（自己的經歷、客戶案例、業界傳說）
+- 有起承轉合，有情緒起伏
+- 用具體細節營造畫面感
+- 結尾要有啟示或反思
 ` : ''}
 
 ## ⚠️ 字數要求（最重要！必須遵守！）
