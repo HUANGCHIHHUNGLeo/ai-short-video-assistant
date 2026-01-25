@@ -35,7 +35,9 @@ import {
   Megaphone,
   CheckCircle,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Download,
+  FileText
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -143,6 +145,7 @@ export default function PositioningHistoryPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedRecord, setSelectedRecord] = useState<PositioningRecord | null>(null)
   const [viewingReport, setViewingReport] = useState<PositioningRecord | null>(null)
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
 
   // 獲取定位記錄
   const fetchRecords = async () => {
@@ -192,6 +195,439 @@ export default function PositioningHistoryPage() {
     if (score >= 80) return "text-green-500"
     if (score >= 60) return "text-yellow-500"
     return "text-red-500"
+  }
+
+  // 生成 PDF 內容並下載
+  const exportToPdf = async (record: PositioningRecord) => {
+    setIsExportingPdf(true)
+
+    try {
+      const output = record.output_data
+      const date = formatDate(record.created_at)
+
+      // 建立 PDF 內容的 HTML
+      const pdfContent = `
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>定位分析報告 - ${output.niche || '我的定位'}</title>
+  <style>
+    @page { margin: 20mm; size: A4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #fff;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #6366f1;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 { font-size: 28px; color: #6366f1; margin-bottom: 8px; }
+    .header .date { color: #666; font-size: 14px; }
+    .header .niche { font-size: 18px; color: #333; margin-top: 10px; }
+
+    .statement {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+    .tag {
+      background: #f3f4f6;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #6366f1;
+      border-left: 4px solid #6366f1;
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .card-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+    .card-value { font-size: 14px; font-weight: 500; }
+
+    .list { margin-left: 20px; }
+    .list li { margin-bottom: 6px; font-size: 14px; }
+
+    .pillar {
+      border-left: 4px solid #6366f1;
+      background: #f9fafb;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 0 8px 8px 0;
+    }
+    .pillar-title { font-weight: 600; font-size: 16px; }
+    .pillar-ratio { font-size: 12px; color: #6b7280; margin-left: 8px; }
+    .pillar-desc { font-size: 14px; color: #4b5563; margin-top: 8px; }
+    .pillar-topics { margin-top: 8px; }
+    .topic-tag {
+      display: inline-block;
+      background: #e0e7ff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 2px;
+      color: #4338ca;
+    }
+
+    .video-item {
+      background: #f9fafb;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .video-num {
+      display: inline-block;
+      background: #6366f1;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .video-title { font-weight: 500; font-size: 14px; }
+    .video-detail { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+    .highlight-box {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .highlight-green { background: #dcfce7; border: 1px solid #86efac; }
+    .highlight-red { background: #fee2e2; border: 1px solid #fca5a5; }
+    .highlight-blue { background: #dbeafe; border: 1px solid #93c5fd; }
+    .highlight-purple { background: #f3e8ff; border: 1px solid #c4b5fd; }
+    .highlight-amber { background: #fef3c7; border: 1px solid #fcd34d; }
+    .highlight-pink { background: #fce7f3; border: 1px solid #f9a8d4; }
+
+    .highlight-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    .highlight-title.green { color: #16a34a; }
+    .highlight-title.red { color: #dc2626; }
+    .highlight-title.blue { color: #2563eb; }
+    .highlight-title.purple { color: #7c3aed; }
+    .highlight-title.amber { color: #d97706; }
+    .highlight-title.pink { color: #db2777; }
+
+    .confidence {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+    }
+    .confidence-label { font-weight: 500; }
+    .confidence-score {
+      font-size: 24px;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 8px;
+    }
+    .score-high { background: #dcfce7; color: #16a34a; }
+    .score-medium { background: #fef3c7; color: #d97706; }
+    .score-low { background: #fee2e2; color: #dc2626; }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+    }
+
+    @media print {
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>AI 定位分析報告</h1>
+    <div class="niche">${output.niche || record.title || '我的定位'}</div>
+    <div class="date">${date}</div>
+  </div>
+
+  ${output.positioningStatement ? `
+  <div class="statement">「${output.positioningStatement}」</div>
+  ` : ''}
+
+  ${output.personaTags && output.personaTags.length > 0 ? `
+  <div class="tags">
+    ${output.personaTags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+  </div>
+  ` : ''}
+
+  ${output.persona ? `
+  <div class="section">
+    <div class="section-title">人設定位</div>
+    <div class="grid">
+      ${output.persona.coreIdentity ? `<div class="card"><div class="card-label">核心身分</div><div class="card-value">${output.persona.coreIdentity}</div></div>` : ''}
+      ${output.persona.memoryHook ? `<div class="card"><div class="card-label">記憶鉤子</div><div class="card-value">${output.persona.memoryHook}</div></div>` : ''}
+      ${output.persona.toneOfVoice ? `<div class="card"><div class="card-label">說話風格</div><div class="card-value">${output.persona.toneOfVoice}</div></div>` : ''}
+      ${output.persona.visualStyle ? `<div class="card"><div class="card-label">視覺風格</div><div class="card-value">${output.persona.visualStyle}</div></div>` : ''}
+    </div>
+    ${output.persona.catchphrase ? `<div class="card" style="margin-top: 12px;"><div class="card-label">招牌口頭禪</div><div class="card-value">「${output.persona.catchphrase}」</div></div>` : ''}
+  </div>
+  ` : ''}
+
+  ${output.targetAudience ? `
+  <div class="section">
+    <div class="section-title">目標受眾</div>
+    <div class="grid-3">
+      ${output.targetAudience.who ? `<div class="card"><div class="card-label">主要族群</div><div class="card-value">${output.targetAudience.who}</div></div>` : ''}
+      ${output.targetAudience.age ? `<div class="card"><div class="card-label">年齡層</div><div class="card-value">${output.targetAudience.age}</div></div>` : ''}
+      ${output.targetAudience.characteristics ? `<div class="card"><div class="card-label">特徵</div><div class="card-value">${output.targetAudience.characteristics}</div></div>` : ''}
+    </div>
+    <div class="grid" style="margin-top: 12px;">
+      ${output.targetAudience.painPoints && output.targetAudience.painPoints.length > 0 ? `
+      <div class="highlight-box highlight-red">
+        <div class="highlight-title red">痛點</div>
+        <ul class="list">${output.targetAudience.painPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.targetAudience.desires && output.targetAudience.desires.length > 0 ? `
+      <div class="highlight-box highlight-green">
+        <div class="highlight-title green">渴望</div>
+        <ul class="list">${output.targetAudience.desires.map(d => `<li>${d}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.contentPillars && output.contentPillars.length > 0 ? `
+  <div class="section">
+    <div class="section-title">內容支柱</div>
+    ${output.contentPillars.map(pillar => `
+    <div class="pillar">
+      <div><span class="pillar-title">${pillar.pillar}</span>${pillar.ratio ? `<span class="pillar-ratio">(${pillar.ratio})</span>` : ''}</div>
+      ${pillar.description ? `<div class="pillar-desc">${pillar.description}</div>` : ''}
+      ${pillar.topics && pillar.topics.length > 0 ? `
+      <div class="pillar-topics">
+        ${pillar.topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}
+      </div>
+      ` : ''}
+    </div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${output.backgroundStoryAnalysis ? `
+  <div class="section">
+    <div class="section-title">故事素材分析</div>
+    ${output.backgroundStoryAnalysis.summary ? `
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-label">故事摘要</div>
+      <div class="card-value">${output.backgroundStoryAnalysis.summary}</div>
+    </div>
+    ` : ''}
+    <div class="grid">
+      ${output.backgroundStoryAnalysis.keyMoments && output.backgroundStoryAnalysis.keyMoments.length > 0 ? `
+      <div class="highlight-box highlight-blue">
+        <div class="highlight-title blue">關鍵時刻</div>
+        <ul class="list">${output.backgroundStoryAnalysis.keyMoments.map(m => `<li>${m}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.backgroundStoryAnalysis.emotionalHooks && output.backgroundStoryAnalysis.emotionalHooks.length > 0 ? `
+      <div class="highlight-box highlight-pink">
+        <div class="highlight-title pink">情感鉤子</div>
+        <ul class="list">${output.backgroundStoryAnalysis.emotionalHooks.map(h => `<li>${h}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.backgroundStoryAnalysis.contentAngles && output.backgroundStoryAnalysis.contentAngles.length > 0 ? `
+      <div class="highlight-box highlight-purple">
+        <div class="highlight-title purple">內容切角</div>
+        <ul class="list">${output.backgroundStoryAnalysis.contentAngles.map(a => `<li>${a}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.backgroundStoryAnalysis.resonancePoints && output.backgroundStoryAnalysis.resonancePoints.length > 0 ? `
+      <div class="highlight-box highlight-amber">
+        <div class="highlight-title amber">共鳴點</div>
+        <ul class="list">${output.backgroundStoryAnalysis.resonancePoints.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.first10Videos && output.first10Videos.length > 0 ? `
+  <div class="section">
+    <div class="section-title">前 10 支影片建議</div>
+    ${output.first10Videos.map((video, idx) => `
+    <div class="video-item">
+      <span class="video-num">${idx + 1}</span>
+      <span class="video-title">${video.title || ''}</span>
+      ${video.hook ? `<div class="video-detail">Hook: ${video.hook}</div>` : ''}
+      ${video.angle ? `<div class="video-detail">角度: ${video.angle}</div>` : ''}
+    </div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${output.differentiator ? `
+  <div class="section">
+    <div class="section-title">差異化策略</div>
+    <div class="grid-3">
+      ${output.differentiator.vsCompetitors ? `<div class="card"><div class="card-label">vs 競爭者</div><div class="card-value">${output.differentiator.vsCompetitors}</div></div>` : ''}
+      ${output.differentiator.uniqueAdvantage ? `<div class="card"><div class="card-label">獨特優勢</div><div class="card-value">${output.differentiator.uniqueAdvantage}</div></div>` : ''}
+      ${output.differentiator.avoidPitfalls ? `<div class="card"><div class="card-label">避免踩坑</div><div class="card-value">${output.differentiator.avoidPitfalls}</div></div>` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.platformStrategy ? `
+  <div class="section">
+    <div class="section-title">平台策略</div>
+    <div class="grid">
+      ${output.platformStrategy.primary ? `<div class="card"><div class="card-label">主力平台</div><div class="card-value">${output.platformStrategy.primary}</div></div>` : ''}
+      ${output.platformStrategy.reason ? `<div class="card"><div class="card-label">選擇原因</div><div class="card-value">${output.platformStrategy.reason}</div></div>` : ''}
+      ${output.platformStrategy.postingSchedule ? `<div class="card"><div class="card-label">發布頻率</div><div class="card-value">${output.platformStrategy.postingSchedule}</div></div>` : ''}
+      ${output.platformStrategy.contentMix ? `<div class="card"><div class="card-label">內容比例</div><div class="card-value">${output.platformStrategy.contentMix}</div></div>` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.actionPlan ? `
+  <div class="section">
+    <div class="section-title">行動計劃</div>
+    <div class="grid-3">
+      ${output.actionPlan.week1 && output.actionPlan.week1.length > 0 ? `
+      <div class="highlight-box highlight-green">
+        <div class="highlight-title green">第 1 週</div>
+        <ul class="list">${output.actionPlan.week1.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.actionPlan.week2to4 && output.actionPlan.week2to4.length > 0 ? `
+      <div class="highlight-box highlight-blue">
+        <div class="highlight-title blue">第 2-4 週</div>
+        <ul class="list">${output.actionPlan.week2to4.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.actionPlan.month2to3 && output.actionPlan.month2to3.length > 0 ? `
+      <div class="highlight-box highlight-purple">
+        <div class="highlight-title purple">第 2-3 個月</div>
+        <ul class="list">${output.actionPlan.month2to3.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${(output.opportunities && output.opportunities.length > 0) || (output.warnings && output.warnings.length > 0) ? `
+  <div class="section">
+    <div class="section-title">機會與風險</div>
+    <div class="grid">
+      ${output.opportunities && output.opportunities.length > 0 ? `
+      <div class="highlight-box highlight-green">
+        <div class="highlight-title green">機會</div>
+        <ul class="list">${output.opportunities.map(o => `<li>${o}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+      ${output.warnings && output.warnings.length > 0 ? `
+      <div class="highlight-box highlight-amber">
+        <div class="highlight-title amber">風險</div>
+        <ul class="list">${output.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.consultantNote ? `
+  <div class="section">
+    <div class="section-title">顧問筆記</div>
+    <div class="highlight-box highlight-purple">
+      <div style="white-space: pre-wrap; font-size: 14px;">${output.consultantNote}</div>
+    </div>
+  </div>
+  ` : ''}
+
+  ${output.confidence ? `
+  <div class="confidence">
+    <div>
+      <div class="confidence-label">定位信心分數</div>
+      ${output.confidenceReason ? `<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">${output.confidenceReason}</div>` : ''}
+    </div>
+    <div class="confidence-score ${output.confidence >= 80 ? 'score-high' : output.confidence >= 60 ? 'score-medium' : 'score-low'}">
+      ${output.confidence}分
+    </div>
+  </div>
+  ` : ''}
+
+  <div class="footer">
+    <p>此報告由 AI 短影音定位分析工具生成</p>
+    <p>生成時間：${date}</p>
+  </div>
+</body>
+</html>
+      `
+
+      // 建立新視窗並列印
+      const printWindow = window.open('', '_blank')
+      if (printWindow) {
+        printWindow.document.write(pdfContent)
+        printWindow.document.close()
+
+        // 等待內容載入後列印
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print()
+            // 列印後關閉視窗
+            printWindow.onafterprint = () => {
+              printWindow.close()
+            }
+          }, 250)
+        }
+      } else {
+        alert('無法開啟列印視窗，請確認瀏覽器允許開啟新視窗')
+      }
+    } catch (error) {
+      console.error('Export PDF error:', error)
+      alert('匯出 PDF 時發生錯誤')
+    } finally {
+      setIsExportingPdf(false)
+    }
   }
 
   return (
@@ -376,14 +812,27 @@ export default function PositioningHistoryPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 gap-1"
+                        className="gap-1"
                         onClick={(e) => {
                           e.stopPropagation()
                           setViewingReport(record)
                         }}
                       >
                         <BookOpen className="h-3 w-3" />
-                        查看完整報告
+                        完整報告
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          exportToPdf(record)
+                        }}
+                        disabled={isExportingPdf}
+                      >
+                        <Download className="h-3 w-3" />
+                        PDF
                       </Button>
                       <Link href={`/script-generator?positioning=${record.id}`} className="flex-1">
                         <Button size="sm" className="w-full gap-1">
@@ -1008,7 +1457,20 @@ export default function PositioningHistoryPage() {
               )}
 
               {/* 操作按鈕 */}
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => exportToPdf(viewingReport)}
+                  disabled={isExportingPdf}
+                >
+                  {isExportingPdf ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4" />
+                  )}
+                  {isExportingPdf ? '準備中...' : '匯出 PDF'}
+                </Button>
                 <Link href={`/script-generator?positioning=${viewingReport.id}`} className="flex-1">
                   <Button className="w-full gap-2">
                     <TrendingUp className="h-4 w-4" />
