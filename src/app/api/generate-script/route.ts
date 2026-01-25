@@ -137,6 +137,32 @@ ${positioningContext}
 - 拍攝類型：${shootingTypeMap[videoSettings.shootingType] || "口播型"}
 - 演員人數：${castCountMap[videoSettings.castCount] || "1人"}
 - 特殊需求：${videoSettings.specialRequirements || "無"}
+${videoSettings.shootingType === 'behind_camera' ? `
+## ⚠️ 藏鏡人腳本特別指引（必須遵守！）
+這是藏鏡人模式！藏鏡人要根據創作者的「${creatorBackground.niche}」產業來發問。
+
+藏鏡人的角色 = 代替觀眾問問題的人
+- 問一般人對「${creatorBackground.niche}」這個產業會有的疑問
+- 問外行人好奇的點、可能的誤解、刻板印象
+- 用問句引導出鏡者解釋專業內容
+
+根據「${creatorBackground.niche}」產業，藏鏡人可以問：
+- 這個工作最辛苦/最爽的是什麼？
+- 一般人對你們這行最大的誤解是什麼？
+- 你們怎麼處理 XXX 問題？（根據產業痛點）
+- 這樣做不會很累/很貴/很花時間嗎？
+- 入行多久了？當初怎麼開始的？
+
+⚠️ 藏鏡人絕對不能講旁白式的話！
+❌ 禁止：「每天的 XXX 災難，還有誰懂？」
+❌ 禁止：「進入 XXX 迷宮！」
+❌ 禁止：任何不是問句的話
+
+✅ 藏鏡人只能用短問句：
+✅「欸，這個要弄多久？」
+✅「真假？那怎麼辦？」
+✅「這樣不會很累嗎？」
+` : ''}
 
 ## ⚠️ 字數要求（最重要！必須遵守！）
 - 目標時長：${targetDuration} 秒
