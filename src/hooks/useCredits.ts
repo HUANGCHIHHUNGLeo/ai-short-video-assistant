@@ -32,7 +32,7 @@ export function useCredits() {
       .from('profiles')
       .select('subscription_tier, script_credits_used, carousel_credits_used')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { subscription_tier?: string; script_credits_used?: number; carousel_credits_used?: number } | null }
 
     if (profile) {
       const tier = (profile.subscription_tier || 'free') as SubscriptionTier
