@@ -607,7 +607,7 @@ function ScriptGeneratorContent() {
                         <p><span className="font-medium">目標受眾：</span>{positioningData.targetAudience.who}</p>
                       )}
                       {positioningData.backgroundStoryAnalysis?.summary && (
-                        <p><span className="font-medium">背景故事：</span>{positioningData.backgroundStoryAnalysis.summary.slice(0, 60)}...</p>
+                        <p><span className="font-medium">背景故事摘要：</span>{positioningData.backgroundStoryAnalysis.summary}</p>
                       )}
                       {positioningData.contentPillars && positioningData.contentPillars.length > 0 && (
                         <p><span className="font-medium">內容支柱：</span>{positioningData.contentPillars.map((p: {pillar: string}) => p.pillar).join('、')}</p>
@@ -616,8 +616,8 @@ function ScriptGeneratorContent() {
                         <p><span className="font-medium">人設標籤：</span>{positioningData.personaTags.join('、')}</p>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2 border-t border-primary/10 pt-2">
-                      ↑ AI 會參考完整報告（含人設、故事、資源等）來生成腳本
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 border-t border-primary/10 pt-2">
+                      ⚠️ 請確認上方背景故事是否正確！如果不是你要的，請重新選擇正確的定位記錄。
                     </p>
                   </div>
                 )}

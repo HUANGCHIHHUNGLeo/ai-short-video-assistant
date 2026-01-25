@@ -4,21 +4,118 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import {
   ArrowLeft,
   Target,
   History,
   Star,
   Loader2,
-  Eye,
-  Trash2,
   Calendar,
   Users,
-  TrendingUp
+  TrendingUp,
+  User,
+  Lightbulb,
+  MapPin,
+  BookOpen,
+  Video,
+  Shield,
+  MessageSquare,
+  Megaphone,
+  CheckCircle,
+  AlertTriangle,
+  Sparkles
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+
+// 完整的定位報告輸出類型（對應 /api/positioning 的輸出）
+interface PositioningOutputData {
+  positioningStatement?: string
+  niche?: string
+  uniqueValue?: string
+  persona?: {
+    coreIdentity?: string
+    memoryHook?: string
+    toneOfVoice?: string
+    visualStyle?: string
+    catchphrase?: string
+  }
+  targetAudience?: {
+    who?: string
+    age?: string
+    characteristics?: string
+    painPoints?: string[]
+    desires?: string[]
+  }
+  contentPillars?: Array<{
+    pillar: string
+    ratio?: string
+    description?: string
+    topics?: string[]
+    hooks?: string[]
+  }>
+  resourceUtilization?: {
+    locations?: Array<{ resource: string; contentIdeas?: string[] }>
+    interactions?: Array<{ resource: string; contentIdeas?: string[] }>
+    items?: Array<{ resource: string; contentIdeas?: string[] }>
+  }
+  storyAssets?: {
+    workExperience?: string
+    education?: string
+    otherExperience?: string
+  }
+  backgroundStoryAnalysis?: {
+    summary?: string
+    keyMoments?: string[]
+    emotionalHooks?: string[]
+    contentAngles?: string[]
+    resonancePoints?: string[]
+    authenticityScore?: number
+  }
+  first10Videos?: Array<{
+    title?: string
+    hook?: string
+    angle?: string
+    resource?: string
+  }>
+  platformStrategy?: {
+    primary?: string
+    reason?: string
+    postingSchedule?: string
+    contentMix?: string
+  }
+  differentiator?: {
+    vsCompetitors?: string
+    uniqueAdvantage?: string
+    avoidPitfalls?: string
+  }
+  actionPlan?: {
+    week1?: string[]
+    week2to4?: string[]
+    month2to3?: string[]
+  }
+  warnings?: string[]
+  opportunities?: string[]
+  personalBrand?: {
+    tone?: string
+  }
+  personaTags?: string[]
+  consultantNote?: string
+  confidence?: number
+  confidenceReason?: string
+}
 
 // 定位記錄類型
 interface PositioningRecord {
@@ -31,21 +128,11 @@ interface PositioningRecord {
     monetization?: string
     contentStyle?: string
     platforms?: string[]
+    goals?: string
+    backgroundStory?: string
+    resources?: string
   }
-  output_data: {
-    positioningStatement?: string
-    niche?: string
-    targetAudience?: {
-      who?: string
-      age?: string
-    }
-    contentPillars?: Array<{
-      pillar: string
-      description: string
-    }>
-    personaTags?: string[]
-    confidence?: number
-  }
+  output_data: PositioningOutputData
   is_favorite: boolean
   created_at: string
 }
@@ -55,6 +142,7 @@ export default function PositioningHistoryPage() {
   const [records, setRecords] = useState<PositioningRecord[]>([])
   const [error, setError] = useState<string | null>(null)
   const [selectedRecord, setSelectedRecord] = useState<PositioningRecord | null>(null)
+  const [viewingReport, setViewingReport] = useState<PositioningRecord | null>(null)
 
   // 獲取定位記錄
   const fetchRecords = async () => {
@@ -266,7 +354,7 @@ export default function PositioningHistoryPage() {
                       </div>
                     </div>
 
-                    {/* 內容支柱 */}
+                    {/* 內容支柱預覽 */}
                     {record.output_data.contentPillars && record.output_data.contentPillars.length > 0 && (
                       <div>
                         <h4 className="text-xs font-medium text-muted-foreground mb-2">內容支柱</h4>
@@ -274,7 +362,9 @@ export default function PositioningHistoryPage() {
                           {record.output_data.contentPillars.slice(0, 3).map((pillar, idx) => (
                             <div key={idx} className="text-xs">
                               <span className="font-medium">{pillar.pillar}</span>
-                              <span className="text-muted-foreground ml-1">- {pillar.description}</span>
+                              {pillar.description && (
+                                <span className="text-muted-foreground ml-1">- {pillar.description}</span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -283,10 +373,22 @@ export default function PositioningHistoryPage() {
 
                     {/* 操作按鈕 */}
                     <div className="flex gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setViewingReport(record)
+                        }}
+                      >
+                        <BookOpen className="h-3 w-3" />
+                        查看完整報告
+                      </Button>
                       <Link href={`/script-generator?positioning=${record.id}`} className="flex-1">
                         <Button size="sm" className="w-full gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          用此定位生成腳本
+                          生成腳本
                         </Button>
                       </Link>
                     </div>
@@ -308,6 +410,622 @@ export default function PositioningHistoryPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* 完整報告 Dialog */}
+      <Dialog open={!!viewingReport} onOpenChange={(open) => !open && setViewingReport(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Target className="h-5 w-5 text-primary" />
+              {viewingReport?.output_data.niche || viewingReport?.title || '完整定位報告'}
+            </DialogTitle>
+            {viewingReport?.created_at && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {formatDate(viewingReport.created_at)}
+              </p>
+            )}
+          </DialogHeader>
+
+          {viewingReport && (
+            <div className="space-y-4 mt-4">
+              {/* 定位宣言 */}
+              {viewingReport.output_data.positioningStatement && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="pt-4">
+                    <p className="text-base sm:text-lg font-medium leading-relaxed">
+                      「{viewingReport.output_data.positioningStatement}」
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 人設標籤 */}
+              {viewingReport.output_data.personaTags && viewingReport.output_data.personaTags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {viewingReport.output_data.personaTags.map((tag, idx) => (
+                    <Badge key={idx} variant="secondary" className="text-sm">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              <Accordion type="multiple" defaultValue={["persona", "audience", "pillars"]} className="w-full">
+                {/* 人設定位 */}
+                {viewingReport.output_data.persona && (
+                  <AccordionItem value="persona">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-primary" />
+                        人設定位
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {viewingReport.output_data.persona.coreIdentity && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">核心身分</p>
+                            <p className="text-sm font-medium">{viewingReport.output_data.persona.coreIdentity}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.persona.memoryHook && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">記憶鉤子</p>
+                            <p className="text-sm font-medium">{viewingReport.output_data.persona.memoryHook}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.persona.toneOfVoice && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">說話風格</p>
+                            <p className="text-sm font-medium">{viewingReport.output_data.persona.toneOfVoice}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.persona.visualStyle && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">視覺風格</p>
+                            <p className="text-sm font-medium">{viewingReport.output_data.persona.visualStyle}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.persona.catchphrase && (
+                          <div className="p-3 rounded-lg bg-muted/50 sm:col-span-2">
+                            <p className="text-xs text-muted-foreground mb-1">招牌口頭禪</p>
+                            <p className="text-sm font-medium">「{viewingReport.output_data.persona.catchphrase}」</p>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 目標受眾 */}
+                {viewingReport.output_data.targetAudience && (
+                  <AccordionItem value="audience">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        目標受眾
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          {viewingReport.output_data.targetAudience.who && (
+                            <div className="p-3 rounded-lg bg-muted/50">
+                              <p className="text-xs text-muted-foreground mb-1">主要族群</p>
+                              <p className="text-sm font-medium">{viewingReport.output_data.targetAudience.who}</p>
+                            </div>
+                          )}
+                          {viewingReport.output_data.targetAudience.age && (
+                            <div className="p-3 rounded-lg bg-muted/50">
+                              <p className="text-xs text-muted-foreground mb-1">年齡層</p>
+                              <p className="text-sm font-medium">{viewingReport.output_data.targetAudience.age}</p>
+                            </div>
+                          )}
+                          {viewingReport.output_data.targetAudience.characteristics && (
+                            <div className="p-3 rounded-lg bg-muted/50">
+                              <p className="text-xs text-muted-foreground mb-1">特徵</p>
+                              <p className="text-sm font-medium">{viewingReport.output_data.targetAudience.characteristics}</p>
+                            </div>
+                          )}
+                        </div>
+                        {viewingReport.output_data.targetAudience.painPoints && viewingReport.output_data.targetAudience.painPoints.length > 0 && (
+                          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <p className="text-xs text-red-600 dark:text-red-400 mb-2 font-medium">痛點</p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.targetAudience.painPoints.map((point, idx) => (
+                                <li key={idx} className="text-sm flex items-start gap-2">
+                                  <span className="text-red-500 mt-1">•</span>
+                                  {point}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.targetAudience.desires && viewingReport.output_data.targetAudience.desires.length > 0 && (
+                          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <p className="text-xs text-green-600 dark:text-green-400 mb-2 font-medium">渴望</p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.targetAudience.desires.map((desire, idx) => (
+                                <li key={idx} className="text-sm flex items-start gap-2">
+                                  <span className="text-green-500 mt-1">•</span>
+                                  {desire}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 內容支柱 */}
+                {viewingReport.output_data.contentPillars && viewingReport.output_data.contentPillars.length > 0 && (
+                  <AccordionItem value="pillars">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4 text-primary" />
+                        內容支柱
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3">
+                        {viewingReport.output_data.contentPillars.map((pillar, idx) => (
+                          <Card key={idx} className="border-l-4 border-l-primary">
+                            <CardContent className="pt-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold">{pillar.pillar}</h4>
+                                {pillar.ratio && (
+                                  <Badge variant="outline">{pillar.ratio}</Badge>
+                                )}
+                              </div>
+                              {pillar.description && (
+                                <p className="text-sm text-muted-foreground mb-3">{pillar.description}</p>
+                              )}
+                              {pillar.topics && pillar.topics.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs text-muted-foreground mb-1">主題方向</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {pillar.topics.map((topic, tidx) => (
+                                      <Badge key={tidx} variant="secondary" className="text-xs">
+                                        {topic}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {pillar.hooks && pillar.hooks.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">開場鉤子</p>
+                                  <ul className="text-sm space-y-1">
+                                    {pillar.hooks.map((hook, hidx) => (
+                                      <li key={hidx} className="text-muted-foreground">• {hook}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 資源運用 */}
+                {viewingReport.output_data.resourceUtilization && (
+                  <AccordionItem value="resources">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        資源運用建議
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {viewingReport.output_data.resourceUtilization.locations && viewingReport.output_data.resourceUtilization.locations.length > 0 && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-2 font-medium">場景/地點</p>
+                            <ul className="space-y-2">
+                              {viewingReport.output_data.resourceUtilization.locations.map((loc, idx) => (
+                                <li key={idx}>
+                                  <p className="text-sm font-medium">{loc.resource}</p>
+                                  {loc.contentIdeas && loc.contentIdeas.length > 0 && (
+                                    <ul className="text-xs text-muted-foreground mt-1">
+                                      {loc.contentIdeas.map((idea, iidx) => (
+                                        <li key={iidx}>→ {idea}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.resourceUtilization.interactions && viewingReport.output_data.resourceUtilization.interactions.length > 0 && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-2 font-medium">互動對象</p>
+                            <ul className="space-y-2">
+                              {viewingReport.output_data.resourceUtilization.interactions.map((int, idx) => (
+                                <li key={idx}>
+                                  <p className="text-sm font-medium">{int.resource}</p>
+                                  {int.contentIdeas && int.contentIdeas.length > 0 && (
+                                    <ul className="text-xs text-muted-foreground mt-1">
+                                      {int.contentIdeas.map((idea, iidx) => (
+                                        <li key={iidx}>→ {idea}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.resourceUtilization.items && viewingReport.output_data.resourceUtilization.items.length > 0 && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-2 font-medium">道具/物品</p>
+                            <ul className="space-y-2">
+                              {viewingReport.output_data.resourceUtilization.items.map((item, idx) => (
+                                <li key={idx}>
+                                  <p className="text-sm font-medium">{item.resource}</p>
+                                  {item.contentIdeas && item.contentIdeas.length > 0 && (
+                                    <ul className="text-xs text-muted-foreground mt-1">
+                                      {item.contentIdeas.map((idea, iidx) => (
+                                        <li key={iidx}>→ {idea}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 故事素材分析 */}
+                {viewingReport.output_data.backgroundStoryAnalysis && (
+                  <AccordionItem value="story">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        故事素材分析
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3">
+                        {viewingReport.output_data.backgroundStoryAnalysis.summary && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">故事摘要</p>
+                            <p className="text-sm">{viewingReport.output_data.backgroundStoryAnalysis.summary}</p>
+                          </div>
+                        )}
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {viewingReport.output_data.backgroundStoryAnalysis.keyMoments && viewingReport.output_data.backgroundStoryAnalysis.keyMoments.length > 0 && (
+                            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 mb-2 font-medium">關鍵時刻</p>
+                              <ul className="space-y-1">
+                                {viewingReport.output_data.backgroundStoryAnalysis.keyMoments.map((moment, idx) => (
+                                  <li key={idx} className="text-sm">• {moment}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {viewingReport.output_data.backgroundStoryAnalysis.emotionalHooks && viewingReport.output_data.backgroundStoryAnalysis.emotionalHooks.length > 0 && (
+                            <div className="p-3 rounded-lg bg-pink-500/10 border border-pink-500/20">
+                              <p className="text-xs text-pink-600 dark:text-pink-400 mb-2 font-medium">情感鉤子</p>
+                              <ul className="space-y-1">
+                                {viewingReport.output_data.backgroundStoryAnalysis.emotionalHooks.map((hook, idx) => (
+                                  <li key={idx} className="text-sm">• {hook}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {viewingReport.output_data.backgroundStoryAnalysis.contentAngles && viewingReport.output_data.backgroundStoryAnalysis.contentAngles.length > 0 && (
+                            <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                              <p className="text-xs text-purple-600 dark:text-purple-400 mb-2 font-medium">內容切角</p>
+                              <ul className="space-y-1">
+                                {viewingReport.output_data.backgroundStoryAnalysis.contentAngles.map((angle, idx) => (
+                                  <li key={idx} className="text-sm">• {angle}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {viewingReport.output_data.backgroundStoryAnalysis.resonancePoints && viewingReport.output_data.backgroundStoryAnalysis.resonancePoints.length > 0 && (
+                            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 font-medium">共鳴點</p>
+                              <ul className="space-y-1">
+                                {viewingReport.output_data.backgroundStoryAnalysis.resonancePoints.map((point, idx) => (
+                                  <li key={idx} className="text-sm">• {point}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 前 10 支影片建議 */}
+                {viewingReport.output_data.first10Videos && viewingReport.output_data.first10Videos.length > 0 && (
+                  <AccordionItem value="videos">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4 text-primary" />
+                        前 10 支影片建議
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2">
+                        {viewingReport.output_data.first10Videos.map((video, idx) => (
+                          <Card key={idx}>
+                            <CardContent className="pt-3 pb-3">
+                              <div className="flex items-start gap-3">
+                                <Badge variant="outline" className="shrink-0">
+                                  {idx + 1}
+                                </Badge>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-sm">{video.title}</p>
+                                  {video.hook && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      <span className="text-primary">Hook:</span> {video.hook}
+                                    </p>
+                                  )}
+                                  {video.angle && (
+                                    <p className="text-xs text-muted-foreground">
+                                      <span className="text-primary">角度:</span> {video.angle}
+                                    </p>
+                                  )}
+                                  {video.resource && (
+                                    <p className="text-xs text-muted-foreground">
+                                      <span className="text-primary">資源:</span> {video.resource}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 差異化策略 */}
+                {viewingReport.output_data.differentiator && (
+                  <AccordionItem value="differentiator">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-primary" />
+                        差異化策略
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {viewingReport.output_data.differentiator.vsCompetitors && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">vs 競爭者</p>
+                            <p className="text-sm">{viewingReport.output_data.differentiator.vsCompetitors}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.differentiator.uniqueAdvantage && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">獨特優勢</p>
+                            <p className="text-sm">{viewingReport.output_data.differentiator.uniqueAdvantage}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.differentiator.avoidPitfalls && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">避免踩坑</p>
+                            <p className="text-sm">{viewingReport.output_data.differentiator.avoidPitfalls}</p>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 平台策略 */}
+                {viewingReport.output_data.platformStrategy && (
+                  <AccordionItem value="platform">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Megaphone className="h-4 w-4 text-primary" />
+                        平台策略
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {viewingReport.output_data.platformStrategy.primary && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">主力平台</p>
+                            <p className="text-sm font-medium">{viewingReport.output_data.platformStrategy.primary}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.platformStrategy.reason && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">選擇原因</p>
+                            <p className="text-sm">{viewingReport.output_data.platformStrategy.reason}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.platformStrategy.postingSchedule && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">發布頻率</p>
+                            <p className="text-sm">{viewingReport.output_data.platformStrategy.postingSchedule}</p>
+                          </div>
+                        )}
+                        {viewingReport.output_data.platformStrategy.contentMix && (
+                          <div className="p-3 rounded-lg bg-muted/50">
+                            <p className="text-xs text-muted-foreground mb-1">內容比例</p>
+                            <p className="text-sm">{viewingReport.output_data.platformStrategy.contentMix}</p>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 行動計劃 */}
+                {viewingReport.output_data.actionPlan && (
+                  <AccordionItem value="action">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        行動計劃
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3">
+                        {viewingReport.output_data.actionPlan.week1 && viewingReport.output_data.actionPlan.week1.length > 0 && (
+                          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <p className="text-xs text-green-600 dark:text-green-400 mb-2 font-medium">第 1 週</p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.actionPlan.week1.map((item, idx) => (
+                                <li key={idx} className="text-sm flex items-start gap-2">
+                                  <span className="text-green-500">✓</span>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.actionPlan.week2to4 && viewingReport.output_data.actionPlan.week2to4.length > 0 && (
+                          <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mb-2 font-medium">第 2-4 週</p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.actionPlan.week2to4.map((item, idx) => (
+                                <li key={idx} className="text-sm flex items-start gap-2">
+                                  <span className="text-blue-500">•</span>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.actionPlan.month2to3 && viewingReport.output_data.actionPlan.month2to3.length > 0 && (
+                          <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                            <p className="text-xs text-purple-600 dark:text-purple-400 mb-2 font-medium">第 2-3 個月</p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.actionPlan.month2to3.map((item, idx) => (
+                                <li key={idx} className="text-sm flex items-start gap-2">
+                                  <span className="text-purple-500">•</span>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 機會與風險 */}
+                {(viewingReport.output_data.opportunities?.length || viewingReport.output_data.warnings?.length) && (
+                  <AccordionItem value="risks">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-primary" />
+                        機會與風險
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {viewingReport.output_data.opportunities && viewingReport.output_data.opportunities.length > 0 && (
+                          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <p className="text-xs text-green-600 dark:text-green-400 mb-2 font-medium flex items-center gap-1">
+                              <Sparkles className="h-3 w-3" />
+                              機會
+                            </p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.opportunities.map((opp, idx) => (
+                                <li key={idx} className="text-sm">• {opp}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {viewingReport.output_data.warnings && viewingReport.output_data.warnings.length > 0 && (
+                          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mb-2 font-medium flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              風險
+                            </p>
+                            <ul className="space-y-1">
+                              {viewingReport.output_data.warnings.map((warn, idx) => (
+                                <li key={idx} className="text-sm">• {warn}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* 顧問筆記 */}
+                {viewingReport.output_data.consultantNote && (
+                  <AccordionItem value="note">
+                    <AccordionTrigger className="text-base font-semibold">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-primary" />
+                        顧問筆記
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                        <p className="text-sm whitespace-pre-wrap">{viewingReport.output_data.consultantNote}</p>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+              </Accordion>
+
+              {/* 信心分數 */}
+              {viewingReport.output_data.confidence && (
+                <div className="p-4 rounded-lg bg-muted/50 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">定位信心分數</p>
+                    {viewingReport.output_data.confidenceReason && (
+                      <p className="text-xs text-muted-foreground mt-1">{viewingReport.output_data.confidenceReason}</p>
+                    )}
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-lg font-bold px-3 py-1",
+                      viewingReport.output_data.confidence >= 80 ? "text-green-500 border-green-500" :
+                      viewingReport.output_data.confidence >= 60 ? "text-yellow-500 border-yellow-500" :
+                      "text-red-500 border-red-500"
+                    )}
+                  >
+                    {viewingReport.output_data.confidence}分
+                  </Badge>
+                </div>
+              )}
+
+              {/* 操作按鈕 */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Link href={`/script-generator?positioning=${viewingReport.id}`} className="flex-1">
+                  <Button className="w-full gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    用此定位生成腳本
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  onClick={() => setViewingReport(null)}
+                >
+                  關閉
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
