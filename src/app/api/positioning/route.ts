@@ -539,8 +539,10 @@ ${data.backgroundStory?.motivation || '尚未填寫'}
           _remainingCredits: authResult.remainingCredits,
           _isGuest: authResult.isGuest
         })
-      } catch {
-        // 如果 JSON 解析失敗，返回原始內容
+      } catch (parseError) {
+        // 如果 JSON 解析失敗，返回原始內容和錯誤詳情
+        console.error('[Positioning API] JSON parse error:', parseError)
+        console.error('[Positioning API] Raw content:', content?.substring(0, 500))
         return NextResponse.json({
           report: null,
           rawContent: content,
