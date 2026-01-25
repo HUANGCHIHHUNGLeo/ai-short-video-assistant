@@ -31,7 +31,7 @@ import {
   Users,
   Video
 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { useCredits } from "@/hooks/useCredits"
 import { CreditsAlert } from "@/components/billing"
@@ -126,7 +126,7 @@ const TIER_SCRIPT_LIMITS: Record<string, number> = {
   lifetime: 5,  // 終身版 5 個
 }
 
-export default function ScriptGeneratorPage() {
+function ScriptGeneratorContent() {
   const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -1579,5 +1579,18 @@ export default function ScriptGeneratorPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// 主頁面組件 - 用 Suspense 包裹以支援 useSearchParams
+export default function ScriptGeneratorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ScriptGeneratorContent />
+    </Suspense>
   )
 }
