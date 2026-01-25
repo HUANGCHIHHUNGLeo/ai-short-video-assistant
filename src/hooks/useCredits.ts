@@ -61,19 +61,22 @@ export function useCredits() {
 
   // 檢查功能是否可用
   const canUseFeature = (feature: FeatureType) => {
-    if (!credits) return { canUse: false, remaining: 0, limit: 0, used: 0 }
+    if (!credits) return { canUse: false, remaining: 0, limit: 0, used: 0, message: '載入中...' }
 
     const creditType = FEATURE_CREDIT_MAP[feature]
     const used = creditType === 'script' ? credits.scriptUsed : credits.carouselUsed
     const limit = creditType === 'script' ? credits.scriptLimit : credits.carouselLimit
+    const typeName = creditType === 'script' ? '腳本' : '輪播'
 
-    if (limit === -1) return { canUse: true, remaining: -1, limit: -1, used }
+    if (limit === -1) return { canUse: true, remaining: -1, limit: -1, used, message: undefined }
 
+    const canUse = used < limit
     return {
-      canUse: used < limit,
+      canUse,
       remaining: limit - used,
       limit,
       used,
+      message: canUse ? undefined : `本月${typeName}額度已用完，請升級方案`,
     }
   }
 
