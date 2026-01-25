@@ -1185,9 +1185,7 @@ function ScriptGeneratorContent() {
                       </div>
                     </CardHeader>
                     <Separator />
-                    <CardContent className="p-0">
-                      <ScrollArea className="h-[500px] sm:h-[600px]">
-                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                           {/* 分鏡腳本 */}
                           <div>
                             <div className="flex items-center justify-between mb-3">
@@ -1465,60 +1463,62 @@ function ScriptGeneratorContent() {
                               </div>
                             </>
                           )}
-                        </div>
-                      </ScrollArea>
                     </CardContent>
                   </Card>
 
-                  {/* 側邊欄 */}
-                  <div className="space-y-4">
-                    {/* 拍攝建議 */}
+                  {/* 側邊欄 - 手機版使用可折疊設計 */}
+                  <div className="space-y-4 lg:space-y-4">
+                    {/* 拍攝 & 剪輯建議 - 手機版合併成一個可折疊區塊 */}
                     <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">拍攝建議</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 text-sm">
-                          {version.shootingTips.map((tip, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <span className="text-primary font-medium">{index + 1}.</span>
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        {version.locationSuggestion && (
-                          <div className="mt-3 pt-3 border-t text-sm">
-                            <span className="text-muted-foreground">場地：</span>
-                            <span>{version.locationSuggestion}</span>
-                          </div>
-                        )}
-                        {version.equipmentNeeded && version.equipmentNeeded.length > 0 && (
-                          <div className="mt-2 text-sm">
-                            <span className="text-muted-foreground">器材：</span>
-                            <span>{version.equipmentNeeded.join("、")}</span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                      <Accordion type="single" collapsible defaultValue="shooting" className="w-full">
+                        <AccordionItem value="shooting" className="border-0">
+                          <AccordionTrigger className="px-4 sm:px-6 py-3 hover:no-underline">
+                            <span className="text-base font-semibold">拍攝建議</span>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 sm:px-6 pb-4">
+                            <ul className="space-y-2 text-sm">
+                              {version.shootingTips.map((tip, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <span className="text-primary font-medium">{index + 1}.</span>
+                                  <span>{tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            {version.locationSuggestion && (
+                              <div className="mt-3 pt-3 border-t text-sm">
+                                <span className="text-muted-foreground">場地：</span>
+                                <span>{version.locationSuggestion}</span>
+                              </div>
+                            )}
+                            {version.equipmentNeeded && version.equipmentNeeded.length > 0 && (
+                              <div className="mt-2 text-sm">
+                                <span className="text-muted-foreground">器材：</span>
+                                <span>{version.equipmentNeeded.join("、")}</span>
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
 
-                    {/* 剪輯建議 */}
-                    {version.editingTips && version.editingTips.length > 0 && (
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">剪輯建議</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2 text-sm">
-                            {version.editingTips.map((tip, index) => (
-                              <li key={index} className="flex items-start gap-2">
-                                <span className="text-primary font-medium">{index + 1}.</span>
-                                <span>{tip}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    )}
+                        {/* 剪輯建議 */}
+                        {version.editingTips && version.editingTips.length > 0 && (
+                          <AccordionItem value="editing" className="border-0 border-t">
+                            <AccordionTrigger className="px-4 sm:px-6 py-3 hover:no-underline">
+                              <span className="text-base font-semibold">剪輯建議</span>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 sm:px-6 pb-4">
+                              <ul className="space-y-2 text-sm">
+                                {version.editingTips.map((tip, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="text-primary font-medium">{index + 1}.</span>
+                                    <span>{tip}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
+                      </Accordion>
+                    </Card>
 
                     {/* 預估表現 */}
                     {version.estimatedMetrics && (
