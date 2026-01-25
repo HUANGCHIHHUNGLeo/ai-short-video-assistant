@@ -298,6 +298,88 @@ export default function PositioningPage() {
 
   const totalSteps = 15
 
+  // 計算問卷填寫完整度
+  const calculateCompleteness = () => {
+    const checks = [
+      // 必填項目（權重較高）
+      { field: 'goals', weight: 15, minLength: 20, label: '目標' },
+      { field: 'targetDirections', weight: 10, isArray: true, label: '目標導向' },
+      { field: 'imageStyle', weight: 10, minLength: 1, label: '螢幕形象' },
+      // 重要項目（中等權重）
+      { field: 'uniqueTraits', weight: 10, minLength: 10, label: '個人特色' },
+      { field: 'workChallenges', weight: 8, minLength: 10, label: '工作挑戰' },
+      { field: 'competitiveAdvantage', weight: 8, minLength: 10, label: '競爭優勢' },
+      // 選填項目（較低權重）
+      { field: 'hobbies', weight: 5, minLength: 5, label: '愛好興趣' },
+      { field: 'othersPerception', weight: 5, minLength: 10, label: '他人評價' },
+      { field: 'locationResources', weight: 4, minLength: 5, label: '場地資源' },
+      { field: 'interactionResources', weight: 4, minLength: 5, label: '互動資源' },
+      { field: 'itemResources', weight: 4, minLength: 5, label: '物品資源' },
+      { field: 'workHistory', weight: 5, minLength: 10, label: '工作經歷' },
+      { field: 'education', weight: 2, minLength: 2, label: '教育背景' },
+      { field: 'clubExperience', weight: 3, minLength: 5, label: '社團經歷' },
+    ]
+
+    // 背景故事單獨計算
+    const storyChecks = [
+      { field: 'growthEnvironment', weight: 2, minLength: 10, label: '成長經歷' },
+      { field: 'turningPoint', weight: 3, minLength: 15, label: '人生轉折' },
+      { field: 'challenges', weight: 3, minLength: 15, label: '挫折經歷' },
+      { field: 'values', weight: 1, minLength: 5, label: '價值觀' },
+      { field: 'motivation', weight: 2, minLength: 10, label: '創業動機' },
+    ]
+
+    let totalWeight = 0
+    let earnedWeight = 0
+    const missingItems: string[] = []
+    const weakItems: string[] = []
+
+    // 檢查主要欄位
+    checks.forEach(check => {
+      totalWeight += check.weight
+      const value = formData[check.field as keyof QuestionnaireData]
+
+      if (check.isArray) {
+        if (Array.isArray(value) && value.length > 0) {
+          earnedWeight += check.weight
+        } else {
+          missingItems.push(check.label)
+        }
+      } else if (typeof value === 'string') {
+        if (value.trim().length >= (check.minLength || 1)) {
+          earnedWeight += check.weight
+        } else if (value.trim().length > 0) {
+          earnedWeight += check.weight * 0.5
+          weakItems.push(check.label)
+        } else if (check.weight >= 8) {
+          missingItems.push(check.label)
+        }
+      }
+    })
+
+    // 檢查背景故事
+    storyChecks.forEach(check => {
+      totalWeight += check.weight
+      const value = formData.backgroundStory[check.field as keyof BackgroundStoryData]
+      if (value && value.trim().length >= (check.minLength || 1)) {
+        earnedWeight += check.weight
+      } else if (value && value.trim().length > 0) {
+        earnedWeight += check.weight * 0.5
+      }
+    })
+
+    const percentage = Math.round((earnedWeight / totalWeight) * 100)
+
+    return {
+      percentage,
+      missingItems,
+      weakItems,
+      level: percentage >= 80 ? 'excellent' : percentage >= 60 ? 'good' : percentage >= 40 ? 'fair' : 'low'
+    }
+  }
+
+  const completeness = calculateCompleteness()
+
   // 計算階段
   const getPhase = (step: number) => {
     if (step <= 3) return { name: "目標與定位", phase: 1 }
@@ -1316,6 +1398,73 @@ export default function PositioningPage() {
                 <li>• AI 會分析你的故事，找出最有共鳴的切入點</li>
                 <li>• 這些故事可以成為你的人設記憶點和差異化優勢</li>
               </ul>
+            </div>
+
+            {/* 內容完整度提示 */}
+            <div className={cn(
+              "p-4 rounded-lg border-2",
+              completeness.level === 'excellent' ? "bg-green-500/10 border-green-500/30" :
+              completeness.level === 'good' ? "bg-blue-500/10 border-blue-500/30" :
+              completeness.level === 'fair' ? "bg-yellow-500/10 border-yellow-500/30" :
+              "bg-red-500/10 border-red-500/30"
+            )}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  {completeness.level === 'excellent' ? (
+                    <><CheckCircle2 className="h-4 w-4 text-green-500" /> 內容非常完整！</>
+                  ) : completeness.level === 'good' ? (
+                    <><CheckCircle2 className="h-4 w-4 text-blue-500" /> 內容良好</>
+                  ) : completeness.level === 'fair' ? (
+                    <><AlertTriangle className="h-4 w-4 text-yellow-500" /> 建議補充更多內容</>
+                  ) : (
+                    <><AlertTriangle className="h-4 w-4 text-red-500" /> 內容較少，報告可能不夠精準</>
+                  )}
+                </p>
+                <Badge variant={
+                  completeness.level === 'excellent' ? "default" :
+                  completeness.level === 'good' ? "secondary" :
+                  "outline"
+                }>
+                  完整度 {completeness.percentage}%
+                </Badge>
+              </div>
+
+              <Progress
+                value={completeness.percentage}
+                className={cn(
+                  "h-2 mb-3",
+                  completeness.level === 'excellent' ? "[&>div]:bg-green-500" :
+                  completeness.level === 'good' ? "[&>div]:bg-blue-500" :
+                  completeness.level === 'fair' ? "[&>div]:bg-yellow-500" :
+                  "[&>div]:bg-red-500"
+                )}
+              />
+
+              {completeness.level !== 'excellent' && (
+                <div className="text-xs text-muted-foreground space-y-1">
+                  {completeness.missingItems.length > 0 && (
+                    <p>
+                      <span className="font-medium text-foreground">建議填寫：</span>
+                      {completeness.missingItems.join('、')}
+                    </p>
+                  )}
+                  {completeness.weakItems.length > 0 && (
+                    <p>
+                      <span className="font-medium text-foreground">可以再詳細一點：</span>
+                      {completeness.weakItems.join('、')}
+                    </p>
+                  )}
+                  <p className="mt-2 text-muted-foreground/80">
+                    提示：填寫越詳細，AI 分析的定位報告就越精準、越實用！
+                  </p>
+                </div>
+              )}
+
+              {completeness.level === 'excellent' && (
+                <p className="text-xs text-green-600">
+                  太棒了！你填寫的內容非常豐富，AI 可以產出高品質的定位報告。
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

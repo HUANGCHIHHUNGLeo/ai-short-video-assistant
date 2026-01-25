@@ -16,6 +16,69 @@ import {
 import { Target, History, ChevronRight, Star, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// 定位報告輸出類型（完整版，對應 /api/positioning 的輸出）
+interface PositioningOutputData {
+  positioningStatement?: string
+  niche?: string
+  uniqueValue?: string
+  persona?: {
+    coreIdentity?: string
+    memoryHook?: string
+    toneOfVoice?: string
+    visualStyle?: string
+    catchphrase?: string
+  }
+  targetAudience?: {
+    who?: string
+    age?: string
+    characteristics?: string
+    painPoints?: string[]
+    desires?: string[]
+  }
+  contentPillars?: Array<{
+    pillar: string
+    ratio?: string
+    description?: string
+    topics?: string[]
+    hooks?: string[]
+  }>
+  resourceUtilization?: {
+    locations?: Array<{ resource: string; contentIdeas?: string[] }>
+    interactions?: Array<{ resource: string; contentIdeas?: string[] }>
+    items?: Array<{ resource: string; contentIdeas?: string[] }>
+  }
+  storyAssets?: {
+    workExperience?: string
+    education?: string
+    otherExperience?: string
+  }
+  backgroundStoryAnalysis?: {
+    summary?: string
+    keyMoments?: string[]
+    emotionalHooks?: string[]
+    contentAngles?: string[]
+    resonancePoints?: string[]
+  }
+  first10Videos?: Array<{
+    title?: string
+    hook?: string
+    angle?: string
+    resource?: string
+  }>
+  differentiator?: {
+    vsCompetitors?: string
+    uniqueAdvantage?: string
+    avoidPitfalls?: string
+  }
+  personalBrand?: {
+    tone?: string
+  }
+  personaTags?: string[]
+  consultantNote?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any // 允許其他未定義的欄位
+}
+
 // 定位記錄類型
 interface PositioningRecord {
   id: string
@@ -28,19 +91,7 @@ interface PositioningRecord {
     contentStyle?: string
     platforms?: string[]
   }
-  output_data: {
-    positioningStatement?: string
-    niche?: string
-    targetAudience?: {
-      who?: string
-      age?: string
-    }
-    contentPillars?: Array<{
-      pillar: string
-      description: string
-    }>
-    personaTags?: string[]
-  }
+  output_data: PositioningOutputData
   is_favorite: boolean
   created_at: string
 }
@@ -57,6 +108,8 @@ export interface SelectedPositioning {
   positioningStatement: string
   contentPillars: string[]
   personaTags: string[]
+  // 完整的定位報告（供腳本生成 API 使用）
+  fullReport?: PositioningOutputData
 }
 
 interface PositioningSelectorProps {
@@ -116,7 +169,9 @@ export function PositioningSelector({ onSelect, selectedId, className }: Positio
       platforms: record.input_data.platforms || [],
       positioningStatement: record.output_data.positioningStatement || '',
       contentPillars: record.output_data.contentPillars?.map(p => p.pillar) || [],
-      personaTags: record.output_data.personaTags || []
+      personaTags: record.output_data.personaTags || [],
+      // 傳遞完整的定位報告（給腳本生成 API 使用）
+      fullReport: record.output_data
     }
 
     onSelect(positioning)

@@ -209,9 +209,7 @@ function ScriptGeneratorContent() {
       if (data.records) {
         const record = data.records.find((r: { id: string }) => r.id === positioningId)
         if (record) {
-          // 保存完整的定位報告資料（用於傳給腳本 API）
-          setPositioningData(record.output_data)
-
+          // 調用 handlePositioningSelect，它會自動保存完整報告
           handlePositioningSelect({
             id: record.id,
             niche: record.output_data.niche || record.input_data.expertise || '',
@@ -222,7 +220,8 @@ function ScriptGeneratorContent() {
             platforms: record.input_data.platforms || [],
             positioningStatement: record.output_data.positioningStatement || '',
             contentPillars: record.output_data.contentPillars?.map((p: { pillar: string }) => p.pillar) || [],
-            personaTags: record.output_data.personaTags || []
+            personaTags: record.output_data.personaTags || [],
+            fullReport: record.output_data // 傳遞完整的定位報告
           })
         }
       }
@@ -244,8 +243,13 @@ function ScriptGeneratorContent() {
         contentStyle: positioning.contentStyle,
         platforms: positioning.platforms
       })
+      // 如果有完整的定位報告，保存起來給 API 使用
+      if (positioning.fullReport) {
+        setPositioningData(positioning.fullReport)
+      }
     } else {
       setSelectedPositioningId(null)
+      setPositioningData(null)
     }
   }
 
@@ -589,10 +593,33 @@ function ScriptGeneratorContent() {
                   onSelect={handlePositioningSelect}
                   selectedId={selectedPositioningId}
                 />
-                {selectedPositioningId && (
-                  <p className="text-xs text-muted-foreground">
-                    已自動帶入定位資料，你仍可以手動調整下方欄位
-                  </p>
+                {selectedPositioningId && positioningData && (
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                    <p className="text-xs font-medium text-primary">✓ 已載入完整定位報告，AI 會參考以下內容生成腳本：</p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      {positioningData.positioningStatement && (
+                        <p><span className="font-medium">定位宣言：</span>{positioningData.positioningStatement}</p>
+                      )}
+                      {positioningData.persona?.coreIdentity && (
+                        <p><span className="font-medium">人設定位：</span>{positioningData.persona.coreIdentity}</p>
+                      )}
+                      {positioningData.targetAudience?.who && (
+                        <p><span className="font-medium">目標受眾：</span>{positioningData.targetAudience.who}</p>
+                      )}
+                      {positioningData.backgroundStoryAnalysis?.summary && (
+                        <p><span className="font-medium">背景故事：</span>{positioningData.backgroundStoryAnalysis.summary.slice(0, 60)}...</p>
+                      )}
+                      {positioningData.contentPillars && positioningData.contentPillars.length > 0 && (
+                        <p><span className="font-medium">內容支柱：</span>{positioningData.contentPillars.map((p: {pillar: string}) => p.pillar).join('、')}</p>
+                      )}
+                      {positioningData.personaTags && positioningData.personaTags.length > 0 && (
+                        <p><span className="font-medium">人設標籤：</span>{positioningData.personaTags.join('、')}</p>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 border-t border-primary/10 pt-2">
+                      ↑ AI 會參考完整報告（含人設、故事、資源等）來生成腳本
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -686,13 +713,16 @@ function ScriptGeneratorContent() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>專業背景</Label>
+                      <Label>專業背景 / 個人經歷（會用在腳本裡！）</Label>
                       <Textarea
-                        placeholder="例如：10年金融業經驗、有營養師證照..."
-                        className="h-20 resize-none"
+                        placeholder="填寫你的真實經歷，AI 會根據這些內容來寫腳本。例如：&#10;• 亂投資虧了 50 萬，後來學會正確理財&#10;• 從月薪 3 萬到年薪百萬的過程&#10;• 創業第一年差點倒閉的故事"
+                        className="h-24 resize-none"
                         value={creatorBackground.expertise}
                         onChange={(e) => setCreatorBackground({ ...creatorBackground, expertise: e.target.value })}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        越具體越好！AI 會使用你提供的數字、經歷來寫腳本
+                      </p>
                     </div>
 
                     <div className="space-y-2">

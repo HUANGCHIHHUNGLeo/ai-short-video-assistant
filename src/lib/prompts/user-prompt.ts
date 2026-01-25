@@ -26,21 +26,86 @@ export interface VideoSettings {
   specialRequirements?: string
 }
 
+// 完整的定位報告類型（對應 /api/positioning 的輸出）
 export interface PositioningData {
   positioningStatement?: string
   niche?: string
   uniqueValue?: string
+
+  // 人設定位
+  persona?: {
+    coreIdentity?: string
+    memoryHook?: string
+    toneOfVoice?: string
+    visualStyle?: string
+    catchphrase?: string
+  }
+
+  // 目標受眾
   targetAudience?: {
     who?: string
     age?: string
     characteristics?: string
+    painPoints?: string[]
+    desires?: string[]
   }
-  painPoints?: string[]
-  contentPillars?: Array<{ pillar: string }>
+
+  // 內容支柱（完整版）
+  contentPillars?: Array<{
+    pillar: string
+    ratio?: string
+    description?: string
+    topics?: string[]
+    hooks?: string[]
+  }>
+
+  // 資源運用
+  resourceUtilization?: {
+    locations?: Array<{ resource: string; contentIdeas?: string[] }>
+    interactions?: Array<{ resource: string; contentIdeas?: string[] }>
+    items?: Array<{ resource: string; contentIdeas?: string[] }>
+  }
+
+  // 故事素材
+  storyAssets?: {
+    workExperience?: string
+    education?: string
+    otherExperience?: string
+  }
+
+  // 背景故事分析（最重要！）
+  backgroundStoryAnalysis?: {
+    summary?: string
+    keyMoments?: string[]
+    emotionalHooks?: string[]
+    contentAngles?: string[]
+    resonancePoints?: string[]
+  }
+
+  // 前 10 支影片建議
+  first10Videos?: Array<{
+    title?: string
+    hook?: string
+    angle?: string
+    resource?: string
+  }>
+
+  // 差異化
+  differentiator?: {
+    vsCompetitors?: string
+    uniqueAdvantage?: string
+    avoidPitfalls?: string
+  }
+
+  // 個人品牌（向後兼容）
   personalBrand?: {
     tone?: string
   }
+
+  // 其他欄位
   personaTags?: string[]
+  painPoints?: string[]
+  consultantNote?: string
 }
 
 export interface BuildUserPromptOptions {
@@ -119,45 +184,236 @@ export function buildUserPrompt(options: BuildUserPromptOptions): string {
 // === 輔助函數 ===
 
 function buildPositioningContext(data: PositioningData): string {
-  return `## 已完成的定位分析（重要！請據此設計腳本）
-這位創作者已經完成了專業的定位分析，請根據以下定位報告來設計腳本：
+  const parts: string[] = []
 
+  // 標題
+  parts.push(`## ⚠️ 專業定位報告（最重要！必須完全遵循！）
+這位創作者已完成專業定位分析，以下是完整報告。腳本內容必須100%基於這份報告來設計！`)
+
+  // 1. 核心定位
+  parts.push(`### 核心定位
 - 定位宣言：${data.positioningStatement || ''}
 - 細分領域：${data.niche || ''}
-- 獨特價值：${data.uniqueValue || ''}
-- 目標受眾：${data.targetAudience?.who || ''} (${data.targetAudience?.age || ''})
-- 受眾特徵：${data.targetAudience?.characteristics || ''}
-- 受眾痛點：${Array.isArray(data.painPoints) ? data.painPoints.join('、') : ''}
-- 內容支柱：${Array.isArray(data.contentPillars) ? data.contentPillars.map(p => p.pillar).join('、') : ''}
-- 個人品牌風格：${data.personalBrand?.tone || ''}
-- 人設關鍵字：${Array.isArray(data.personaTags) ? data.personaTags.join('、') : ''}
+- 獨特價值：${data.uniqueValue || ''}`)
 
-請確保腳本：
-1. 符合定位宣言的方向
-2. 針對指定的目標受眾說話
-3. 痛點要戳到他們的真實困擾
-4. 使用建議的品牌風格和語調
-5. 內容主題符合內容支柱方向`
+  // 2. 人設定位（新增！）
+  if (data.persona) {
+    parts.push(`### 人設定位（說話方式要符合！）
+- 核心人設：${data.persona.coreIdentity || ''}
+- 記憶點：${data.persona.memoryHook || ''}
+- 說話風格：${data.persona.toneOfVoice || ''}
+- 視覺風格：${data.persona.visualStyle || ''}
+- 口頭禪：${data.persona.catchphrase || ''}`)
+  }
+
+  // 3. 目標受眾（完整版）
+  if (data.targetAudience) {
+    const ta = data.targetAudience
+    let audienceText = `### 目標受眾（對這群人說話！）
+- 是誰：${ta.who || ''} (${ta.age || ''})
+- 特徵：${ta.characteristics || ''}`
+
+    if (ta.painPoints && ta.painPoints.length > 0) {
+      audienceText += `\n- 痛點：${ta.painPoints.join('、')}`
+    } else if (data.painPoints && data.painPoints.length > 0) {
+      audienceText += `\n- 痛點：${data.painPoints.join('、')}`
+    }
+
+    if (ta.desires && ta.desires.length > 0) {
+      audienceText += `\n- 渴望：${ta.desires.join('、')}`
+    }
+    parts.push(audienceText)
+  }
+
+  // 4. 背景故事分析（最重要！）
+  if (data.backgroundStoryAnalysis) {
+    const story = data.backgroundStoryAnalysis
+    let storyText = `### ⚠️ 創作者的背景故事（腳本的核心素材！）`
+
+    if (story.summary) {
+      storyText += `\n【故事摘要】\n${story.summary}`
+    }
+
+    if (story.keyMoments && story.keyMoments.length > 0) {
+      storyText += `\n\n【人生轉折點】（可以拍成故事的素材！）\n${story.keyMoments.map((m, i) => `${i + 1}. ${m}`).join('\n')}`
+    }
+
+    if (story.emotionalHooks && story.emotionalHooks.length > 0) {
+      storyText += `\n\n【情感共鳴點】\n${story.emotionalHooks.map((h, i) => `${i + 1}. ${h}`).join('\n')}`
+    }
+
+    if (story.contentAngles && story.contentAngles.length > 0) {
+      storyText += `\n\n【可拍攝的內容角度】\n${story.contentAngles.map((a, i) => `${i + 1}. ${a}`).join('\n')}`
+    }
+
+    if (story.resonancePoints && story.resonancePoints.length > 0) {
+      storyText += `\n\n【共鳴點】\n${story.resonancePoints.join('、')}`
+    }
+
+    parts.push(storyText)
+  }
+
+  // 5. 故事素材
+  if (data.storyAssets) {
+    const assets = data.storyAssets
+    let assetsText = `### 故事素材庫`
+    if (assets.workExperience) assetsText += `\n- 工作經歷可講的：${assets.workExperience}`
+    if (assets.education) assetsText += `\n- 學歷背景可用的：${assets.education}`
+    if (assets.otherExperience) assetsText += `\n- 其他經歷可變成的內容：${assets.otherExperience}`
+    if (assetsText !== `### 故事素材庫`) {
+      parts.push(assetsText)
+    }
+  }
+
+  // 6. 內容支柱（完整版）
+  if (data.contentPillars && data.contentPillars.length > 0) {
+    let pillarsText = `### 內容支柱（主題要符合這些方向！）`
+    data.contentPillars.forEach((pillar, i) => {
+      pillarsText += `\n\n【${pillar.pillar}】${pillar.ratio ? `（${pillar.ratio}）` : ''}`
+      if (pillar.description) pillarsText += `\n${pillar.description}`
+      if (pillar.topics && pillar.topics.length > 0) {
+        pillarsText += `\n具體主題：${pillar.topics.join('、')}`
+      }
+      if (pillar.hooks && pillar.hooks.length > 0) {
+        pillarsText += `\n開場 Hook：${pillar.hooks.slice(0, 2).join(' / ')}`
+      }
+    })
+    parts.push(pillarsText)
+  }
+
+  // 7. 資源運用
+  if (data.resourceUtilization) {
+    const res = data.resourceUtilization
+    let resText = `### 可運用的資源`
+
+    if (res.locations && res.locations.length > 0) {
+      resText += `\n【場地】`
+      res.locations.forEach(loc => {
+        resText += `\n- ${loc.resource}`
+        if (loc.contentIdeas && loc.contentIdeas.length > 0) {
+          resText += `：可拍 ${loc.contentIdeas.join('、')}`
+        }
+      })
+    }
+
+    if (res.interactions && res.interactions.length > 0) {
+      resText += `\n【互動資源】`
+      res.interactions.forEach(int => {
+        resText += `\n- ${int.resource}`
+        if (int.contentIdeas && int.contentIdeas.length > 0) {
+          resText += `：可拍 ${int.contentIdeas.join('、')}`
+        }
+      })
+    }
+
+    if (res.items && res.items.length > 0) {
+      resText += `\n【物品】`
+      res.items.forEach(item => {
+        resText += `\n- ${item.resource}`
+        if (item.contentIdeas && item.contentIdeas.length > 0) {
+          resText += `：可拍 ${item.contentIdeas.join('、')}`
+        }
+      })
+    }
+
+    if (resText !== `### 可運用的資源`) {
+      parts.push(resText)
+    }
+  }
+
+  // 8. 前 10 支影片參考
+  if (data.first10Videos && data.first10Videos.length > 0) {
+    let videosText = `### 參考主題（定位報告建議的影片方向）`
+    data.first10Videos.slice(0, 5).forEach((video, i) => {
+      videosText += `\n${i + 1}. ${video.title || ''}`
+      if (video.hook) videosText += ` | Hook: ${video.hook}`
+    })
+    parts.push(videosText)
+  }
+
+  // 9. 差異化優勢
+  if (data.differentiator) {
+    const diff = data.differentiator
+    let diffText = `### 差異化優勢`
+    if (diff.vsCompetitors) diffText += `\n- 跟競爭者的差異：${diff.vsCompetitors}`
+    if (diff.uniqueAdvantage) diffText += `\n- 獨特優勢：${diff.uniqueAdvantage}`
+    if (diff.avoidPitfalls) diffText += `\n- 要避免的錯誤：${diff.avoidPitfalls}`
+    if (diffText !== `### 差異化優勢`) {
+      parts.push(diffText)
+    }
+  }
+
+  // 10. 個人品牌風格（向後兼容）
+  if (data.persona?.toneOfVoice || data.personalBrand?.tone) {
+    parts.push(`### 說話風格
+${data.persona?.toneOfVoice || data.personalBrand?.tone || ''}`)
+  }
+
+  // 11. 強調使用規則
+  parts.push(`### ⚠️ 使用定位報告的規則
+1. 腳本主題必須符合「內容支柱」的方向
+2. 說話方式必須符合「人設定位」的風格
+3. 如果有「背景故事」，腳本要基於這些真實經歷
+4. 痛點要對應「目標受眾」的真實困擾
+5. 可以參考「前10支影片」的主題方向
+6. 善用「資源」來設計畫面和場景
+7. 不可以自己編造定位報告中沒有的故事！`)
+
+  return parts.join('\n\n')
 }
 
 function buildCreatorInfo(bg: CreatorBackground): string {
-  return `## 創作者資訊
+  // 檢查是否有提供個人經歷/背景故事
+  const hasPersonalStory = bg.expertise && bg.expertise.length > 10
+
+  let info = `## 創作者資訊
 - 領域：${bg.niche}
-- 專業背景：${bg.expertise || "一般素人"}
 - 目標觀眾：${bg.targetAudience}
 - 觀眾的痛點：${bg.audiencePainPoints || "待挖掘"}
 - 說話風格：${getContentStyle(bg.contentStyle || 'friendly')}
 - 發布平台：${bg.platforms?.join("、") || "IG/抖音"}`
+
+  // 如果有個人經歷，特別強調這是腳本素材
+  if (hasPersonalStory) {
+    info += `
+
+## ⚠️ 創作者的真實經歷（重要！必須使用！）
+${bg.expertise}
+
+### 這是腳本的核心素材！
+- 腳本內容必須基於上面這段真實經歷
+- 不可以自己編造其他故事或案例
+- 數字、細節、過程都要符合創作者提供的內容
+- 如果創作者說「虧了50萬」，腳本就要講「虧了50萬」，不能改成其他金額或情境`
+  } else {
+    info += `
+- 專業背景：${bg.expertise || "一般素人"}`
+  }
+
+  return info
 }
 
 function buildVideoSettings(vs: VideoSettings, duration: number, ctaType: CTAType): string {
-  return `## 這支影片的設定
+  const hasKeyMessage = vs.keyMessage && vs.keyMessage.length > 5
+
+  let settings = `## 這支影片的設定
 - 主題：${vs.topic}
 - 目標：${getVideoGoal(vs.goal || 'awareness')}
 - 時長：${duration} 秒
-- 核心訊息：${vs.keyMessage || "待定"}
 - CTA：${getCTAGuide(ctaType).split('\n')[0]}
 - 情緒：${getEmotionalTone(vs.emotionalTone || 'calm')}`
+
+  // 如果有核心訊息，強調這是必須傳達的重點
+  if (hasKeyMessage) {
+    settings += `
+
+## ⚠️ 這支影片必須傳達的核心訊息
+「${vs.keyMessage}」
+
+腳本內容要圍繞這個核心訊息來設計，確保觀眾看完能記住這個重點。`
+  }
+
+  return settings
 }
 
 function buildShootingSpecs(vs: VideoSettings): string {
