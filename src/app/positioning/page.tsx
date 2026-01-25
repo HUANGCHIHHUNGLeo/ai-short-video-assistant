@@ -1556,7 +1556,7 @@ export default function PositioningPage() {
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6">
                   <ul className="space-y-2">
-                    {report.painPoints?.map((point, i) => (
+                    {(report.painPoints || report.targetAudience?.painPoints)?.map((point, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-orange-500 mt-1">•</span>
                         <span>{point}</span>
@@ -1575,7 +1575,9 @@ export default function PositioningPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6">
-                  <p className="bg-yellow-500/10 p-3 rounded-lg">{report.uniqueValue}</p>
+                  <p className="bg-yellow-500/10 p-3 rounded-lg">
+                    {report.uniqueValue || report.differentiator?.uniqueAdvantage || report.persona?.memoryHook || '—'}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -1910,11 +1912,17 @@ export default function PositioningPage() {
                   <CardTitle className="text-base sm:text-lg">競爭分析</CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6 space-y-3">
-                  <p className="text-sm">{report.competitorAnalysis?.insight}</p>
+                  <p className="text-sm">{report.competitorAnalysis?.insight || report.differentiator?.vsCompetitors}</p>
                   <div className="bg-primary/5 p-3 rounded-lg">
                     <p className="text-sm font-medium text-primary">差異化切入點：</p>
-                    <p className="text-sm">{report.competitorAnalysis?.differentiator}</p>
+                    <p className="text-sm">{report.competitorAnalysis?.differentiator || report.differentiator?.uniqueAdvantage || '—'}</p>
                   </div>
+                  {report.differentiator?.avoidPitfalls && (
+                    <div className="bg-orange-50 p-3 rounded-lg">
+                      <p className="text-sm font-medium text-orange-600">要避免的錯誤：</p>
+                      <p className="text-sm">{report.differentiator.avoidPitfalls}</p>
+                    </div>
+                  )}
                   {report.competitorAnalysis?.referenceStyles && report.competitorAnalysis.referenceStyles.length > 0 ? (
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">可參考的內容風格：</p>
@@ -2061,35 +2069,80 @@ export default function PositioningPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6">
-                  {report.actionPlan && Array.isArray(report.actionPlan) && (
-                    typeof report.actionPlan[0] === 'string' ? (
-                      <ol className="space-y-2">
-                        {(report.actionPlan as unknown as string[]).map((action, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white text-sm flex items-center justify-center">
-                              {i + 1}
-                            </span>
-                            <span>{action}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <div className="space-y-4">
-                        {(report.actionPlan as { phase: string; tasks: string[] }[]).map((phase, i) => (
-                          <div key={i} className="border rounded-lg p-3">
-                            <p className="font-medium mb-2">{phase.phase}</p>
-                            <ol className="space-y-1">
-                              {phase.tasks?.map((task, j) => (
-                                <li key={j} className="flex items-start gap-2 text-sm">
-                                  <span className="text-green-500">•</span>
-                                  <span>{task}</span>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
-                        ))}
-                      </div>
-                    )
+                  {/* 新格式：{ week1, week2to4, month2to3 } */}
+                  {report.actionPlan && !Array.isArray(report.actionPlan) && 'week1' in report.actionPlan && (
+                    <div className="space-y-4">
+                      {(report.actionPlan as { week1: string[]; week2to4: string[]; month2to3: string[] }).week1?.length > 0 && (
+                        <div className="border rounded-lg p-3">
+                          <p className="font-medium mb-2 text-green-600">第一週</p>
+                          <ol className="space-y-1">
+                            {(report.actionPlan as { week1: string[] }).week1.map((task, j) => (
+                              <li key={j} className="flex items-start gap-2 text-sm">
+                                <span className="text-green-500">•</span>
+                                <span>{task}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                      {(report.actionPlan as { week2to4: string[] }).week2to4?.length > 0 && (
+                        <div className="border rounded-lg p-3">
+                          <p className="font-medium mb-2 text-blue-600">第 2-4 週</p>
+                          <ol className="space-y-1">
+                            {(report.actionPlan as { week2to4: string[] }).week2to4.map((task, j) => (
+                              <li key={j} className="flex items-start gap-2 text-sm">
+                                <span className="text-blue-500">•</span>
+                                <span>{task}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                      {(report.actionPlan as { month2to3: string[] }).month2to3?.length > 0 && (
+                        <div className="border rounded-lg p-3">
+                          <p className="font-medium mb-2 text-purple-600">第 2-3 個月</p>
+                          <ol className="space-y-1">
+                            {(report.actionPlan as { month2to3: string[] }).month2to3.map((task, j) => (
+                              <li key={j} className="flex items-start gap-2 text-sm">
+                                <span className="text-purple-500">•</span>
+                                <span>{task}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* 舊格式：string[] */}
+                  {report.actionPlan && Array.isArray(report.actionPlan) && typeof report.actionPlan[0] === 'string' && (
+                    <ol className="space-y-2">
+                      {(report.actionPlan as unknown as string[]).map((action, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white text-sm flex items-center justify-center">
+                            {i + 1}
+                          </span>
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {/* 舊格式：{ phase, tasks }[] */}
+                  {report.actionPlan && Array.isArray(report.actionPlan) && typeof report.actionPlan[0] === 'object' && 'phase' in (report.actionPlan[0] as object) && (
+                    <div className="space-y-4">
+                      {(report.actionPlan as { phase: string; tasks: string[] }[]).map((phase, i) => (
+                        <div key={i} className="border rounded-lg p-3">
+                          <p className="font-medium mb-2">{phase.phase}</p>
+                          <ol className="space-y-1">
+                            {phase.tasks?.map((task, j) => (
+                              <li key={j} className="flex items-start gap-2 text-sm">
+                                <span className="text-green-500">•</span>
+                                <span>{task}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </CardContent>
               </Card>
