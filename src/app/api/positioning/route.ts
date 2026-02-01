@@ -30,7 +30,7 @@ const chatSystemPrompt = `你是「深度定位教練」，基於 SFM 流量變�
 - 不要任何格式標記，直接說人話`
 
 // 根據用戶選擇的形象風格，動態調整報告語氣
-const getReportToneByImageStyle = (imageStyle: string): string => {
+const getReportToneByImageStyle = (imageStyles: string | string[]): string => {
   const toneMap: Record<string, string> = {
     humorous: `你說話的風格：
 - 幽默風趣，偶爾來點冷笑話或輕鬆吐槽
@@ -81,15 +81,28 @@ const getReportToneByImageStyle = (imageStyle: string): string => {
 - 給人希望和方向，不只是打雞血`
   }
 
-  return toneMap[imageStyle] || `你說話的風格：
+  const defaultTone = `你說話的風格：
 - 務實、直接、有洞察力
 - 用大白話解釋所有概念
 - 會給出具體到「明天就能開始拍」的建議
 - 敢直說問題，不會為了好聽而講空話`
+
+  const styles = Array.isArray(imageStyles) ? imageStyles : [imageStyles]
+  const matchedTones = styles
+    .map(s => toneMap[s])
+    .filter(Boolean)
+
+  if (matchedTones.length === 0) return defaultTone
+  if (matchedTones.length === 1) return matchedTones[0]
+
+  // 多選時組合所有風格描述
+  return `用戶選擇了多種螢幕形象風格，你說話時需要融合以下特質：
+
+${matchedTones.join('\n\n')}`
 }
 
 // 問卷模式的定位報告 System Prompt（根據用戶選擇的形象動態調整）
-const getReportSystemPrompt = (imageStyle: string): string => {
+const getReportSystemPrompt = (imageStyle: string | string[]): string => {
   const toneSetting = getReportToneByImageStyle(imageStyle)
 
   return `你是一位台灣頂尖短影音代操公司的資深內容總監，服務過上百個品牌客戶和個人 IP。
@@ -306,7 +319,7 @@ interface QuestionnaireData {
   // 第一階段：目標與定位
   goals: string               // Q1: 希望藉由代操達成的目標
   targetDirections: string[]  // Q2: 希望代操的目標導向（多選）
-  imageStyle: string          // Q3: 螢幕形象呈現
+  imageStyle: string[]        // Q3: 螢幕形象呈現（多選）
   // 第二階段：個人特色挖掘
   hobbies: string             // Q4: 特別的愛好或興趣
   uniqueTraits: string        // Q5: 最能顯現自己特色的地方
@@ -380,8 +393,10 @@ ${data.targetDirections && data.targetDirections.length > 0
   ? data.targetDirections.map(d => targetDirectionMap[d] || d).join('\n- ')
   : '尚未選擇'}
 
-【Q3. 希望的螢幕形象呈現】
-${data.imageStyle ? imageStyleMap[data.imageStyle] || data.imageStyle : '尚未選擇'}
+【Q3. 希望的螢幕形象呈現】（可複選）
+${data.imageStyle && data.imageStyle.length > 0
+  ? (Array.isArray(data.imageStyle) ? data.imageStyle : [data.imageStyle]).map(s => imageStyleMap[s] || s).join('\n- ')
+  : '尚未選擇'}
 
 ═══════════════════════════════════
 第二部分：個人特色挖掘（差異化來源）

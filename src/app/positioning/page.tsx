@@ -50,7 +50,7 @@ interface QuestionnaireData {
   // 第一階段：目標與定位
   goals: string               // Q1: 希望藉由代操達成的目標
   targetDirections: string[]  // Q2: 希望代操的目標導向（多選）
-  imageStyle: string          // Q3: 螢幕形象呈現
+  imageStyle: string[]        // Q3: 螢幕形象呈現（多選）
   // 第二階段：個人特色挖掘
   hobbies: string             // Q4: 特別的愛好或興趣
   uniqueTraits: string        // Q5: 最能顯現自己特色的地方
@@ -266,7 +266,7 @@ export default function PositioningPage() {
     // 第一階段：目標與定位
     goals: "",
     targetDirections: [],
-    imageStyle: "",
+    imageStyle: [],
     // 第二階段：個人特色挖掘
     hobbies: "",
     uniqueTraits: "",
@@ -304,7 +304,7 @@ export default function PositioningPage() {
       // 必填項目（權重較高）
       { field: 'goals', weight: 15, minLength: 20, label: '目標' },
       { field: 'targetDirections', weight: 10, isArray: true, label: '目標導向' },
-      { field: 'imageStyle', weight: 10, minLength: 1, label: '螢幕形象' },
+      { field: 'imageStyle', weight: 10, isArray: true, label: '螢幕形象' },
       // 重要項目（中等權重）
       { field: 'uniqueTraits', weight: 10, minLength: 10, label: '個人特色' },
       { field: 'workChallenges', weight: 8, minLength: 10, label: '工作挑戰' },
@@ -417,7 +417,7 @@ export default function PositioningPage() {
     switch (currentStep) {
       case 1: return formData.goals.trim() !== ""              // Q1: 目標必填
       case 2: return formData.targetDirections.length > 0       // Q2: 目標導向至少選一個
-      case 3: return formData.imageStyle.trim() !== ""          // Q3: 形象必填
+      case 3: return formData.imageStyle.length > 0               // Q3: 形象至少選一個
       case 4: return true                                        // Q4: 愛好選填
       case 5: return true                                        // Q5: 特色選填
       case 6: return true                                        // Q6: 他人看法選填
@@ -477,7 +477,7 @@ export default function PositioningPage() {
     setFormData({
       goals: "",
       targetDirections: [],
-      imageStyle: "",
+      imageStyle: [],
       hobbies: "",
       uniqueTraits: "",
       othersPerception: "",
@@ -1000,7 +1000,7 @@ export default function PositioningPage() {
         </Card>
       )}
 
-      {/* Step 3: 螢幕形象 */}
+      {/* Step 3: 螢幕形象（複選） */}
       {currentStep === 3 && (
         <Card>
           <CardHeader className="px-4 sm:px-6">
@@ -1009,27 +1009,52 @@ export default function PositioningPage() {
               Q3. 希望自己的螢幕形象呈現什麼感覺？
             </CardTitle>
             <CardDescription>
-              選擇最符合您想要呈現的風格
+              可複選，選擇所有符合您想要呈現的風格
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 px-4 sm:px-6">
             <div className="grid grid-cols-2 gap-3">
-              {imageStyleOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={cn(
-                    "p-3 rounded-lg border-2 cursor-pointer transition-all",
-                    formData.imageStyle === option.value
-                      ? "border-primary bg-primary/5"
-                      : "border-muted hover:border-primary/50"
-                  )}
-                  onClick={() => handleOptionSelect("imageStyle", option.value)}
-                >
-                  <div className="font-medium text-sm">{option.label}</div>
-                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                </div>
-              ))}
+              {imageStyleOptions.map((option) => {
+                const isSelected = formData.imageStyle.includes(option.value)
+                return (
+                  <div
+                    key={option.value}
+                    className={cn(
+                      "p-3 rounded-lg border-2 cursor-pointer transition-all",
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/50"
+                    )}
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        imageStyle: isSelected
+                          ? prev.imageStyle.filter(v => v !== option.value)
+                          : [...prev.imageStyle, option.value]
+                      }))
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0",
+                        isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                      )}>
+                        {isSelected && <CheckCircle2 className="h-3 w-3 text-white" />}
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
+            {formData.imageStyle.length > 0 && (
+              <p className="text-sm text-primary">
+                已選擇 {formData.imageStyle.length} 項
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
