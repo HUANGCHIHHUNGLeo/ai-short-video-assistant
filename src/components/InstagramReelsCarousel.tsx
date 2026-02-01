@@ -41,6 +41,7 @@ export default function InstagramReelsCarousel() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null)
   const [postMeta, setPostMeta] = useState<PostMeta | null>(null)
   const [metaLoading, setMetaLoading] = useState(false)
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({})
   const scrollRef = useRef<HTMLDivElement>(null)
   const metaCache = useRef<Record<string, PostMeta>>({})
 
@@ -49,6 +50,27 @@ export default function InstagramReelsCarousel() {
   const dragStartX = useRef(0)
   const dragScrollLeft = useRef(0)
   const hasDragged = useRef(false)
+
+  // 預先載入所有縮圖
+  useEffect(() => {
+    const fetchAll = async () => {
+      const entries = await Promise.all(
+        REELS.map(async (reel) => {
+          try {
+            const res = await fetch(`/api/instagram-meta?id=${reel.id}&type=${reel.type}`)
+            const data = await res.json()
+            if (!data.error && data.thumbnail_url) {
+              metaCache.current[reel.id] = data
+              return [reel.id, data.thumbnail_url] as const
+            }
+          } catch { /* ignore */ }
+          return [reel.id, ""] as const
+        })
+      )
+      setThumbnails(Object.fromEntries(entries.filter(([, url]) => url)))
+    }
+    fetchAll()
+  }, [])
 
   // 選取貼文時抓取內文
   useEffect(() => {
@@ -150,15 +172,24 @@ export default function InstagramReelsCarousel() {
                 className="flex-shrink-0 w-[28vw] sm:w-[200px] h-[50vw] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
                 onClick={() => onCardClick(reel)}
               >
-                {/* 只顯示影片封面（裁掉 IG 嵌入的頭尾 UI） */}
-                <iframe
-                  src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
-                  className="pointer-events-none border-0 absolute left-1/2 -translate-x-1/2"
-                  style={{ top: -56, width: 326, height: 580 }}
-                  loading="lazy"
-                  allow="encrypted-media"
-                  draggable={false}
-                />
+                {/* 縮圖：用 oEmbed 圖片取代 iframe */}
+                {thumbnails[reel.id] ? (
+                  <img
+                    src={thumbnails[reel.id]}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-800 animate-pulse" />
+                )}
+
+                {/* 置中播放按鈕 */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:opacity-0 transition-opacity duration-300">
+                    <Play className="h-5 w-5 sm:h-6 sm:w-6 text-gray-800 fill-gray-800 ml-0.5" />
+                  </div>
+                </div>
 
                 {/* Hover 霧面遮罩 + IG 帳號 */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 group-hover:backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center flex-col gap-2 pointer-events-none">
@@ -190,12 +221,12 @@ export default function InstagramReelsCarousel() {
 
         {/* 彈窗 - 手機：上影片下內文 / 桌機：左影片右內文 */}
         <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-          <DialogContent className="max-w-[950px] max-h-[90vh] md:max-h-[85vh] p-0 overflow-hidden">
+          <DialogContent className="max-w-[950px] max-h-[80vh] md:max-h-[85vh] p-0 overflow-hidden">
             <DialogTitle className="sr-only">Instagram Post</DialogTitle>
             {selectedReel && (
-              <div className="flex flex-col md:flex-row h-[85vh] md:h-[80vh]">
+              <div className="flex flex-col md:flex-row h-[70vh] md:h-[80vh]">
                 {/* 影片嵌入：手機上方 / 桌機左側 */}
-                <div className="h-[40vh] md:h-auto md:flex-1 bg-black min-w-0 shrink-0">
+                <div className="h-[35vh] md:h-auto md:flex-1 bg-black min-w-0 shrink-0">
                   <iframe
                     src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
                     width="100%"
@@ -208,7 +239,7 @@ export default function InstagramReelsCarousel() {
                 {/* 內文面板：手機下方 / 桌機右側 */}
                 <div className="flex-1 md:flex-none md:w-95 md:border-l overflow-hidden bg-white flex flex-col">
                   {/* 帳號 header */}
-                  <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
+                  <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0">
                     <svg
                       className="w-5 h-5 text-pink-500"
                       viewBox="0 0 24 24"
@@ -227,24 +258,24 @@ export default function InstagramReelsCarousel() {
                   </div>
 
                   {/* 內文區域 */}
-                  <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4">
+                  <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-3">
                     {metaLoading ? (
-                      <div className="flex items-center justify-center h-32">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                      <div className="flex items-center justify-center h-20">
+                        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
                       </div>
                     ) : postMeta?.title ? (
                       <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
                         {postMeta.title}
                       </p>
                     ) : (
-                      <p className="text-sm text-gray-400 text-center py-8">
+                      <p className="text-sm text-gray-400 text-center py-4">
                         無法載入貼文內文
                       </p>
                     )}
                   </div>
 
                   {/* 底部連結 */}
-                  <div className="px-4 py-3 border-t text-center shrink-0">
+                  <div className="px-4 py-2 border-t text-center shrink-0">
                     <a
                       href={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/`}
                       target="_blank"

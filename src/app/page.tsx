@@ -144,23 +144,23 @@ export default function Home() {
 
       {/* 使用流程 */}
       <Card className="bg-muted/30">
-        <CardHeader className="pb-2 px-4 sm:px-6">
-          <CardTitle className="text-base sm:text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
+        <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+          <CardTitle className="text-xs sm:text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-12 py-2 sm:py-4">
+        <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+          <div className="flex flex-row items-start justify-center gap-3 sm:gap-6 md:gap-12 py-1 sm:py-4">
             {[
               { step: 1, title: "填寫背景資料", desc: "描述你的領域與目標受眾" },
               { step: 2, title: "設定內容需求", desc: "說明主題與期望呈現方式" },
               { step: 3, title: "AI 智能生成", desc: "獲得多版本專業內容" },
             ].map((item, index) => (
-              <div key={item.step} className="flex items-center gap-3 sm:gap-4">
+              <div key={item.step} className="flex items-center gap-1 sm:gap-4">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-1.5 sm:mb-2 text-sm sm:text-base">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-1 sm:mb-2 text-xs sm:text-base">
                     {item.step}
                   </div>
-                  <p className="font-semibold text-sm sm:text-base">{item.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1 max-w-[120px] sm:max-w-none">{item.desc}</p>
+                  <p className="font-semibold text-[10px] sm:text-base">{item.title}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 max-w-[80px] sm:max-w-none">{item.desc}</p>
                 </div>
                 {index < 2 && (
                   <ArrowRight className="hidden sm:block h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
@@ -173,24 +173,24 @@ export default function Home() {
 
       {/* 其他工具 */}
       <div>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+        <h2 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 flex items-center gap-2">
           <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           更多工具
         </h2>
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-2 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
           {tools.map((tool) => (
             <Link key={tool.title} href={tool.href}>
               <Card className={`h-full cursor-pointer group transition-all duration-300 ${tool.color}`}>
-                <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                <CardContent className="pt-3 sm:pt-6 px-3 sm:px-6 pb-3 sm:pb-6">
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
                       <tool.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm sm:text-base group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold text-xs sm:text-base group-hover:text-primary transition-colors">
                         {tool.title}
                       </h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                      <p className="text-[10px] sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 leading-relaxed hidden sm:block">
                         {tool.desc}
                       </p>
                     </div>
@@ -204,8 +204,8 @@ export default function Home() {
 
       {/* 功能特色 */}
       <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="py-4 sm:py-6 px-4 sm:px-6">
-          <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+        <CardContent className="py-3 sm:py-6 px-3 sm:px-6">
+          <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4">
             {[
               { icon: CheckCircle2, text: "台灣在地化口語腳本" },
               { icon: CheckCircle2, text: "多版本內容自由選擇" },
