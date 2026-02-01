@@ -1,14 +1,20 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Play } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Loader2 } from "lucide-react"
 
 interface ReelItem {
   id: string
   type: "p" | "reel"
   username: string
+}
+
+interface PostMeta {
+  author_name: string
+  title: string
+  thumbnail_url: string
 }
 
 // 在這裡加入你的 Instagram 貼文 / Reels 網址
@@ -27,15 +33,50 @@ const REELS: ReelItem[] = [
   { id: "DTdKK3dAURf", type: "p", username: "kai_chi77" },
 ]
 
+// Instagram SVG icon path
+const IG_ICON_PATH =
+  "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+
 export default function InstagramReelsCarousel() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null)
+  const [postMeta, setPostMeta] = useState<PostMeta | null>(null)
+  const [metaLoading, setMetaLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const metaCache = useRef<Record<string, PostMeta>>({})
 
   // 拖曳滑動狀態（用 ref 避免不必要的 re-render）
   const isDragging = useRef(false)
   const dragStartX = useRef(0)
   const dragScrollLeft = useRef(0)
   const hasDragged = useRef(false)
+
+  // 選取貼文時抓取內文
+  useEffect(() => {
+    if (!selectedReel) {
+      setPostMeta(null)
+      return
+    }
+
+    const cached = metaCache.current[selectedReel.id]
+    if (cached) {
+      setPostMeta(cached)
+      return
+    }
+
+    setMetaLoading(true)
+    setPostMeta(null)
+
+    fetch(`/api/instagram-meta?id=${selectedReel.id}&type=${selectedReel.type}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          metaCache.current[selectedReel.id] = data
+          setPostMeta(data)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setMetaLoading(false))
+  }, [selectedReel])
 
   const scroll = (dir: "left" | "right") => {
     scrollRef.current?.scrollBy({
@@ -109,21 +150,17 @@ export default function InstagramReelsCarousel() {
                 className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
                 onClick={() => onCardClick(reel)}
               >
-                {/* 縮放預覽 iframe */}
-                <div
-                  className="origin-top-left"
-                  style={{ width: 326, height: 580, transform: "scale(0.555)" }}
-                >
-                  <iframe
-                    src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
-                    width="326"
-                    height="580"
-                    className="pointer-events-none border-0"
-                    loading="lazy"
-                    allow="encrypted-media"
-                    draggable={false}
-                  />
-                </div>
+                {/* 只顯示影片封面（裁掉 IG 嵌入的頭尾 UI） */}
+                <iframe
+                  src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
+                  width="326"
+                  height="580"
+                  className="pointer-events-none border-0 absolute left-1/2 -translate-x-1/2"
+                  style={{ top: -56 }}
+                  loading="lazy"
+                  allow="encrypted-media"
+                  draggable={false}
+                />
 
                 {/* Hover 霧面遮罩 + IG 帳號 */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 group-hover:backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center flex-col gap-2 pointer-events-none">
@@ -132,7 +169,7 @@ export default function InstagramReelsCarousel() {
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    <path d={IG_ICON_PATH} />
                   </svg>
                   <span className="text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg">
                     @{reel.username}
@@ -153,7 +190,7 @@ export default function InstagramReelsCarousel() {
           </Button>
         </div>
 
-        {/* 彈窗 - 左：影片 / 右：僅內文 */}
+        {/* 彈窗 - 左：影片 / 右：API 抓取的內文 */}
         <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
           <DialogContent className="max-w-[950px] max-h-[85vh] p-0 overflow-hidden">
             <DialogTitle className="sr-only">Instagram Post</DialogTitle>
@@ -170,7 +207,7 @@ export default function InstagramReelsCarousel() {
                   />
                 </div>
 
-                {/* 右側：僅內文（不重複顯示影片） */}
+                {/* 右側：API 抓取的內文 */}
                 <div className="flex-1 md:flex-none md:w-95 md:border-l overflow-hidden bg-white">
                   {/* 手機版：完整嵌入 */}
                   <div className="md:hidden h-full overflow-y-auto hide-scrollbar">
@@ -183,7 +220,7 @@ export default function InstagramReelsCarousel() {
                     />
                   </div>
 
-                  {/* 桌面版：帳號 header + 偏移隱藏影片只顯示內文 + 底部連結 */}
+                  {/* 桌面版：自訂渲染的內文面板 */}
                   <div className="hidden md:flex md:flex-col h-full">
                     {/* 帳號 header */}
                     <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
@@ -192,21 +229,33 @@ export default function InstagramReelsCarousel() {
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        <path d={IG_ICON_PATH} />
                       </svg>
-                      <span className="font-semibold text-sm text-gray-900">
+                      <a
+                        href={`https://www.instagram.com/${selectedReel.username}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-sm text-gray-900 hover:underline"
+                      >
                         @{selectedReel.username}
-                      </span>
+                      </a>
                     </div>
 
-                    {/* 內文區域（用絕對定位 + 偏移隱藏影片部分） */}
-                    <div className="flex-1 overflow-hidden relative">
-                      <iframe
-                        src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
-                        className="border-0 absolute left-0 right-0"
-                        style={{ top: -480, width: "100%", height: 2000 }}
-                        allow="encrypted-media"
-                      />
+                    {/* 內文區域 */}
+                    <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4">
+                      {metaLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                        </div>
+                      ) : postMeta?.title ? (
+                        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                          {postMeta.title}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-400 text-center py-8">
+                          無法載入貼文內文
+                        </p>
+                      )}
                     </div>
 
                     {/* 底部連結 */}
