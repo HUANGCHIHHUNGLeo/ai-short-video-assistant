@@ -190,14 +190,14 @@ export default function InstagramReelsCarousel() {
           </Button>
         </div>
 
-        {/* 彈窗 - 左：影片 / 右：API 抓取的內文 */}
+        {/* 彈窗 - 手機：上影片下內文 / 桌機：左影片右內文 */}
         <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-          <DialogContent className="max-w-[950px] max-h-[85vh] p-0 overflow-hidden">
+          <DialogContent className="max-w-[950px] max-h-[90vh] md:max-h-[85vh] p-0 overflow-hidden">
             <DialogTitle className="sr-only">Instagram Post</DialogTitle>
             {selectedReel && (
-              <div className="flex flex-col md:flex-row h-[80vh]">
-                {/* 左側：影片嵌入（桌面版） */}
-                <div className="hidden md:block flex-1 bg-black min-w-0">
+              <div className="flex flex-col md:flex-row h-[85vh] md:h-[80vh]">
+                {/* 影片嵌入：手機上方 / 桌機左側 */}
+                <div className="h-[40vh] md:h-auto md:flex-1 bg-black min-w-0 shrink-0">
                   <iframe
                     src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
                     width="100%"
@@ -207,68 +207,54 @@ export default function InstagramReelsCarousel() {
                   />
                 </div>
 
-                {/* 右側：API 抓取的內文 */}
-                <div className="flex-1 md:flex-none md:w-95 md:border-l overflow-hidden bg-white">
-                  {/* 手機版：完整嵌入 */}
-                  <div className="md:hidden h-full overflow-y-auto hide-scrollbar">
-                    <iframe
-                      src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
-                      width="100%"
-                      height="1200"
-                      className="border-0"
-                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                    />
+                {/* 內文面板：手機下方 / 桌機右側 */}
+                <div className="flex-1 md:flex-none md:w-95 md:border-l overflow-hidden bg-white flex flex-col">
+                  {/* 帳號 header */}
+                  <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
+                    <svg
+                      className="w-5 h-5 text-pink-500"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d={IG_ICON_PATH} />
+                    </svg>
+                    <a
+                      href={`https://www.instagram.com/${selectedReel.username}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-sm text-gray-900 hover:underline"
+                    >
+                      @{selectedReel.username}
+                    </a>
                   </div>
 
-                  {/* 桌面版：自訂渲染的內文面板 */}
-                  <div className="hidden md:flex md:flex-col h-full">
-                    {/* 帳號 header */}
-                    <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
-                      <svg
-                        className="w-5 h-5 text-pink-500"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d={IG_ICON_PATH} />
-                      </svg>
-                      <a
-                        href={`https://www.instagram.com/${selectedReel.username}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-sm text-gray-900 hover:underline"
-                      >
-                        @{selectedReel.username}
-                      </a>
-                    </div>
+                  {/* 內文區域 */}
+                  <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4">
+                    {metaLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                      </div>
+                    ) : postMeta?.title ? (
+                      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                        {postMeta.title}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400 text-center py-8">
+                        無法載入貼文內文
+                      </p>
+                    )}
+                  </div>
 
-                    {/* 內文區域 */}
-                    <div className="flex-1 overflow-y-auto hide-scrollbar px-4 py-4">
-                      {metaLoading ? (
-                        <div className="flex items-center justify-center h-32">
-                          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                        </div>
-                      ) : postMeta?.title ? (
-                        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
-                          {postMeta.title}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-gray-400 text-center py-8">
-                          無法載入貼文內文
-                        </p>
-                      )}
-                    </div>
-
-                    {/* 底部連結 */}
-                    <div className="px-4 py-3 border-t text-center shrink-0">
-                      <a
-                        href={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-500 hover:text-blue-600 font-medium"
-                      >
-                        到 Instagram 查看完整貼文 →
-                      </a>
-                    </div>
+                  {/* 底部連結 */}
+                  <div className="px-4 py-3 border-t text-center shrink-0">
+                    <a
+                      href={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+                    >
+                      到 Instagram 查看完整貼文 →
+                    </a>
                   </div>
                 </div>
               </div>
