@@ -822,7 +822,9 @@ function buildTitleRequirements(topic: string): string {
 
 function buildGenerationRequirements(versions: number, duration: number, min: number, max: number, shootingType: string = 'talking_head'): string {
   let requirements = `## 生成要求
-1. 生成 ${versions} 個版本，每個版本要用不同的框架和風格
+1. 生成 ${versions} 個版本，每個版本用不同的「切入角度」，但品質必須一樣好！
+   - ⚠️ 不能 A 版最用心、B/C 版敷衍！每個版本都是獨立完整的作品！
+   - ⚠️ 每個版本的 voiceover 總字數必須都達到 ${min}-${max} 字，不能某版本特別短！
 2. ⚠️ 每段 voiceover 都要有「價值輸出」！觀眾看完要覺得學到東西！
 3. ⚠️ 價值輸出 = 具體的數字、真實的案例、可執行的方法、親身的故事！
 4. ⚠️ 像正常台灣人說話！禁止大陸用語（你猜怎麼著、咋了、牛逼、整活等）

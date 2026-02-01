@@ -1572,7 +1572,7 @@ function ScriptGeneratorContent() {
                   <div>
                     <p className="font-semibold">生成完成</p>
                     <p className="text-sm text-muted-foreground">
-                      已生成 {generatedVersions.length} 個不同風格的腳本版本
+                      已生成 {generatedVersions.length} 個不同風格的腳本版本，覺得哪裡不滿意可以點「修改」微調
                     </p>
                   </div>
                 </div>
@@ -1679,7 +1679,8 @@ function ScriptGeneratorContent() {
                             }}
                             className={revisingVersionId === version.id ? 'border-primary text-primary' : ''}
                           >
-                            <MessageSquare className="h-4 w-4" />
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            修改
                           </Button>
                         </div>
                       </div>
