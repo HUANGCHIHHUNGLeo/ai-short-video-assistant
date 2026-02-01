@@ -82,41 +82,41 @@ export default function Home() {
       <InstagramReelsCarousel />
 
       {/* 主要功能 */}
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2">
         {quickActions.map((action) => (
           <Link key={action.title} href={action.href} className="block">
             <Card className="relative h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
               <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-              <CardHeader className="pb-3 sm:pb-4 relative px-4 sm:px-6">
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
-                    <action.icon className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+              <CardHeader className="pb-2 sm:pb-4 relative px-3 sm:px-6 pt-3 sm:pt-6">
+                <div className="flex items-start justify-between mb-2 sm:mb-4">
+                  <div className={`w-9 h-9 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
+                    <action.icon className="h-4 w-4 sm:h-7 sm:w-7 text-white" />
                   </div>
-                  <Badge variant="secondary" className="font-medium text-xs">
+                  <Badge variant="secondary" className="font-medium text-[10px] sm:text-xs px-1.5 sm:px-2.5">
                     {action.tag}
                   </Badge>
                 </div>
 
-                <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">
+                <CardTitle className="text-sm sm:text-xl group-hover:text-primary transition-colors leading-tight">
                   {action.title}
                 </CardTitle>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
+                <p className="text-[10px] sm:text-sm text-muted-foreground font-medium mt-0.5 sm:mt-1">
                   {action.subtitle}
                 </p>
               </CardHeader>
 
-              <CardContent className="relative px-4 sm:px-6">
-                <p className="text-muted-foreground mb-4 sm:mb-6 text-xs sm:text-sm leading-relaxed">
+              <CardContent className="relative px-3 sm:px-6 pb-3 sm:pb-6">
+                <p className="text-muted-foreground mb-2 sm:mb-6 text-xs sm:text-sm leading-relaxed hidden sm:block">
                   {action.desc}
                 </p>
                 <Button
-                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm text-sm`}
+                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm text-xs sm:text-sm h-8 sm:h-9`}
                   size="sm"
                 >
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   開始使用
-                  <ArrowRight className="h-4 w-4 ml-auto" />
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto" />
                 </Button>
               </CardContent>
             </Card>
