@@ -147,7 +147,7 @@ export default function InstagramReelsCarousel() {
             {REELS.map((reel) => (
               <div
                 key={reel.id}
-                className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
+                className="flex-shrink-0 w-[140px] sm:w-[200px] h-[250px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
                 onClick={() => onCardClick(reel)}
               >
                 {/* 只顯示影片封面（裁掉 IG 嵌入的頭尾 UI） */}

@@ -82,43 +82,61 @@ export default function Home() {
       <InstagramReelsCarousel />
 
       {/* 主要功能 */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-6 sm:grid-cols-2">
         {quickActions.map((action) => (
           <Link key={action.title} href={action.href} className="block">
             <Card className="relative h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
               <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-              <CardHeader className="pb-2 sm:pb-4 relative px-3 sm:px-6 pt-3 sm:pt-6">
-                <div className="flex items-start justify-between mb-2 sm:mb-4">
-                  <div className={`w-9 h-9 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
-                    <action.icon className="h-4 w-4 sm:h-7 sm:w-7 text-white" />
-                  </div>
-                  <Badge variant="secondary" className="font-medium text-[10px] sm:text-xs px-1.5 sm:px-2.5">
-                    {action.tag}
-                  </Badge>
+              {/* 手機版：橫向緊湊佈局 */}
+              <CardContent className="flex items-center gap-3 p-3 sm:hidden relative">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
+                  <action.icon className="h-5 w-5 text-white" />
                 </div>
-
-                <CardTitle className="text-sm sm:text-xl group-hover:text-primary transition-colors leading-tight">
-                  {action.title}
-                </CardTitle>
-                <p className="text-[10px] sm:text-sm text-muted-foreground font-medium mt-0.5 sm:mt-1">
-                  {action.subtitle}
-                </p>
-              </CardHeader>
-
-              <CardContent className="relative px-3 sm:px-6 pb-3 sm:pb-6">
-                <p className="text-muted-foreground mb-2 sm:mb-6 text-xs sm:text-sm leading-relaxed hidden sm:block">
-                  {action.desc}
-                </p>
-                <Button
-                  className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm text-xs sm:text-sm h-8 sm:h-9`}
-                  size="sm"
-                >
-                  <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  開始使用
-                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-auto" />
-                </Button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{action.title}</p>
+                  <p className="text-xs text-muted-foreground">{action.subtitle}</p>
+                </div>
+                <Badge variant="secondary" className="font-medium text-[10px] flex-shrink-0">
+                  {action.tag}
+                </Badge>
+                <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </CardContent>
+
+              {/* 桌機版：垂直完整佈局 */}
+              <div className="hidden sm:block">
+                <CardHeader className="pb-4 relative px-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300`}>
+                      <action.icon className="h-7 w-7 text-white" />
+                    </div>
+                    <Badge variant="secondary" className="font-medium text-xs">
+                      {action.tag}
+                    </Badge>
+                  </div>
+
+                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                    {action.title}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">
+                    {action.subtitle}
+                  </p>
+                </CardHeader>
+
+                <CardContent className="relative px-6">
+                  <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                    {action.desc}
+                  </p>
+                  <Button
+                    className={`w-full bg-gradient-to-r ${action.gradient} hover:opacity-90 shadow-sm text-sm`}
+                    size="sm"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    開始使用
+                    <ArrowRight className="h-4 w-4 ml-auto" />
+                  </Button>
+                </CardContent>
+              </div>
             </Card>
           </Link>
         ))}
