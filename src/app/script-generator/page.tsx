@@ -234,10 +234,25 @@ function ScriptGeneratorContent() {
   const handlePositioningSelect = (positioning: SelectedPositioning | null) => {
     if (positioning) {
       setSelectedPositioningId(positioning.id)
+
+      // 從定位報告中提取個人經歷
+      let expertiseText = positioning.expertise || ''
+      if (positioning.fullReport) {
+        const report = positioning.fullReport
+        const parts: string[] = []
+        if (report.storyAssets?.workExperience) parts.push(report.storyAssets.workExperience)
+        if (report.storyAssets?.education) parts.push(report.storyAssets.education)
+        if (report.storyAssets?.otherExperience) parts.push(report.storyAssets.otherExperience)
+        if (report.backgroundStoryAnalysis?.summary) parts.push(report.backgroundStoryAnalysis.summary)
+        if (parts.length > 0) {
+          expertiseText = parts.join('\n')
+        }
+      }
+
       setCreatorBackground({
         ...creatorBackground,
         niche: positioning.niche,
-        expertise: positioning.expertise,
+        expertise: expertiseText,
         targetAudience: positioning.targetAudience,
         audiencePainPoints: positioning.audiencePainPoints,
         contentStyle: positioning.contentStyle,
@@ -803,22 +818,46 @@ function ScriptGeneratorContent() {
                 <Label className="text-sm font-medium">
                   影片主題 <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  placeholder="這支影片要講什麼內容？"
+                <Textarea
+                  placeholder="描述這支影片要講什麼內容、想傳達什麼？&#10;不需要想標題，只要描述主題方向即可，AI 會幫你生成爆款標題"
                   value={videoSettings.topic}
                   onChange={(e) => setVideoSettings({ ...videoSettings, topic: e.target.value })}
-                  className="h-11"
+                  className="h-20 resize-none"
                 />
+                <p className="text-xs text-muted-foreground">
+                  {positioningData ? '根據你的定位推薦以下主題，點擊即可使用：' : '不知道要拍什麼？點擊以下範例：'}
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {EXAMPLE_TOPICS.map((item) => (
+                  {(() => {
+                    // 如果有定位資料，從中提取主題建議
+                    if (positioningData) {
+                      const suggestions: string[] = []
+                      // 從前10支影片建議提取
+                      if (positioningData.first10Videos) {
+                        positioningData.first10Videos.forEach((v: { title?: string }) => {
+                          if (v.title) suggestions.push(v.title)
+                        })
+                      }
+                      // 如果影片建議不足，從內容支柱的 topics 補充
+                      if (suggestions.length < 4 && positioningData.contentPillars) {
+                        positioningData.contentPillars.forEach((p: { topics?: string[] }) => {
+                          p.topics?.forEach(t => {
+                            if (suggestions.length < 8 && !suggestions.includes(t)) suggestions.push(t)
+                          })
+                        })
+                      }
+                      return suggestions.slice(0, 8)
+                    }
+                    return EXAMPLE_TOPICS
+                  })().map((item) => (
                     <Button
                       key={item}
                       variant="outline"
                       size="sm"
-                      className="text-xs"
+                      className="text-xs h-auto py-1.5 whitespace-normal text-left"
                       onClick={() => setVideoSettings({ ...videoSettings, topic: item })}
                     >
-                      {item.slice(0, 20)}...
+                      {item.length > 25 ? item.slice(0, 25) + '...' : item}
                     </Button>
                   ))}
                 </div>

@@ -504,7 +504,7 @@ ${data.backgroundStory?.motivation || '尚未填寫'}
           { role: "user", content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 8000,
       })
 
       const content = completion.choices[0]?.message?.content || ""

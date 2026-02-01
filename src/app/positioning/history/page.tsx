@@ -143,7 +143,6 @@ export default function PositioningHistoryPage() {
   const [loading, setLoading] = useState(true)
   const [records, setRecords] = useState<PositioningRecord[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [selectedRecord, setSelectedRecord] = useState<PositioningRecord | null>(null)
   const [viewingReport, setViewingReport] = useState<PositioningRecord | null>(null)
   const [isExportingPdf, setIsExportingPdf] = useState(false)
 
@@ -693,9 +692,9 @@ export default function PositioningHistoryPage() {
               key={record.id}
               className={cn(
                 "cursor-pointer transition-all hover:shadow-md hover:border-primary/50",
-                selectedRecord?.id === record.id && "border-primary ring-2 ring-primary/20"
+                viewingReport?.id === record.id && "border-primary ring-2 ring-primary/20"
               )}
-              onClick={() => setSelectedRecord(selectedRecord?.id === record.id ? null : record)}
+              onClick={() => setViewingReport(record)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
@@ -756,93 +755,28 @@ export default function PositioningHistoryPage() {
                   </div>
                 )}
 
-                {/* 展開詳情 */}
-                {selectedRecord?.id === record.id && (
-                  <div className="pt-3 border-t space-y-3 animate-in fade-in slide-in-from-top-2">
-                    {/* 輸入資料 */}
-                    <div>
-                      <h4 className="text-xs font-medium text-muted-foreground mb-2">問卷資料</h4>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        {record.input_data.expertise && (
-                          <div>
-                            <span className="text-muted-foreground">專長：</span>
-                            <span className="ml-1">{record.input_data.expertise}</span>
-                          </div>
-                        )}
-                        {record.input_data.targetAudience && (
-                          <div>
-                            <span className="text-muted-foreground">受眾：</span>
-                            <span className="ml-1">{record.input_data.targetAudience}</span>
-                          </div>
-                        )}
-                        {record.input_data.monetization && (
-                          <div>
-                            <span className="text-muted-foreground">變現：</span>
-                            <span className="ml-1">{record.input_data.monetization}</span>
-                          </div>
-                        )}
-                        {record.input_data.platforms && record.input_data.platforms.length > 0 && (
-                          <div>
-                            <span className="text-muted-foreground">平台：</span>
-                            <span className="ml-1">{record.input_data.platforms.join('、')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 內容支柱預覽 */}
-                    {record.output_data.contentPillars && record.output_data.contentPillars.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">內容支柱</h4>
-                        <div className="space-y-1">
-                          {record.output_data.contentPillars.slice(0, 3).map((pillar, idx) => (
-                            <div key={idx} className="text-xs">
-                              <span className="font-medium">{pillar.pillar}</span>
-                              {pillar.description && (
-                                <span className="text-muted-foreground ml-1">- {pillar.description}</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 操作按鈕 */}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setViewingReport(record)
-                        }}
-                      >
-                        <BookOpen className="h-3 w-3" />
-                        完整報告
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          exportToPdf(record)
-                        }}
-                        disabled={isExportingPdf}
-                      >
-                        <Download className="h-3 w-3" />
-                        PDF
-                      </Button>
-                      <Link href={`/script-generator?positioning=${record.id}`} className="flex-1">
-                        <Button size="sm" className="w-full gap-1">
-                          <TrendingUp className="h-3 w-3" />
-                          生成腳本
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )}
+                {/* 操作按鈕（直接顯示） */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      exportToPdf(record)
+                    }}
+                    disabled={isExportingPdf}
+                  >
+                    <Download className="h-3 w-3" />
+                    PDF
+                  </Button>
+                  <Link href={`/script-generator?positioning=${record.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                    <Button size="sm" className="w-full gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      生成腳本
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           ))}

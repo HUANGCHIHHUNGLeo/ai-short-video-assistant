@@ -1839,16 +1839,33 @@ export default function PositioningPage() {
                     <div key={i} className="border rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="font-semibold">{pillar.pillar}</p>
-                        {pillar.frequency && (
-                          <Badge variant="outline" className="text-xs">{pillar.frequency}</Badge>
+                        {(pillar.ratio || pillar.frequency) && (
+                          <Badge variant="outline" className="text-xs">{pillar.ratio || pillar.frequency}</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">{pillar.description}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {pillar.examples?.map((ex, j) => (
-                          <Badge key={j} variant="secondary" className="text-xs">{ex}</Badge>
-                        ))}
-                      </div>
+                      {/* 主題方向（新版 topics 或舊版 examples） */}
+                      {(pillar.topics || pillar.examples) && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">主題方向</p>
+                          <div className="flex flex-wrap gap-1">
+                            {(pillar.topics || pillar.examples)?.map((item, j) => (
+                              <Badge key={j} variant="secondary" className="text-xs">{item}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* Hook 建議（新版） */}
+                      {pillar.hooks && pillar.hooks.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">可用 Hook</p>
+                          <div className="space-y-1">
+                            {pillar.hooks.map((hook, j) => (
+                              <p key={j} className="text-xs text-muted-foreground">• {hook}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </CardContent>
