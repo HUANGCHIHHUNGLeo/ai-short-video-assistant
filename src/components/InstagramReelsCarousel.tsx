@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useCallback } from "react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Play } from "lucide-react"
@@ -8,137 +8,225 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react"
 interface ReelItem {
   id: string
   type: "p" | "reel"
+  username: string
 }
 
 // 在這裡加入你的 Instagram 貼文 / Reels 網址
 // type: "p" = 一般貼文, "reel" = Reels 短影片
+// username: Instagram 帳號名稱（不含 @）
 const REELS: ReelItem[] = [
-  { id: "DUM7TcKEdi9", type: "p" },
-  { id: "DUA5dcvkXPd", type: "p" },
-  { id: "DT-SPnrEZxO", type: "p" },
-  { id: "DTp2W-EEUlq", type: "p" },
-  { id: "DTj2E06EboD", type: "p" },
-  { id: "DTU43BSCXCw", type: "p" },
-  { id: "DTaIQpsk88v", type: "p" },
-  { id: "DTK79yok13-", type: "p" },
-  { id: "DTM3jowCUph", type: "p" },
-  { id: "DTdKK3dAURf", type: "p" },
+  { id: "DUM7TcKEdi9", type: "p", username: "kai_chi77" },
+  { id: "DUA5dcvkXPd", type: "p", username: "kai_chi77" },
+  { id: "DT-SPnrEZxO", type: "p", username: "kai_chi77" },
+  { id: "DTp2W-EEUlq", type: "p", username: "kai_chi77" },
+  { id: "DTj2E06EboD", type: "p", username: "kai_chi77" },
+  { id: "DTU43BSCXCw", type: "p", username: "kai_chi77" },
+  { id: "DTaIQpsk88v", type: "p", username: "kai_chi77" },
+  { id: "DTK79yok13-", type: "p", username: "kai_chi77" },
+  { id: "DTM3jowCUph", type: "p", username: "kai_chi77" },
+  { id: "DTdKK3dAURf", type: "p", username: "kai_chi77" },
 ]
 
 export default function InstagramReelsCarousel() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -220 : 220,
-        behavior: "smooth",
-      })
-    }
+  // 拖曳滑動狀態（用 ref 避免不必要的 re-render）
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragScrollLeft = useRef(0)
+  const hasDragged = useRef(false)
+
+  const scroll = (dir: "left" | "right") => {
+    scrollRef.current?.scrollBy({
+      left: dir === "left" ? -220 : 220,
+      behavior: "smooth",
+    })
   }
+
+  // 滑鼠拖曳：按住左右移動橫幅
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true
+    hasDragged.current = false
+    dragStartX.current = e.pageX
+    dragScrollLeft.current = scrollRef.current?.scrollLeft ?? 0
+  }, [])
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return
+    e.preventDefault()
+    const dx = e.pageX - dragStartX.current
+    if (Math.abs(dx) > 5) hasDragged.current = true
+    if (scrollRef.current) scrollRef.current.scrollLeft = dragScrollLeft.current - dx
+  }, [])
+
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false
+  }, [])
+
+  const onCardClick = useCallback((reel: ReelItem) => {
+    if (!hasDragged.current) setSelectedReel(reel)
+  }, [])
 
   if (REELS.length === 0) return null
 
   return (
-    <div className="mb-2">
-      <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-        <Play className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-        推薦影片
-      </h2>
+    <>
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      <div className="relative group/carousel">
-        {/* 左滑按鈕 */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-full shadow-md"
-          onClick={() => scroll("left")}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+      <div className="mb-2">
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <Play className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          推薦影片
+        </h2>
 
-        {/* 可滾動容器 */}
-        <div
-          ref={scrollRef}
-          className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {REELS.map((reel) => (
-            <div
-              key={reel.id}
-              className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
-              onClick={() => setSelectedReel(reel)}
-            >
-              {/* 用較大的 iframe 再縮小，只顯示影片畫面 */}
+        <div className="relative group/carousel">
+          {/* 左滑按鈕 */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-full shadow-md"
+            onClick={() => scroll("left")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {/* 可滾動容器（支援拖曳滑動） */}
+          <div
+            ref={scrollRef}
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 select-none cursor-grab active:cursor-grabbing hide-scrollbar"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+          >
+            {REELS.map((reel) => (
               <div
-                className="origin-top-left"
-                style={{
-                  width: 326,
-                  height: 580,
-                  transform: "scale(0.555)",
-                }}
+                key={reel.id}
+                className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
+                onClick={() => onCardClick(reel)}
               >
-                <iframe
-                  src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
-                  width="326"
-                  height="580"
-                  className="pointer-events-none border-0"
-                  loading="lazy"
-                  allow="encrypted-media"
-                />
-              </div>
-              {/* 點擊遮罩 */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                  <Play className="h-5 w-5 text-black fill-black ml-0.5" />
+                {/* 縮放預覽 iframe */}
+                <div
+                  className="origin-top-left"
+                  style={{ width: 326, height: 580, transform: "scale(0.555)" }}
+                >
+                  <iframe
+                    src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
+                    width="326"
+                    height="580"
+                    className="pointer-events-none border-0"
+                    loading="lazy"
+                    allow="encrypted-media"
+                    draggable={false}
+                  />
+                </div>
+
+                {/* Hover 霧面遮罩 + IG 帳號 */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 group-hover:backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center flex-col gap-2 pointer-events-none">
+                  <svg
+                    className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                  </svg>
+                  <span className="text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg">
+                    @{reel.username}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* 右滑按鈕 */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-full shadow-md"
+            onClick={() => scroll("right")}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
 
-        {/* 右滑按鈕 */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-full shadow-md"
-          onClick={() => scroll("right")}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+        {/* 彈窗 - 左：影片 / 右：僅內文 */}
+        <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
+          <DialogContent className="max-w-[950px] max-h-[85vh] p-0 overflow-hidden">
+            <DialogTitle className="sr-only">Instagram Post</DialogTitle>
+            {selectedReel && (
+              <div className="flex flex-col md:flex-row h-[80vh]">
+                {/* 左側：影片嵌入（桌面版） */}
+                <div className="hidden md:block flex-1 bg-black min-w-0">
+                  <iframe
+                    src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
+                    width="100%"
+                    height="100%"
+                    className="border-0"
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  />
+                </div>
 
-      {/* 點擊彈窗 - 左右兩欄：影片 + 內文 */}
-      <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-        <DialogContent className="max-w-[950px] max-h-[85vh] p-0 overflow-hidden">
-          <DialogTitle className="sr-only">Instagram Post</DialogTitle>
-          {selectedReel && (
-            <div className="flex flex-col md:flex-row h-[80vh]">
-              {/* 左側：影片（桌面版顯示） */}
-              <div className="hidden md:block flex-1 bg-black min-w-0">
-                <iframe
-                  src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
-                  width="100%"
-                  height="100%"
-                  className="border-0"
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                />
+                {/* 右側：僅內文（不重複顯示影片） */}
+                <div className="flex-1 md:flex-none md:w-95 md:border-l overflow-hidden bg-white">
+                  {/* 手機版：完整嵌入 */}
+                  <div className="md:hidden h-full overflow-y-auto hide-scrollbar">
+                    <iframe
+                      src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
+                      width="100%"
+                      height="1200"
+                      className="border-0"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                    />
+                  </div>
+
+                  {/* 桌面版：帳號 header + 偏移隱藏影片只顯示內文 + 底部連結 */}
+                  <div className="hidden md:flex md:flex-col h-full">
+                    {/* 帳號 header */}
+                    <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
+                      <svg
+                        className="w-5 h-5 text-pink-500"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                      </svg>
+                      <span className="font-semibold text-sm text-gray-900">
+                        @{selectedReel.username}
+                      </span>
+                    </div>
+
+                    {/* 內文區域（用絕對定位 + 偏移隱藏影片部分） */}
+                    <div className="flex-1 overflow-hidden relative">
+                      <iframe
+                        src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
+                        className="border-0 absolute left-0 right-0"
+                        style={{ top: -480, width: "100%", height: 2000 }}
+                        allow="encrypted-media"
+                      />
+                    </div>
+
+                    {/* 底部連結 */}
+                    <div className="px-4 py-3 border-t text-center shrink-0">
+                      <a
+                        href={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+                      >
+                        到 Instagram 查看完整貼文 →
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-              {/* 右側：含內文的完整嵌入（桌面版）/ 手機版全寬顯示 */}
-              <div className="flex-1 md:flex-none md:w-[380px] md:border-l overflow-y-auto bg-white">
-                <iframe
-                  src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
-                  width="100%"
-                  height="1200"
-                  className="border-0"
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                />
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   )
 }
