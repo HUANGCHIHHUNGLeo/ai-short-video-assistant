@@ -164,7 +164,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-x-hidden">
       {/* Auth Modal */}
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
 

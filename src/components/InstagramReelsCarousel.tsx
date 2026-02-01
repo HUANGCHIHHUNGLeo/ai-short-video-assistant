@@ -138,7 +138,7 @@ export default function InstagramReelsCarousel() {
           {/* 可滾動容器（支援拖曳滑動） */}
           <div
             ref={scrollRef}
-            className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 select-none cursor-grab active:cursor-grabbing hide-scrollbar"
+            className="flex gap-2 sm:gap-4 overflow-x-auto pb-3 select-none cursor-grab active:cursor-grabbing hide-scrollbar"
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
@@ -147,16 +147,14 @@ export default function InstagramReelsCarousel() {
             {REELS.map((reel) => (
               <div
                 key={reel.id}
-                className="flex-shrink-0 w-[140px] sm:w-[200px] h-[250px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
+                className="flex-shrink-0 w-[28vw] sm:w-[200px] h-[50vw] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
                 onClick={() => onCardClick(reel)}
               >
                 {/* 只顯示影片封面（裁掉 IG 嵌入的頭尾 UI） */}
                 <iframe
                   src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
-                  width="326"
-                  height="580"
                   className="pointer-events-none border-0 absolute left-1/2 -translate-x-1/2"
-                  style={{ top: -56 }}
+                  style={{ top: -56, width: 326, height: 580 }}
                   loading="lazy"
                   allow="encrypted-media"
                   draggable={false}
