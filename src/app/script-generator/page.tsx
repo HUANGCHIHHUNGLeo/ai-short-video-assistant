@@ -139,7 +139,7 @@ function ScriptGeneratorContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false) // 細節分析中
   const [preAnalysis, setPreAnalysis] = useState<{
     analysis: string
-    questions: { id: string; question: string; placeholder: string; why: string }[]
+    questions: { id: string; question: string; placeholder: string; why: string; suggestions?: string[] }[]
   } | null>(null)
   const [preAnalysisAnswers, setPreAnalysisAnswers] = useState<Record<string, string>>({})
   const [selectedPositioningId, setSelectedPositioningId] = useState<string | null>(null)
@@ -323,7 +323,7 @@ function ScriptGeneratorContent() {
       const response = await fetch("/api/script-pre-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creatorBackground, videoSettings })
+        body: JSON.stringify({ creatorBackground, videoSettings, positioningData: positioningData || undefined })
       })
 
       if (response.ok) {
@@ -336,9 +336,9 @@ function ScriptGeneratorContent() {
         setPreAnalysis({
           analysis: "讓我根據你的設定來幫你優化腳本。先回答幾個問題，讓腳本更有料！",
           questions: [
-            { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人" },
-            { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高" },
-            { id: "q3", question: "關於這個主題，一般人最容易犯的錯或最大的誤解是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念" },
+            { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人", suggestions: ["剛入行的時候踩了很多坑，花了不少冤枉錢才學到教訓", "有一次遇到很大的挫折，差點想放棄，後來靠一個方法撐過來了"] },
+            { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高", suggestions: ["至少知道一個馬上可以用的方法", "改變一個錯誤的觀念或習慣"] },
+            { id: "q3", question: "關於這個主題，一般人最容易犯的錯或最大的誤解是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念", suggestions: ["大部分人以為很難，其實掌握關鍵就不難", "很多人做錯了第一步，後面全部白費"] },
           ]
         })
         setPreAnalysisAnswers({})
@@ -349,9 +349,9 @@ function ScriptGeneratorContent() {
       setPreAnalysis({
         analysis: "讓我根據你的設定來幫你優化腳本。先回答幾個問題！",
         questions: [
-          { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人" },
-          { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高" },
-          { id: "q3", question: "關於這個主題，一般人最容易犯的錯是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念" },
+          { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人", suggestions: ["剛入行的時候踩了很多坑，花了不少冤枉錢才學到教訓", "有一次遇到很大的挫折，差點想放棄，後來靠一個方法撐過來了"] },
+          { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高", suggestions: ["至少知道一個馬上可以用的方法", "改變一個錯誤的觀念或習慣"] },
+          { id: "q3", question: "關於這個主題，一般人最容易犯的錯是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念", suggestions: ["大部分人以為很難，其實掌握關鍵就不難", "很多人做錯了第一步，後面全部白費"] },
         ]
       })
       setPreAnalysisAnswers({})
@@ -1286,6 +1286,24 @@ function ScriptGeneratorContent() {
                       onChange={(e) => setPreAnalysisAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
                       className="h-20 sm:h-24 resize-none text-sm"
                     />
+                    {q.suggestions && q.suggestions.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 pl-7">
+                        {q.suggestions.map((suggestion, sIdx) => (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => setPreAnalysisAnswers(prev => ({ ...prev, [q.id]: suggestion }))}
+                            className={`text-left text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
+                              preAnalysisAnswers[q.id] === suggestion
+                                ? 'bg-primary/10 border-primary/40 text-primary'
+                                : 'bg-muted/50 border-border hover:bg-muted hover:border-primary/30'
+                            }`}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-[10px] sm:text-xs text-muted-foreground pl-7">
                       {q.why}
                     </p>
