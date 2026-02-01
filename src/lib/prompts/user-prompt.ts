@@ -153,10 +153,13 @@ export function buildUserPrompt(options: BuildUserPromptOptions): string {
   }
 
   // 3. ⭐ 細節問答的回答（Step 3 的追問結果 — 使用者最具體的素材，放最前面！）
-  if (preAnalysisAnswers && preAnalysisQuestions) {
+  const hasStep3Answers = preAnalysisAnswers && preAnalysisQuestions &&
+    preAnalysisQuestions.some(q => preAnalysisAnswers[q.id]?.trim())
+
+  if (hasStep3Answers && preAnalysisQuestions) {
     const answeredPairs: string[] = []
     for (const q of preAnalysisQuestions) {
-      const answer = preAnalysisAnswers[q.id]
+      const answer = preAnalysisAnswers![q.id]
       if (answer && answer.trim().length > 0) {
         answeredPairs.push(`問：${q.question}\n答：${answer.trim()}`)
       }
@@ -177,6 +180,15 @@ ${answeredPairs.join('\n\n')}
 - 不能自己編造「新的故事」來取代，但可以把同一個故事說得更生動
 - 每個版本都必須融入這些素材，不能忽略！`)
     }
+  } else {
+    // Step 3 被跳過或沒有回答 → 強調 Step 2 的資料就是主要素材
+    parts.push(`## ⚠️ 腳本素材來源
+創作者沒有提供額外的細節補充，所以請完全根據上方的「影片設定」來生成腳本：
+- 如果有「想傳達的價值」→ 這是腳本的核心乾貨，每個版本都要圍繞它
+- 如果有「想分享的故事」→ 這是腳本的故事骨架，要延伸成有畫面感的敘述
+- 如果有「觀眾該學到什麼」→ 這是腳本的收尾目標，結尾要能落地
+- 即使這些都沒填，也要根據「主題」和「創作者領域」生成有具體乾貨的腳本
+- ⚠️ 不能因為素材少就寫出空泛的腳本！要主動補充跟主題相關的具體案例、數字、方法`)
   }
 
   // 4. 創作者資訊
