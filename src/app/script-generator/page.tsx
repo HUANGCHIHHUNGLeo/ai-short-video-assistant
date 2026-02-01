@@ -30,7 +30,9 @@ import {
   User,
   Users,
   Video,
-  MessageCircle
+  MessageCircle,
+  MessageSquare,
+  Loader2
 } from "lucide-react"
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
@@ -145,6 +147,10 @@ function ScriptGeneratorContent() {
   const [selectedPositioningId, setSelectedPositioningId] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [positioningData, setPositioningData] = useState<Record<string, any> | null>(null) // 完整定位報告
+  // Step 5 修改討論區
+  const [revisionFeedback, setRevisionFeedback] = useState('')
+  const [isRevising, setIsRevising] = useState(false)
+  const [revisingVersionId, setRevisingVersionId] = useState<string | null>(null) // 正在修改哪個版本
 
   const { canUseFeature, useCredit, display, credits, isLoading: creditsLoading } = useCredits()
 
@@ -467,6 +473,96 @@ function ScriptGeneratorContent() {
       }
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  // Step 5: 修改腳本
+  const handleRevise = async (versionToRevise: ScriptVersion) => {
+    if (!revisionFeedback.trim()) return
+
+    // 檢查額度
+    const creditCheck = canUseFeature('script')
+    if (!creditCheck.canUse && creditCheck.message !== '載入中...') {
+      setCreditError(creditCheck.message || '額度不足')
+      return
+    }
+
+    setCreditError(null)
+    setIsRevising(true)
+
+    try {
+      const response = await fetch("/api/revise-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalVersion: versionToRevise,
+          revisionFeedback: revisionFeedback.trim(),
+          creatorBackground,
+          videoSettings,
+          positioningData: positioningData || undefined,
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        alert(`修改失敗：${errorData.error || `伺服器錯誤 (${response.status})`}`)
+        return
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        alert("修改失敗：無法讀取回應")
+        return
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || ''
+
+        for (const event of events) {
+          if (!event.startsWith('data: ')) continue
+          try {
+            const data = JSON.parse(event.slice(6))
+
+            if (data.type === 'done') {
+              if (data.result?.versions?.length > 0) {
+                if (data._creditConsumed) {
+                  useCredit('script')
+                }
+                const revisedVersion = data.result.versions[0] as ScriptVersion
+                // 確保修改版 id 帶 ' 標記
+                if (!revisedVersion.id.includes("'")) {
+                  revisedVersion.id = `${versionToRevise.id}'`
+                }
+                // 加入生成列表
+                setGeneratedVersions(prev => [...prev, revisedVersion])
+                setActiveVersion(revisedVersion.id)
+                // 清理修改面板
+                setRevisionFeedback('')
+                setRevisingVersionId(null)
+              } else if (data.result?.error) {
+                alert(`修改失敗：${data.result.error}`)
+              }
+            } else if (data.type === 'error') {
+              alert(`修改失敗：${data.error}`)
+            }
+          } catch {
+            // 忽略解析失敗的事件
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Revise error:", error)
+      alert("修改時發生錯誤，請稍後再試")
+    } finally {
+      setIsRevising(false)
     }
   }
 
@@ -1574,6 +1670,17 @@ function ScriptGeneratorContent() {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setRevisingVersionId(revisingVersionId === version.id ? null : version.id)
+                              setRevisionFeedback('')
+                            }}
+                            className={revisingVersionId === version.id ? 'border-primary text-primary' : ''}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </CardHeader>
@@ -2000,6 +2107,84 @@ function ScriptGeneratorContent() {
                     </div>
                   </div>
                 </div>
+
+                {/* 修改討論面板 */}
+                {revisingVersionId === version.id && (
+                  <Card className="mt-4 border-primary/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        修改「{version.style}」
+                      </CardTitle>
+                      <CardDescription>
+                        描述你想怎麼修改，AI 會根據你的指示調整這個版本（消耗 1 次額度）
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Textarea
+                        placeholder="例如：第三四段太矯情了，改成更自然的對話風格..."
+                        value={revisionFeedback}
+                        onChange={(e) => setRevisionFeedback(e.target.value)}
+                        className="h-24 resize-none text-sm"
+                        disabled={isRevising}
+                      />
+
+                      {/* 快捷建議 chips */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          "語氣太正式，改成更口語自然",
+                          "內容太空泛，加入更多具體數字和案例",
+                          "開頭不夠吸引人，換一個更有衝擊力的開場",
+                          "結尾 CTA 太硬銷，改柔和一點",
+                          "整體太長，幫我精簡",
+                          "太像 AI 寫的，改成更真實的感覺",
+                        ].map((chip, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={isRevising}
+                            onClick={() => setRevisionFeedback(prev =>
+                              prev ? `${prev}\n${chip}` : chip
+                            )}
+                            className="text-left text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full border bg-muted/50 border-border hover:bg-muted hover:border-primary/30 transition-colors disabled:opacity-50"
+                          >
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          onClick={() => handleRevise(version)}
+                          disabled={!revisionFeedback.trim() || isRevising}
+                          className="flex-1"
+                        >
+                          {isRevising ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              修改中...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              送出修改
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setRevisingVersionId(null)
+                            setRevisionFeedback('')
+                          }}
+                          disabled={isRevising}
+                        >
+                          取消
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             ))}
           </Tabs>

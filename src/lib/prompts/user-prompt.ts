@@ -141,7 +141,7 @@ export function buildUserPrompt(options: BuildUserPromptOptions): string {
   const shootingType = videoSettings.shootingType || 'talking_head'
   const ctaType = (videoSettings.cta || 'follow') as CTAType
 
-  // 組合各區塊
+  // 組合各區塊（順序很重要！使用者素材放前面，規則放後面）
   const parts: (string | null)[] = []
 
   // 1. 基本請求
@@ -152,34 +152,40 @@ export function buildUserPrompt(options: BuildUserPromptOptions): string {
     parts.push(buildPositioningContext(positioningData))
   }
 
-  // 3. 創作者資訊
+  // 3. ⭐ 細節問答的回答（Step 3 的追問結果 — 使用者最具體的素材，放最前面！）
+  if (preAnalysisAnswers && preAnalysisQuestions) {
+    const answeredPairs: string[] = []
+    for (const q of preAnalysisQuestions) {
+      const answer = preAnalysisAnswers[q.id]
+      if (answer && answer.trim().length > 0) {
+        answeredPairs.push(`問：${q.question}\n答：${answer.trim()}`)
+      }
+    }
+    if (answeredPairs.length > 0) {
+      parts.push(`## ⚠️⚠️⚠️ 創作者親自提供的細節素材（最重要！整支腳本要圍繞這些素材！）
+
+以下是創作者針對追問提供的真實故事、數字、方法，這是腳本的核心素材：
+
+${answeredPairs.join('\n\n')}
+
+### 素材使用規則（違反直接重寫！）：
+- ⚠️ 不是照抄！要分析、延伸、轉化成更豐富的腳本語句！
+- 保留核心意思和關鍵數字，但用更口語、更有畫面感的方式表達
+- 例如創作者說「我之前虧了50萬」→ 腳本可以寫成「那時候帳戶直接少了 50 萬，我每天打開手機看一次，心都在滴血」
+- 故事要延伸：創作者給的是骨架，你要補上肉（情境、感受、細節）
+- 數字要保留：創作者提到的具體數字不能改，但可以加上比較和畫面
+- 不能自己編造「新的故事」來取代，但可以把同一個故事說得更生動
+- 每個版本都必須融入這些素材，不能忽略！`)
+    }
+  }
+
+  // 4. 創作者資訊
   parts.push(buildCreatorInfo(creatorBackground))
 
-  // 4. 影片設定
+  // 5. 影片設定
   parts.push(buildVideoSettings(videoSettings, targetDuration, ctaType))
 
-  // 5. 拍攝規格
-  parts.push(buildShootingSpecs(videoSettings))
-
-  // 6. 產業客製化指引
-  parts.push(buildIndustryGuide(creatorBackground.niche))
-
-  // 7. 拍攝類型特別指引（只載入選中的類型）
-  parts.push(buildShootingTypeGuide(shootingType, creatorBackground.niche, targetDuration))
-
-  // 8. 字數要求
-  parts.push(buildWordCountRequirements(targetDuration, targetWordCount, minWordCount, maxWordCount))
-
-  // 9. 標題要求
-  parts.push(buildTitleRequirements(videoSettings.topic))
-
-  // 10. 生成要求（精簡版）
-  parts.push(buildGenerationRequirements(generateVersions, targetDuration, minWordCount, maxWordCount, shootingType))
-
-  // 11. CTA 指引（只載入選中的類型）
-  parts.push(getCTAGuide(ctaType))
-
-  // 12. 版本風格建議（藏鏡人有專屬風格）
+  // 6. 版本風格建議（藏鏡人有專屬風格）
   if (shootingType === 'behind_camera') {
     parts.push(`版本風格建議（每個版本都要是藏鏡人兩人對話格式！）：
 - 版本 A：知識分享版 - 藏鏡人代替觀眾提問，出鏡者分享專業乾貨（「欸這個怎麼做的？」→ 出鏡者詳細講解）
@@ -193,28 +199,26 @@ ${generateVersions > 3 ? `- 版本 D：吐槽互動版 - 藏鏡人邊吐槽邊�
     parts.push(generateVersions > 3 ? VERSION_STYLES_EXTENDED : VERSION_STYLES)
   }
 
-  // 13. 細節問答的回答（Step 3 的追問結果）
-  if (preAnalysisAnswers && preAnalysisQuestions) {
-    const answeredPairs: string[] = []
-    for (const q of preAnalysisQuestions) {
-      const answer = preAnalysisAnswers[q.id]
-      if (answer && answer.trim().length > 0) {
-        answeredPairs.push(`問：${q.question}\n答：${answer.trim()}`)
-      }
-    }
-    if (answeredPairs.length > 0) {
-      parts.push(`## ⚠️⚠️⚠️ 創作者提供的額外細節（必須融入腳本！）
+  // 7. 拍攝規格
+  parts.push(buildShootingSpecs(videoSettings))
 
-以下是創作者針對追問提供的具體細節，這些是最有價值的素材：
+  // 8. 產業客製化指引
+  parts.push(buildIndustryGuide(creatorBackground.niche))
 
-${answeredPairs.join('\n\n')}
+  // 9. 拍攝類型特別指引（只載入選中的類型）
+  parts.push(buildShootingTypeGuide(shootingType, creatorBackground.niche, targetDuration))
 
-### 使用規則：
-- 以上回答中的故事、數字、方法必須直接用在腳本裡！
-- 不能自己編造其他內容來取代創作者提供的真實素材！
-- 這些細節是腳本最有價值的部分，要放在最重要的位置！`)
-    }
-  }
+  // 10. 字數要求
+  parts.push(buildWordCountRequirements(targetDuration, targetWordCount, minWordCount, maxWordCount))
+
+  // 11. 標題要求
+  parts.push(buildTitleRequirements(videoSettings.topic))
+
+  // 12. 生成要求
+  parts.push(buildGenerationRequirements(generateVersions, targetDuration, minWordCount, maxWordCount, shootingType))
+
+  // 13. CTA 指引（只載入選中的類型）
+  parts.push(getCTAGuide(ctaType))
 
   // 14. JSON 格式提示
   parts.push('請用 JSON 格式輸出。')

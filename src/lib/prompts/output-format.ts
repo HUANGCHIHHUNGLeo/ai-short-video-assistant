@@ -34,7 +34,7 @@ export const OUTPUT_FORMAT = `## 輸出格式（JSON，必須完整）
           "mood": "情緒氛圍",
           "suggestions": ["推薦曲目或關鍵字"]
         },
-        "cta": "結尾呼籲（要自然不硬）"
+        "cta": "結尾呼籲（口語化、跟前段內容銜接、後面加（可選）兩字）"
       },
       "shootingTips": ["拍攝建議1", "拍攝建議2"],
       "editingTips": ["剪輯建議"],
