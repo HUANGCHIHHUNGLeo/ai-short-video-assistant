@@ -1018,6 +1018,38 @@ function ScriptGeneratorContent() {
                     onChange={(e) => setVideoSettings({ ...videoSettings, valuePoints: e.target.value })}
                     className="h-20 sm:h-24 resize-none text-sm"
                   />
+                  {positioningData && (() => {
+                    const chips: string[] = []
+                    // 從內容支柱的 topics 拉建議
+                    if (positioningData.contentPillars) {
+                      for (const p of positioningData.contentPillars as Array<{ pillar?: string; topics?: string[] }>) {
+                        if (p.topics) chips.push(...p.topics.slice(0, 2))
+                      }
+                    }
+                    // 從受眾痛點拉建議
+                    if (positioningData.targetAudience?.painPoints) {
+                      chips.push(...(positioningData.targetAudience.painPoints as string[]).slice(0, 2))
+                    }
+                    // 從背景故事的 contentAngles
+                    if (positioningData.backgroundStoryAnalysis?.contentAngles) {
+                      chips.push(...(positioningData.backgroundStoryAnalysis.contentAngles as string[]).slice(0, 2))
+                    }
+                    const unique = [...new Set(chips)].slice(0, 5)
+                    if (unique.length === 0) return null
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {unique.map((chip, i) => (
+                          <button key={i} type="button"
+                            onClick={() => setVideoSettings(prev => ({
+                              ...prev,
+                              valuePoints: prev.valuePoints ? `${prev.valuePoints}\n${chip}` : chip
+                            }))}
+                            className="text-left text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full border bg-muted/50 border-border hover:bg-muted hover:border-primary/30 transition-colors"
+                          >{chip}</button>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
@@ -1030,6 +1062,37 @@ function ScriptGeneratorContent() {
                     onChange={(e) => setVideoSettings({ ...videoSettings, storyToShare: e.target.value })}
                     className="h-20 sm:h-24 resize-none text-sm"
                   />
+                  {positioningData && (() => {
+                    const chips: string[] = []
+                    // 從背景故事的 keyMoments
+                    if (positioningData.backgroundStoryAnalysis?.keyMoments) {
+                      chips.push(...(positioningData.backgroundStoryAnalysis.keyMoments as string[]).slice(0, 3))
+                    }
+                    // 從 emotionalHooks
+                    if (positioningData.backgroundStoryAnalysis?.emotionalHooks) {
+                      chips.push(...(positioningData.backgroundStoryAnalysis.emotionalHooks as string[]).slice(0, 2))
+                    }
+                    // 從 storyAssets
+                    if (positioningData.storyAssets?.workExperience) {
+                      const exp = positioningData.storyAssets.workExperience as string
+                      if (exp.length > 5 && exp.length <= 60) chips.push(exp)
+                    }
+                    const unique = [...new Set(chips)].slice(0, 5)
+                    if (unique.length === 0) return null
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {unique.map((chip, i) => (
+                          <button key={i} type="button"
+                            onClick={() => setVideoSettings(prev => ({
+                              ...prev,
+                              storyToShare: prev.storyToShare ? `${prev.storyToShare}\n${chip}` : chip
+                            }))}
+                            className="text-left text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full border bg-muted/50 border-border hover:bg-muted hover:border-primary/30 transition-colors"
+                          >{chip}</button>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
@@ -1042,6 +1105,37 @@ function ScriptGeneratorContent() {
                     onChange={(e) => setVideoSettings({ ...videoSettings, keyTakeaway: e.target.value })}
                     className="h-16 sm:h-20 resize-none text-sm"
                   />
+                  {positioningData && (() => {
+                    const chips: string[] = []
+                    // 從受眾渴望
+                    if (positioningData.targetAudience?.desires) {
+                      chips.push(...(positioningData.targetAudience.desires as string[]).slice(0, 3))
+                    }
+                    // 從差異化優勢
+                    if (positioningData.differentiator?.uniqueAdvantage) {
+                      const adv = positioningData.differentiator.uniqueAdvantage as string
+                      if (adv.length > 3 && adv.length <= 60) chips.push(adv)
+                    }
+                    // 從 resonancePoints
+                    if (positioningData.backgroundStoryAnalysis?.resonancePoints) {
+                      chips.push(...(positioningData.backgroundStoryAnalysis.resonancePoints as string[]).slice(0, 2))
+                    }
+                    const unique = [...new Set(chips)].slice(0, 5)
+                    if (unique.length === 0) return null
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {unique.map((chip, i) => (
+                          <button key={i} type="button"
+                            onClick={() => setVideoSettings(prev => ({
+                              ...prev,
+                              keyTakeaway: prev.keyTakeaway ? `${prev.keyTakeaway}\n${chip}` : chip
+                            }))}
+                            className="text-left text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full border bg-muted/50 border-border hover:bg-muted hover:border-primary/30 transition-colors"
+                          >{chip}</button>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-500">
