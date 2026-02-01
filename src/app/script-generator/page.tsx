@@ -288,7 +288,11 @@ function ScriptGeneratorContent() {
     emotionalTone: "",
     specialRequirements: "",
     shootingType: "",
-    castCount: ""
+    castCount: "",
+    // 藏鏡人專用
+    valuePoints: "",     // 核心知識/價值點
+    storyToShare: "",    // 出鏡者要分享的故事
+    keyTakeaway: "",     // 觀眾該學到什麼
   })
 
   const handlePlatformChange = (platformId: string, checked: boolean) => {
@@ -939,6 +943,54 @@ function ScriptGeneratorContent() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* 價值輸出設定 — 所有拍攝類型都適用 */}
+              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-amber-700 dark:text-amber-400">
+                  <Lightbulb className="h-4 w-4" />
+                  內容設計（填越多，腳本越有料！）
+                </div>
+
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">
+                    這支影片要傳達的核心知識/價值
+                  </Label>
+                  <Textarea
+                    placeholder={"影片中要傳達什麼有價值的內容？\n例如：\n• 開店第一年虧了 50 萬，後來靠調整菜單翻身\n• 正確的投資心態：不要追高殺低\n• 三個新手最容易犯的錯"}
+                    value={videoSettings.valuePoints}
+                    onChange={(e) => setVideoSettings({ ...videoSettings, valuePoints: e.target.value })}
+                    className="h-20 sm:h-24 resize-none text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">
+                    要帶入的故事/經歷（有故事才有吸引力！）
+                  </Label>
+                  <Textarea
+                    placeholder={"有什麼真實故事可以帶入影片？\n例如：\n• 創業初期被客戶放鴿子，差點撐不下去\n• 第一次帶團被投訴，結果後來成了最受歡迎的導遊\n• 從月薪三萬到年收百萬的轉折點"}
+                    value={videoSettings.storyToShare}
+                    onChange={(e) => setVideoSettings({ ...videoSettings, storyToShare: e.target.value })}
+                    className="h-20 sm:h-24 resize-none text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">
+                    觀眾看完應該學到/記住什麼？
+                  </Label>
+                  <Textarea
+                    placeholder={"觀眾看完影片後，最該帶走的重點是什麼？\n例如：\n• 投資不是賭博，要先學會控制風險\n• 做餐飲最重要的是食材，不是裝潢\n• 創業前先存六個月的生活費"}
+                    value={videoSettings.keyTakeaway}
+                    onChange={(e) => setVideoSettings({ ...videoSettings, keyTakeaway: e.target.value })}
+                    className="h-16 sm:h-20 resize-none text-sm"
+                  />
+                </div>
+
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-500">
+                  以上欄位不是必填，但填了會讓腳本更有深度！AI 會根據你提供的內容來設計腳本。
+                </p>
               </div>
 
               <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
