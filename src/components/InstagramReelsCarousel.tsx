@@ -109,18 +109,33 @@ export default function InstagramReelsCarousel() {
         </Button>
       </div>
 
-      {/* 點擊彈窗 - 顯示完整 Instagram Embed（含內文） */}
+      {/* 點擊彈窗 - 左右兩欄：影片 + 內文 */}
       <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-        <DialogContent className="max-w-[540px] max-h-[90vh] p-0 overflow-y-auto">
-          <DialogTitle className="sr-only">Instagram Reel</DialogTitle>
+        <DialogContent className="max-w-[950px] max-h-[85vh] p-0 overflow-hidden">
+          <DialogTitle className="sr-only">Instagram Post</DialogTitle>
           {selectedReel && (
-            <iframe
-              src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
-              width="100%"
-              height="750"
-              className="border-0"
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            />
+            <div className="flex flex-col md:flex-row h-[80vh]">
+              {/* 左側：影片（桌面版顯示） */}
+              <div className="hidden md:block flex-1 bg-black min-w-0">
+                <iframe
+                  src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
+                  width="100%"
+                  height="100%"
+                  className="border-0"
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                />
+              </div>
+              {/* 右側：含內文的完整嵌入（桌面版）/ 手機版全寬顯示 */}
+              <div className="flex-1 md:flex-none md:w-[380px] md:border-l overflow-y-auto bg-white">
+                <iframe
+                  src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
+                  width="100%"
+                  height="1200"
+                  className="border-0"
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                />
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
