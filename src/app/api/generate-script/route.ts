@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return authError(authResult)
     }
 
-    const { creatorBackground, videoSettings, generateVersions = 3, positioningData } = await request.json()
+    const { creatorBackground, videoSettings, generateVersions = 3, positioningData, preAnalysisAnswers, preAnalysisQuestions } = await request.json()
 
     if (!creatorBackground?.niche || !videoSettings?.topic) {
       return NextResponse.json({ error: "請提供完整的創作者背景和影片設定" }, { status: 400 })
@@ -30,7 +30,9 @@ export async function POST(request: NextRequest) {
       creatorBackground,
       videoSettings,
       generateVersions,
-      positioningData
+      positioningData,
+      preAnalysisAnswers,
+      preAnalysisQuestions
     })
 
     // 使用模組化 prompt - 根據拍攝類型動態組合

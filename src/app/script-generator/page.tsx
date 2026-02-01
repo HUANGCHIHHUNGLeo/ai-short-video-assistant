@@ -29,7 +29,8 @@ import {
   Target,
   User,
   Users,
-  Video
+  Video,
+  MessageCircle
 } from "lucide-react"
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
@@ -135,6 +136,12 @@ function ScriptGeneratorContent() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [creditError, setCreditError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"simple" | "professional">("simple") // 檢視模式
+  const [isAnalyzing, setIsAnalyzing] = useState(false) // 細節分析中
+  const [preAnalysis, setPreAnalysis] = useState<{
+    analysis: string
+    questions: { id: string; question: string; placeholder: string; why: string }[]
+  } | null>(null)
+  const [preAnalysisAnswers, setPreAnalysisAnswers] = useState<Record<string, string>>({})
   const [selectedPositioningId, setSelectedPositioningId] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [positioningData, setPositioningData] = useState<Record<string, any> | null>(null) // 完整定位報告
@@ -309,6 +316,51 @@ function ScriptGeneratorContent() {
     }
   }
 
+  // Step 2 → Step 3：呼叫 pre-analysis API 產生細節問題
+  const handlePreAnalysis = async () => {
+    setIsAnalyzing(true)
+    try {
+      const response = await fetch("/api/script-pre-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ creatorBackground, videoSettings })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPreAnalysis(data)
+        setPreAnalysisAnswers({}) // 重置答案
+        setStep(3)
+      } else {
+        // 如果 pre-analysis 失敗，用預設問題繼續
+        setPreAnalysis({
+          analysis: "讓我根據你的設定來幫你優化腳本。先回答幾個問題，讓腳本更有料！",
+          questions: [
+            { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人" },
+            { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高" },
+            { id: "q3", question: "關於這個主題，一般人最容易犯的錯或最大的誤解是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念" },
+          ]
+        })
+        setPreAnalysisAnswers({})
+        setStep(3)
+      }
+    } catch {
+      // 網路錯誤也用預設問題
+      setPreAnalysis({
+        analysis: "讓我根據你的設定來幫你優化腳本。先回答幾個問題！",
+        questions: [
+          { id: "q1", question: "關於這個主題，你有什麼真實的故事或經歷可以分享？", placeholder: "例如：我曾經因為XXX虧了50萬...", why: "真實故事讓腳本更吸引人" },
+          { id: "q2", question: "你想讓觀眾看完之後記住什麼重點？", placeholder: "例如：投資最重要的是風險控管", why: "有明確重點的影片完播率更高" },
+          { id: "q3", question: "關於這個主題，一般人最容易犯的錯是什麼？", placeholder: "例如：大家都以為要很多錢才能開始...", why: "打破迷思能製造懸念" },
+        ]
+      })
+      setPreAnalysisAnswers({})
+      setStep(3)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
   const handleGenerate = async () => {
     // 如果 credits 還在載入，等待一下
     if (creditsLoading) {
@@ -335,7 +387,10 @@ function ScriptGeneratorContent() {
           creatorBackground,
           videoSettings,
           generateVersions: generateCount,
-          positioningData: positioningData || undefined // 如果有定位報告，傳給 API
+          positioningData: positioningData || undefined,
+          // Step 3 的細節問答（如果有的話）
+          preAnalysisAnswers: Object.keys(preAnalysisAnswers).length > 0 ? preAnalysisAnswers : undefined,
+          preAnalysisQuestions: preAnalysis?.questions || undefined
         })
       })
 
@@ -388,7 +443,7 @@ function ScriptGeneratorContent() {
                 }
                 setGeneratedVersions(data.result.versions)
                 setActiveVersion(data.result.versions[0].id)
-                setStep(3)
+                setStep(4)
               } else if (data.result?.error) {
                 alert(`生成失敗：${data.result.error}`)
               } else {
@@ -563,7 +618,7 @@ function ScriptGeneratorContent() {
   const canProceedStep1 = creatorBackground.niche && creatorBackground.targetAudience
   const canProceedStep2 = videoSettings.topic && videoSettings.goal
 
-  const progress = step === 1 ? 33 : step === 2 ? 66 : 100
+  const progress = step === 1 ? 25 : step === 2 ? 50 : step === 3 ? 75 : 100
 
   return (
     <div className="flex flex-col gap-3 sm:gap-6 overflow-hidden">
@@ -591,24 +646,25 @@ function ScriptGeneratorContent() {
           {[
             { num: 1, label: "背景", labelFull: "創作者背景", icon: User },
             { num: 2, label: "設定", labelFull: "影片設定", icon: Target },
-            { num: 3, label: "結果", labelFull: "生成結果", icon: Sparkles },
+            { num: 3, label: "細節", labelFull: "內容細節", icon: MessageCircle },
+            { num: 4, label: "結果", labelFull: "生成結果", icon: Sparkles },
           ].map((item, index) => (
             <div key={item.num} className="flex items-center flex-1 justify-center sm:justify-start sm:flex-initial">
               <div className={`flex flex-col sm:flex-row items-center gap-1 sm:gap-2 ${step >= item.num ? "text-primary" : "text-muted-foreground"}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                   step > item.num
                     ? "bg-primary text-primary-foreground"
                     : step === item.num
                       ? "bg-primary/20 text-primary border-2 border-primary"
                       : "bg-muted text-muted-foreground"
                 }`}>
-                  {step > item.num ? <Check className="h-4 w-4" /> : item.num}
+                  {step > item.num ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : item.num}
                 </div>
-                <span className="text-xs sm:text-sm font-medium sm:hidden">{item.label}</span>
+                <span className="text-[10px] sm:text-sm font-medium sm:hidden">{item.label}</span>
                 <span className="hidden sm:block text-sm font-medium">{item.labelFull}</span>
               </div>
-              {index < 2 && (
-                <div className={`hidden sm:block w-8 md:w-12 lg:w-24 h-0.5 mx-2 ${
+              {index < 3 && (
+                <div className={`hidden sm:block w-4 md:w-8 lg:w-16 h-0.5 mx-1 sm:mx-2 ${
                   step > item.num ? "bg-primary" : "bg-muted"
                 }`} />
               )}
@@ -1145,19 +1201,19 @@ function ScriptGeneratorContent() {
                   上一步
                 </Button>
                 <Button
-                  onClick={handleGenerate}
-                  disabled={!canProceedStep2 || isGenerating}
-                  className="px-4 sm:px-8 h-9 sm:h-10 text-sm"
+                  onClick={handlePreAnalysis}
+                  disabled={!canProceedStep2 || isAnalyzing}
+                  className="px-6 sm:px-8 h-9 sm:h-10 text-sm"
                 >
-                  {isGenerating ? (
+                  {isAnalyzing ? (
                     <>
                       <RefreshCw className="mr-1.5 sm:mr-2 h-4 w-4 animate-spin" />
-                      生成中...
+                      分析中...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4" />
-                      生成 {generateCount} 個腳本
+                      下一步
+                      <ArrowRight className="h-4 w-4 ml-1.5 sm:ml-2" />
                     </>
                   )}
                 </Button>
@@ -1192,8 +1248,111 @@ function ScriptGeneratorContent() {
         </div>
       )}
 
-      {/* Step 3 */}
-      {step === 3 && generatedVersions.length > 0 && (
+      {/* Step 3 - 細節問答 */}
+      {step === 3 && preAnalysis && (
+        <div className="grid gap-3 sm:gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden">
+            <CardHeader className="px-3 py-3 sm:px-6 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                Step 3：內容細節
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                回答以下問題讓 AI 生成更有價值的腳本（可以跳過不填）
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
+              {/* 微分析 */}
+              <div className="p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-sm sm:text-base leading-relaxed">{preAnalysis.analysis}</p>
+                </div>
+              </div>
+
+              {/* 問題列表 */}
+              <div className="space-y-4 sm:space-y-5">
+                {preAnalysis.questions.map((q, index) => (
+                  <div key={q.id} className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-xs sm:text-sm font-medium flex items-start gap-2">
+                      <span className="bg-primary/10 text-primary text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        {index + 1}
+                      </span>
+                      <span>{q.question}</span>
+                    </Label>
+                    <Textarea
+                      placeholder={q.placeholder}
+                      value={preAnalysisAnswers[q.id] || ''}
+                      onChange={(e) => setPreAnalysisAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                      className="h-20 sm:h-24 resize-none text-sm"
+                    />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground pl-7">
+                      {q.why}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* 額度不足提示 */}
+              {creditError && !creditsLoading && creditError !== '載入中...' && (
+                <CreditsAlert message={creditError} featureType="script" />
+              )}
+
+              <div className="flex justify-between pt-3 sm:pt-4">
+                <Button variant="outline" onClick={() => setStep(2)} className="h-9 sm:h-10 text-sm">
+                  <ArrowLeft className="h-4 w-4 mr-1.5 sm:mr-2" />
+                  上一步
+                </Button>
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="px-4 sm:px-8 h-9 sm:h-10 text-sm"
+                >
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="mr-1.5 sm:mr-2 h-4 w-4 animate-spin" />
+                      生成中...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4" />
+                      生成 {generateCount} 個腳本
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 右側面板 - 目前設定摘要 */}
+          <Card className="h-fit hidden lg:block">
+            <CardHeader>
+              <CardTitle className="text-base">目前設定</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground">影片主題</p>
+                <p className="font-medium">{videoSettings.topic || "—"}</p>
+              </div>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground">拍攝方式</p>
+                <p className="font-medium">{videoSettings.shootingType || "—"}</p>
+              </div>
+              <div className="flex gap-2">
+                <Badge variant="secondary">{videoSettings.duration}秒</Badge>
+                <Badge variant="secondary">{generateCount} 版本</Badge>
+              </div>
+              <Separator />
+              <p className="text-xs text-muted-foreground">
+                以上問題不是必填，但回答越多，腳本品質越好！
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Step 4 - 生成結果 */}
+      {step === 4 && generatedVersions.length > 0 && (
         <div className="space-y-6">
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="py-4">
@@ -1212,10 +1371,10 @@ function ScriptGeneratorContent() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(3)}
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    調整設定
+                    重新調整
                   </Button>
                   <Button
                     variant="ghost"

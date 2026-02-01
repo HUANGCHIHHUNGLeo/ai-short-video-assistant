@@ -117,6 +117,9 @@ export interface BuildUserPromptOptions {
   videoSettings: VideoSettings
   generateVersions?: number
   positioningData?: PositioningData
+  // Step 3 細節問答
+  preAnalysisAnswers?: Record<string, string>
+  preAnalysisQuestions?: { id: string; question: string }[]
 }
 
 /**
@@ -127,7 +130,7 @@ export interface BuildUserPromptOptions {
  * @returns 組裝好的 user prompt
  */
 export function buildUserPrompt(options: BuildUserPromptOptions): string {
-  const { creatorBackground, videoSettings, generateVersions = 3, positioningData } = options
+  const { creatorBackground, videoSettings, generateVersions = 3, positioningData, preAnalysisAnswers, preAnalysisQuestions } = options
 
   // 計算目標字數
   const targetDuration = videoSettings.duration || 45
@@ -190,7 +193,30 @@ ${generateVersions > 3 ? `- 版本 D：吐槽互動版 - 藏鏡人邊吐槽邊�
     parts.push(generateVersions > 3 ? VERSION_STYLES_EXTENDED : VERSION_STYLES)
   }
 
-  // 13. JSON 格式提示
+  // 13. 細節問答的回答（Step 3 的追問結果）
+  if (preAnalysisAnswers && preAnalysisQuestions) {
+    const answeredPairs: string[] = []
+    for (const q of preAnalysisQuestions) {
+      const answer = preAnalysisAnswers[q.id]
+      if (answer && answer.trim().length > 0) {
+        answeredPairs.push(`問：${q.question}\n答：${answer.trim()}`)
+      }
+    }
+    if (answeredPairs.length > 0) {
+      parts.push(`## ⚠️⚠️⚠️ 創作者提供的額外細節（必須融入腳本！）
+
+以下是創作者針對追問提供的具體細節，這些是最有價值的素材：
+
+${answeredPairs.join('\n\n')}
+
+### 使用規則：
+- 以上回答中的故事、數字、方法必須直接用在腳本裡！
+- 不能自己編造其他內容來取代創作者提供的真實素材！
+- 這些細節是腳本最有價值的部分，要放在最重要的位置！`)
+    }
+  }
+
+  // 14. JSON 格式提示
   parts.push('請用 JSON 格式輸出。')
 
   return parts.filter(Boolean).join('\n\n')
