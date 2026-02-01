@@ -532,7 +532,7 @@ function ScriptGeneratorContent() {
   const progress = step === 1 ? 33 : step === 2 ? 66 : 100
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 sm:gap-6 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 sm:gap-4">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-md flex-shrink-0">
@@ -586,18 +586,18 @@ function ScriptGeneratorContent() {
 
       {/* Step 1 */}
       {step === 1 && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
+        <div className="grid gap-3 sm:gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden">
+            <CardHeader className="px-3 py-3 sm:px-6 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Step 1：創作者背景
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 填寫你的領域和目標受眾，AI 會根據這些資訊生成更精準的腳本
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
               {/* 定位選擇器 - 快速帶入過去的定位分析 */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium flex items-center gap-2">
@@ -609,30 +609,30 @@ function ScriptGeneratorContent() {
                   selectedId={selectedPositioningId}
                 />
                 {selectedPositioningId && positioningData && (
-                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-                    <p className="text-xs font-medium text-primary">✓ 已載入完整定位報告，AI 會參考以下內容生成腳本：</p>
-                    <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1.5 sm:space-y-2 overflow-hidden">
+                    <p className="text-[10px] sm:text-xs font-medium text-primary">✓ 已載入完整定位報告，AI 會參考以下內容生成腳本：</p>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground space-y-1 break-words overflow-hidden">
                       {positioningData.positioningStatement && (
-                        <p><span className="font-medium">定位宣言：</span>{positioningData.positioningStatement}</p>
+                        <p className="line-clamp-2 sm:line-clamp-none"><span className="font-medium">定位宣言：</span>{positioningData.positioningStatement}</p>
                       )}
                       {positioningData.persona?.coreIdentity && (
-                        <p><span className="font-medium">人設定位：</span>{positioningData.persona.coreIdentity}</p>
+                        <p className="line-clamp-1 sm:line-clamp-none"><span className="font-medium">人設定位：</span>{positioningData.persona.coreIdentity}</p>
                       )}
                       {positioningData.targetAudience?.who && (
-                        <p><span className="font-medium">目標受眾：</span>{positioningData.targetAudience.who}</p>
+                        <p className="line-clamp-1 sm:line-clamp-none"><span className="font-medium">目標受眾：</span>{positioningData.targetAudience.who}</p>
                       )}
                       {positioningData.backgroundStoryAnalysis?.summary && (
-                        <p><span className="font-medium">背景故事摘要：</span>{positioningData.backgroundStoryAnalysis.summary}</p>
+                        <p className="line-clamp-2 sm:line-clamp-none"><span className="font-medium">背景故事摘要：</span>{positioningData.backgroundStoryAnalysis.summary}</p>
                       )}
                       {positioningData.contentPillars && positioningData.contentPillars.length > 0 && (
-                        <p><span className="font-medium">內容支柱：</span>{positioningData.contentPillars.map((p: {pillar: string}) => p.pillar).join('、')}</p>
+                        <p className="line-clamp-1 sm:line-clamp-none"><span className="font-medium">內容支柱：</span>{positioningData.contentPillars.map((p: {pillar: string}) => p.pillar).join('、')}</p>
                       )}
                       {positioningData.personaTags && positioningData.personaTags.length > 0 && (
-                        <p><span className="font-medium">人設標籤：</span>{positioningData.personaTags.join('、')}</p>
+                        <p className="line-clamp-1 sm:line-clamp-none"><span className="font-medium">人設標籤：</span>{positioningData.personaTags.join('、')}</p>
                       )}
                     </div>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 border-t border-primary/10 pt-2">
-                      ⚠️ 請確認上方背景故事是否正確！如果不是你要的，請重新選擇正確的定位記錄。
+                    <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-1.5 sm:mt-2 border-t border-primary/10 pt-1.5 sm:pt-2">
+                      ⚠️ 請確認上方背景故事是否正確！
                     </p>
                   </div>
                 )}
@@ -640,22 +640,23 @@ function ScriptGeneratorContent() {
 
               <Separator />
 
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-xs sm:text-sm font-medium">
                   你的領域 / 定位 <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   placeholder="例如：個人理財教學、職場成長、健身減脂..."
                   value={creatorBackground.niche}
                   onChange={(e) => setCreatorBackground({ ...creatorBackground, niche: e.target.value })}
-                  className="h-11"
+                  className="h-9 sm:h-11 text-sm"
                 />
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {EXAMPLE_NICHES.map((item) => (
                     <Button
                       key={item}
                       variant={creatorBackground.niche === item ? "default" : "outline"}
                       size="sm"
+                      className="text-xs h-7 sm:h-8 px-2 sm:px-3"
                       onClick={() => setCreatorBackground({ ...creatorBackground, niche: item })}
                     >
                       {item}
@@ -664,13 +665,13 @@ function ScriptGeneratorContent() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-xs sm:text-sm font-medium">
                   目標受眾 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   placeholder="描述你的目標觀眾，例如：25-35歲上班族，想學投資但不知道從何開始..."
-                  className="min-h-[100px] resize-none"
+                  className="min-h-[80px] sm:min-h-[100px] resize-none text-sm"
                   value={creatorBackground.targetAudience}
                   onChange={(e) => setCreatorBackground({ ...creatorBackground, targetAudience: e.target.value })}
                 />
@@ -766,11 +767,11 @@ function ScriptGeneratorContent() {
                 </AccordionItem>
               </Accordion>
 
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end pt-3 sm:pt-4">
                 <Button
                   onClick={() => setStep(2)}
                   disabled={!canProceedStep1}
-                  className="px-8"
+                  className="px-6 sm:px-8 h-9 sm:h-10 text-sm"
                 >
                   下一步
                   <ArrowRight className="h-4 w-4 ml-2" />
@@ -779,7 +780,7 @@ function ScriptGeneratorContent() {
             </CardContent>
           </Card>
 
-          <Card className="h-fit">
+          <Card className="h-fit hidden lg:block">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
@@ -802,32 +803,32 @@ function ScriptGeneratorContent() {
 
       {/* Step 2 */}
       {step === 2 && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
+        <div className="grid gap-3 sm:gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden">
+            <CardHeader className="px-3 py-3 sm:px-6 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Step 2：影片設定
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 設定這支影片的主題、目標和拍攝方式
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
+            <CardContent className="space-y-4 sm:space-y-6 px-3 sm:px-6">
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-xs sm:text-sm font-medium">
                   影片主題 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   placeholder="描述這支影片要講什麼內容、想傳達什麼？&#10;不需要想標題，只要描述主題方向即可，AI 會幫你生成爆款標題"
                   value={videoSettings.topic}
                   onChange={(e) => setVideoSettings({ ...videoSettings, topic: e.target.value })}
-                  className="h-20 resize-none"
+                  className="h-16 sm:h-20 resize-none text-sm"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   {positioningData ? '根據你的定位推薦以下主題，點擊即可使用：' : '不知道要拍什麼？點擊以下範例：'}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {(() => {
                     // 如果有定位資料，從中提取主題建議
                     if (positioningData) {
@@ -854,25 +855,25 @@ function ScriptGeneratorContent() {
                       key={item}
                       variant="outline"
                       size="sm"
-                      className="text-xs h-auto py-1.5 whitespace-normal text-left"
+                      className="text-[10px] sm:text-xs h-auto py-1 sm:py-1.5 px-2 sm:px-3 whitespace-normal text-left max-w-full break-words"
                       onClick={() => setVideoSettings({ ...videoSettings, topic: item })}
                     >
-                      {item.length > 25 ? item.slice(0, 25) + '...' : item}
+                      {item.length > 20 ? item.slice(0, 20) + '...' : item}
                     </Button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">
                     影片目標 <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={videoSettings.goal}
                     onValueChange={(v) => setVideoSettings({ ...videoSettings, goal: v })}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9 sm:h-11 text-sm">
                       <SelectValue placeholder="選擇目標" />
                     </SelectTrigger>
                     <SelectContent>
@@ -884,16 +885,16 @@ function ScriptGeneratorContent() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Mic className="h-4 w-4" />
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     拍攝方式
                   </Label>
                   <Select
                     value={videoSettings.shootingType}
                     onValueChange={(v) => setVideoSettings({ ...videoSettings, shootingType: v })}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9 sm:h-11 text-sm">
                       <SelectValue placeholder="選擇拍攝方式" />
                     </SelectTrigger>
                     <SelectContent>
@@ -910,17 +911,17 @@ function ScriptGeneratorContent() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     演員人數
                   </Label>
                   <Select
                     value={videoSettings.castCount}
                     onValueChange={(v) => setVideoSettings({ ...videoSettings, castCount: v })}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9 sm:h-11 text-sm">
                       <SelectValue placeholder="選擇人數" />
                     </SelectTrigger>
                     <SelectContent>
@@ -932,13 +933,13 @@ function ScriptGeneratorContent() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>影片氛圍</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">影片氛圍</Label>
                   <Select
                     value={videoSettings.emotionalTone}
                     onValueChange={(v) => setVideoSettings({ ...videoSettings, emotionalTone: v })}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9 sm:h-11 text-sm">
                       <SelectValue placeholder="選擇氛圍" />
                     </SelectTrigger>
                     <SelectContent>
@@ -952,16 +953,16 @@ function ScriptGeneratorContent() {
                 </div>
               </div>
 
-              <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     影片長度：{videoSettings.duration} 秒
                   </Label>
                   <Badge variant={
                     videoSettings.duration <= 30 ? "default" :
                     videoSettings.duration <= 60 ? "secondary" : "outline"
-                  }>
+                  } className="text-[10px] sm:text-xs shrink-0">
                     {videoSettings.duration <= 30 ? "極短 / 高完播" :
                      videoSettings.duration <= 60 ? "標準 / 最常見" :
                      videoSettings.duration <= 90 ? "中長 / 教學適合" : "長片 / 深度內容"}
@@ -982,14 +983,14 @@ function ScriptGeneratorContent() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>結尾 CTA</Label>
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="text-xs sm:text-sm">結尾 CTA</Label>
                   <Select
                     value={videoSettings.cta}
                     onValueChange={(v) => setVideoSettings({ ...videoSettings, cta: v })}
                   >
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-9 sm:h-11 text-sm">
                       <SelectValue placeholder="選擇行動呼籲" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1003,11 +1004,11 @@ function ScriptGeneratorContent() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label className="flex items-center gap-2 text-xs sm:text-sm">
                     生成版本數
                     {!creditsLoading && maxVersions < 5 && (
-                      <Badge variant="outline" className="text-xs font-normal">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs font-normal">
                         上限 {maxVersions} 個
                       </Badge>
                     )}
@@ -1041,11 +1042,11 @@ function ScriptGeneratorContent() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>特殊需求（選填）</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm">特殊需求（選填）</Label>
                 <Textarea
                   placeholder="例如：想要搞笑風格、需要包含特定關鍵字..."
-                  className="h-20 resize-none"
+                  className="h-16 sm:h-20 resize-none text-sm"
                   value={videoSettings.specialRequirements}
                   onChange={(e) => setVideoSettings({ ...videoSettings, specialRequirements: e.target.value })}
                 />
@@ -1056,24 +1057,24 @@ function ScriptGeneratorContent() {
                 <CreditsAlert message={creditError} featureType="script" />
               )}
 
-              <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+              <div className="flex justify-between pt-3 sm:pt-4">
+                <Button variant="outline" onClick={() => setStep(1)} className="h-9 sm:h-10 text-sm">
+                  <ArrowLeft className="h-4 w-4 mr-1.5 sm:mr-2" />
                   上一步
                 </Button>
                 <Button
                   onClick={handleGenerate}
                   disabled={!canProceedStep2 || isGenerating}
-                  className="px-8"
+                  className="px-4 sm:px-8 h-9 sm:h-10 text-sm"
                 >
                   {isGenerating ? (
                     <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      <RefreshCw className="mr-1.5 sm:mr-2 h-4 w-4 animate-spin" />
                       生成中...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="mr-1.5 sm:mr-2 h-4 w-4" />
                       生成 {generateCount} 個腳本
                     </>
                   )}
@@ -1082,7 +1083,7 @@ function ScriptGeneratorContent() {
             </CardContent>
           </Card>
 
-          <Card className="h-fit">
+          <Card className="h-fit hidden lg:block">
             <CardHeader>
               <CardTitle className="text-base">目前設定</CardTitle>
             </CardHeader>

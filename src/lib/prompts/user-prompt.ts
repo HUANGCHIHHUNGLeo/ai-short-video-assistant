@@ -167,13 +167,24 @@ export function buildUserPrompt(options: BuildUserPromptOptions): string {
   parts.push(buildTitleRequirements(videoSettings.topic))
 
   // 10. 生成要求（精簡版）
-  parts.push(buildGenerationRequirements(generateVersions, targetDuration, minWordCount, maxWordCount))
+  parts.push(buildGenerationRequirements(generateVersions, targetDuration, minWordCount, maxWordCount, shootingType))
 
   // 11. CTA 指引（只載入選中的類型）
   parts.push(getCTAGuide(ctaType))
 
-  // 12. 版本風格建議
-  parts.push(generateVersions > 3 ? VERSION_STYLES_EXTENDED : VERSION_STYLES)
+  // 12. 版本風格建議（藏鏡人有專屬風格）
+  if (shootingType === 'behind_camera') {
+    parts.push(`版本風格建議（每個版本都要是藏鏡人兩人對話格式！）：
+- 版本 A：知識分享版 - 藏鏡人代替觀眾提問，出鏡者分享專業乾貨（「欸這個怎麼做的？」→ 出鏡者詳細講解）
+- 版本 B：搞笑日常版 - 藏鏡人用日常問題引出荒謬回答，反差製造笑點
+- 版本 C：故事挖掘版 - 藏鏡人用追問引出出鏡者的真實經歷和轉折故事
+${generateVersions > 3 ? `- 版本 D：吐槽互動版 - 藏鏡人邊吐槽邊提問，出鏡者自嘲回應
+- 版本 E：街訪風格版 - 藏鏡人像路人一樣隨機提問，出鏡者即興回答` : ''}
+
+⚠️ 重要：每個版本的 voiceover 都必須是【藏鏡人】和【出鏡者】的對話！不能寫成單人口播！`)
+  } else {
+    parts.push(generateVersions > 3 ? VERSION_STYLES_EXTENDED : VERSION_STYLES)
+  }
 
   // 13. JSON 格式提示
   parts.push('請用 JSON 格式輸出。')
@@ -459,19 +470,45 @@ function buildShootingTypeGuide(shootingType: string, niche: string, duration: n
 - 語氣像在跟同行或有興趣的人聊天`,
 
     behind_camera: `
-## ⚠️ 藏鏡人腳本特別要求（必須遵守！）
+## ⚠️⚠️⚠️ 藏鏡人腳本 - 最重要的規則（違反直接重寫！）
+
+### 🔴 voiceover 欄位格式（絕對不能寫成單人口播！）
+藏鏡人的 voiceover 必須是兩人對話格式：
+- 用【藏鏡人】和【出鏡者】標籤區分說話者
+- 每個 segment 的 voiceover 要包含 2-4 輪問答
+- 對話要自然，像兩個朋友在聊天
+- 藏鏡人負責提問、追問、吐槽、反應
+- 出鏡者負責回答、分享經驗、給乾貨
+
+### voiceover 正確格式範例（必須照做！）：
+"【藏鏡人】：欸你當初怎麼會想做這個？\\n【出鏡者】：其實是被逼的啦，公司倒了。\\n【藏鏡人】：蛤？真假？\\n【出鏡者】：真的，那時候負債快兩百萬。\\n【藏鏡人】：那後來怎麼翻身的？"
+
+❌ 錯誤格式（禁止！這是口播不是藏鏡人！）：
+"你知道我怎麼翻身的嗎？那是我人生最低谷的時刻..."
+
+### segment 結構（不要用 HOOK-CONTENT-CTA 框架！）
+藏鏡人腳本要用「問答輪次」結構：
+- 第 1 段（segmentName: "開場提問"）：藏鏡人丟出第一個問題引發好奇
+- 第 2-4 段（segmentName: "第X輪問答"）：每輪一個主題，藏鏡人追問＋出鏡者回答
+- 最後段（segmentName: "收尾"）：藏鏡人總結或出鏡者給 CTA
+
+### 每個 segment 的 voiceover 至少多長？
+- 每段 voiceover 至少 60-100 字（含兩人的對話）
+- 藏鏡人的話：短句為主（3-15 字），用疑問句引導
+- 出鏡者的話：稍長（20-60 字），給乾貨、講經歷、說故事
 
 ### 台灣口吻（絕對禁止大陸用語！）
 - ❌「你猜怎麼著」→ ✅「結果咧」「後來呢」
 - ❌「咋了」→ ✅「怎麼了」
 - ❌「牛逼」→ ✅「猛」「扯」
-- 台灣反應詞：「真假」「不會吧」「誇張欸」「傻眼」「扯」
+- 藏鏡人反應詞：「真假」「不會吧」「誇張欸」「傻眼」「扯」「蛤？」「然後咧？」「有沒有搞錯」
 
 ### 根據「${niche}」產業，藏鏡人可以問：
 - 這個工作最辛苦/最爽的是什麼？
 - 一般人對你們這行最大的誤解是什麼？
 - 你們怎麼處理 XXX 問題？
 - 入行多久了？當初怎麼開始的？
+- 做這行遇過最扯的事是什麼？
 
 ### 如果是搞笑/幽默類內容：
 - 搞笑來自「情境的荒謬」，不是「說笑話」
@@ -527,11 +564,17 @@ function buildShootingTypeGuide(shootingType: string, niche: string, duration: n
 }
 
 function buildWordCountRequirements(duration: number, target: number, min: number, max: number): string {
-  return `## ⚠️ 字數要求（最重要！必須遵守！）
+  const segmentCount = duration <= 30 ? 4 : duration <= 60 ? 5 : 6
+  const perSegmentMin = Math.round(min / segmentCount)
+
+  return `## ⚠️ 字數要求（最重要！必須遵守！違反要重寫！）
 - 目標時長：${duration} 秒
 - 目標總字數：${target} 字（範圍：${min}-${max} 字）
-- 計算方式：每秒 4.5 個字
-- 每個 segment 的 voiceover 加起來，必須達到 ${min}-${max} 字！`
+- 計算方式：每秒約 4.5 個中文字
+- 建議 ${segmentCount} 個 segments，每個 segment 的 voiceover 平均 ${perSegmentMin}+ 字
+- ⚠️ 每個 segment 的 voiceover 不能只有一兩句話！至少要 ${perSegmentMin} 字以上！
+- ⚠️ 最終驗證：把所有 segment 的 voiceover 字數加總，必須達到 ${min}-${max} 字
+- 如果字數不夠，要增加對話內容、加入更多乾貨和細節！`
 }
 
 function buildTitleRequirements(topic: string): string {
@@ -541,14 +584,31 @@ function buildTitleRequirements(topic: string): string {
 - 標題要吸睛但必須與主題相關`
 }
 
-function buildGenerationRequirements(versions: number, duration: number, min: number, max: number): string {
-  return `## 生成要求
+function buildGenerationRequirements(versions: number, duration: number, min: number, max: number, shootingType: string = 'talking_head'): string {
+  let requirements = `## 生成要求
 1. 生成 ${versions} 個版本，每個版本要用不同的框架和風格
-2. ⚠️ 內容必須有價值！有乾貨！
+2. ⚠️ 內容必須有價值！有乾貨！不能只有空泛的概念！
 3. ⚠️ 口播內容要像正常台灣人說話！禁止大陸用語（你猜怎麼著、咋了、牛逼、整活等）
 4. 開頭 3 秒要能 HOOK 住觀眾
 5. 每個版本要有足夠的 segments 來填滿 ${duration} 秒
-6. 每段都要有具體的：畫面描述、口播內容、字卡、特效、音效
-7. 最終驗證：把所有 voiceover 字數加總，確保達到 ${min}-${max} 字
-8. ⚠️ 台灣人反應詞：真假、不會吧、誇張欸、傻眼、扯、靠、天啊`
+6. 每段的 voiceover 都要夠長、夠詳細，不能只有一兩句話！
+7. 每段都要有具體的：畫面描述、口播內容、字卡、特效、音效
+8. ⚠️ 最終驗證：把所有 voiceover 字數加總，確保達到 ${min}-${max} 字
+9. ⚠️ 台灣人反應詞：真假、不會吧、誇張欸、傻眼、扯、靠、天啊`
+
+  // 藏鏡人專用生成要求
+  if (shootingType === 'behind_camera') {
+    requirements += `
+
+## ⚠️ 藏鏡人腳本最終檢查（必須全部通過！）
+- ✅ 每段 voiceover 是否都有【藏鏡人】和【出鏡者】的對話？（沒有的話重寫！）
+- ✅ 藏鏡人是否用短句提問？（不能講長篇大論）
+- ✅ 出鏡者回答是否有乾貨、有具體內容？（不能空泛）
+- ✅ 對話是否自然？像朋友聊天而不是主持人訪問？
+- ✅ 是否用了台灣口語？（蛤、真假、然後咧、不會吧、誇張欸）
+- ✅ segmentName 是否用問答輪次（開場提問、第X輪問答、收尾）而不是 HOOK/CONTENT/CTA？
+- ❌ 如果任何 voiceover 看起來像單人口播，必須重寫成兩人對話！`
+  }
+
+  return requirements
 }
