@@ -18,6 +18,11 @@ const REELS: ReelItem[] = [
   { id: "DT-SPnrEZxO", type: "p" },
   { id: "DTp2W-EEUlq", type: "p" },
   { id: "DTj2E06EboD", type: "p" },
+  { id: "DTU43BSCXCw", type: "p" },
+  { id: "DTaIQpsk88v", type: "p" },
+  { id: "DTK79yok13-", type: "p" },
+  { id: "DTM3jowCUph", type: "p" },
+  { id: "DTdKK3dAURf", type: "p" },
 ]
 
 export default function InstagramReelsCarousel() {
@@ -62,18 +67,29 @@ export default function InstagramReelsCarousel() {
           {REELS.map((reel) => (
             <div
               key={reel.id}
-              className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-muted"
+              className="flex-shrink-0 w-[180px] sm:w-[200px] h-[320px] sm:h-[355px] rounded-xl overflow-hidden cursor-pointer relative group border bg-black"
               onClick={() => setSelectedReel(reel)}
             >
-              <iframe
-                src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
-                width="100%"
-                height="100%"
-                className="pointer-events-none border-0"
-                loading="lazy"
-              />
+              {/* 用較大的 iframe 再縮小，只顯示影片畫面 */}
+              <div
+                className="origin-top-left"
+                style={{
+                  width: 326,
+                  height: 580,
+                  transform: "scale(0.555)",
+                }}
+              >
+                <iframe
+                  src={`https://www.instagram.com/${reel.type}/${reel.id}/embed/`}
+                  width="326"
+                  height="580"
+                  className="pointer-events-none border-0"
+                  loading="lazy"
+                  allow="encrypted-media"
+                />
+              </div>
               {/* 點擊遮罩 */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                 <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                   <Play className="h-5 w-5 text-black fill-black ml-0.5" />
                 </div>
@@ -93,16 +109,17 @@ export default function InstagramReelsCarousel() {
         </Button>
       </div>
 
-      {/* 點擊彈窗 - 顯示完整 Instagram Embed */}
+      {/* 點擊彈窗 - 顯示完整 Instagram Embed（含內文） */}
       <Dialog open={!!selectedReel} onOpenChange={() => setSelectedReel(null)}>
-        <DialogContent className="max-w-[540px] p-0 overflow-hidden">
+        <DialogContent className="max-w-[540px] max-h-[90vh] p-0 overflow-y-auto">
           <DialogTitle className="sr-only">Instagram Reel</DialogTitle>
           {selectedReel && (
             <iframe
-              src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/`}
+              src={`https://www.instagram.com/${selectedReel.type}/${selectedReel.id}/embed/captioned/`}
               width="100%"
-              height="680"
+              height="750"
               className="border-0"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             />
           )}
         </DialogContent>
