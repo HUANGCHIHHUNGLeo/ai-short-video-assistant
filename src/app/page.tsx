@@ -85,7 +85,7 @@ export default function Home() {
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {quickActions.map((action) => (
           <Link key={action.title} href={action.href} className="block">
-            <Card className="h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
+            <Card className="relative h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
               <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
               <CardHeader className="pb-3 sm:pb-4 relative px-4 sm:px-6">
