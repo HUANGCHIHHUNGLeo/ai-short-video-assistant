@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Bot, CheckCircle2, FileText, Images, Lightbulb, Play, Sparkles, Video, Zap } from "lucide-react"
 import Link from "next/link"
+import InstagramReelsCarousel from "@/components/InstagramReelsCarousel"
 
 export default function Home() {
   const quickActions = [
@@ -76,6 +77,9 @@ export default function Home() {
           </p>
         </div>
       </div>
+
+      {/* 推薦影片 */}
+      <InstagramReelsCarousel />
 
       {/* 主要功能 */}
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
