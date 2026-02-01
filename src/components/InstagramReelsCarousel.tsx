@@ -118,7 +118,7 @@ export default function InstagramReelsCarousel() {
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="mb-2">
+      <div className="mb-2 overflow-hidden">
         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
           <Play className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           推薦影片

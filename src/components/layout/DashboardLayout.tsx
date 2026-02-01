@@ -246,7 +246,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in">
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full animate-fade-in overflow-x-hidden">
           {children}
         </main>
       </div>
