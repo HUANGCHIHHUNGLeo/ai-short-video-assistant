@@ -56,22 +56,22 @@ export default function Home() {
   ]
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8">
+    <div className="flex flex-col gap-3 sm:gap-6 lg:gap-8">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 sm:p-8 md:p-12 border">
+      <div className="relative overflow-hidden rounded-lg sm:rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-3 sm:p-8 md:p-12 border">
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-700/25" />
 
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-6">
+          <div className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1.5 rounded-full bg-primary/10 text-primary text-[10px] sm:text-sm font-medium mb-2 sm:mb-6">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
             AI 短影音內容創作平台
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-2 sm:mb-4">
+          <h1 className="text-lg sm:text-3xl md:text-4xl font-bold tracking-tight mb-1 sm:mb-4">
             專業內容，一鍵生成
           </h1>
 
-          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg">
+          <p className="text-muted-foreground text-xs sm:text-base lg:text-lg leading-relaxed">
             基於 SFM 流量變現系統，為內容創作者提供專業的 AI 輔助工具。
             從定位分析到腳本生成，全方位提升你的創作效率。
           </p>
@@ -82,25 +82,25 @@ export default function Home() {
       <InstagramReelsCarousel />
 
       {/* 主要功能 */}
-      <div className="grid gap-3 sm:gap-6 sm:grid-cols-2">
+      <div className="grid gap-2 sm:gap-6 sm:grid-cols-2">
         {quickActions.map((action) => (
           <Link key={action.title} href={action.href} className="block">
             <Card className="relative h-full cursor-pointer group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/30">
               <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${action.bgGlow} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
               {/* 手機版：橫向緊湊佈局 */}
-              <CardContent className="flex items-center gap-3 p-3 sm:hidden relative">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
-                  <action.icon className="h-5 w-5 text-white" />
+              <CardContent className="flex items-center gap-2.5 p-2.5 sm:hidden relative">
+                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
+                  <action.icon className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">{action.subtitle}</p>
+                  <p className="font-semibold text-xs">{action.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{action.subtitle}</p>
                 </div>
                 <Badge variant="secondary" className="font-medium text-[10px] flex-shrink-0">
                   {action.tag}
                 </Badge>
-                <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
               </CardContent>
 
               {/* 桌機版：垂直完整佈局 */}
@@ -144,11 +144,9 @@ export default function Home() {
 
       {/* 使用流程 */}
       <Card className="bg-muted/30">
-        <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
-          <CardTitle className="text-xs sm:text-lg text-center">簡單三步驟，快速生成專業內容</CardTitle>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-          <div className="flex flex-row items-start justify-center gap-3 sm:gap-6 md:gap-12 py-1 sm:py-4">
+        <CardContent className="px-2 sm:px-6 py-2.5 sm:py-6">
+          <p className="text-[10px] sm:text-lg font-semibold text-center mb-1.5 sm:mb-4">簡單三步驟，快速生成專業內容</p>
+          <div className="flex flex-row items-start justify-center gap-2 sm:gap-6 md:gap-12">
             {[
               { step: 1, title: "填寫背景資料", desc: "描述你的領域與目標受眾" },
               { step: 2, title: "設定內容需求", desc: "說明主題與期望呈現方式" },
@@ -156,11 +154,11 @@ export default function Home() {
             ].map((item, index) => (
               <div key={item.step} className="flex items-center gap-1 sm:gap-4">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-1 sm:mb-2 text-xs sm:text-base">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold mb-0.5 sm:mb-2 text-[10px] sm:text-base">
                     {item.step}
                   </div>
                   <p className="font-semibold text-[10px] sm:text-base">{item.title}</p>
-                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 max-w-[80px] sm:max-w-none">{item.desc}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 max-w-[70px] sm:max-w-none leading-tight">{item.desc}</p>
                 </div>
                 {index < 2 && (
                   <ArrowRight className="hidden sm:block h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
@@ -173,24 +171,34 @@ export default function Home() {
 
       {/* 其他工具 */}
       <div>
-        <h2 className="text-sm sm:text-xl font-semibold mb-2 sm:mb-4 flex items-center gap-2">
-          <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+        <h2 className="text-xs sm:text-xl font-semibold mb-1.5 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
+          <Zap className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary" />
           更多工具
         </h2>
-        <div className="grid gap-2 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
           {tools.map((tool) => (
             <Link key={tool.title} href={tool.href}>
               <Card className={`h-full cursor-pointer group transition-all duration-300 ${tool.color}`}>
-                <CardContent className="pt-3 sm:pt-6 px-3 sm:px-6 pb-3 sm:pb-6">
-                  <div className="flex items-center gap-2 sm:gap-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
-                      <tool.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                {/* 手機版：垂直圖標+標題 */}
+                <CardContent className="flex flex-col items-center gap-1.5 p-2.5 sm:hidden">
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <tool.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <h3 className="font-semibold text-[10px] text-center group-hover:text-primary transition-colors leading-tight">
+                    {tool.title}
+                  </h3>
+                </CardContent>
+                {/* 桌機版：橫向圖標+標題+描述 */}
+                <CardContent className="hidden sm:block pt-6 px-6 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                      <tool.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-xs sm:text-base group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold text-base group-hover:text-primary transition-colors">
                         {tool.title}
                       </h3>
-                      <p className="text-[10px] sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 leading-relaxed hidden sm:block">
+                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                         {tool.desc}
                       </p>
                     </div>
@@ -204,17 +212,17 @@ export default function Home() {
 
       {/* 功能特色 */}
       <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="py-3 sm:py-6 px-3 sm:px-6">
-          <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4">
+        <CardContent className="py-2 sm:py-6 px-2.5 sm:px-6">
+          <div className="grid gap-1 sm:gap-4 grid-cols-2 md:grid-cols-4">
             {[
               { icon: CheckCircle2, text: "台灣在地化口語腳本" },
               { icon: CheckCircle2, text: "多版本內容自由選擇" },
               { icon: CheckCircle2, text: "完整分鏡與配樂建議" },
               { icon: CheckCircle2, text: "一鍵複製立即使用" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5 sm:gap-2">
-                <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-medium">{item.text}</span>
+              <div key={i} className="flex items-center gap-1 sm:gap-2">
+                <item.icon className="h-3 w-3 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="text-[10px] sm:text-sm font-medium">{item.text}</span>
               </div>
             ))}
           </div>

@@ -179,6 +179,15 @@ export default function InstagramReelsCarousel() {
                     alt=""
                     className="w-full h-full object-cover"
                     draggable={false}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      // 圖片載入失敗時改用 proxy
+                      const img = e.currentTarget
+                      const proxyUrl = `/api/instagram-thumb?url=${encodeURIComponent(thumbnails[reel.id])}`
+                      if (!img.src.includes('/api/instagram-thumb')) {
+                        img.src = proxyUrl
+                      }
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-800 animate-pulse" />
