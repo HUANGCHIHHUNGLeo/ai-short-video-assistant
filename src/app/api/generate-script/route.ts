@@ -4,8 +4,8 @@ import { buildSystemPrompt, buildUserPrompt } from "@/lib/prompts"
 import { checkApiAuth, recordUsage, authError, saveGeneration } from "@/lib/auth/api-guard"
 import { trackApiCost } from "@/lib/cost-tracking"
 
-// Vercel 超時設定（Hobby 方案最多 60 秒，Pro 方案可到 300 秒）
-export const maxDuration = 60
+// 提高超時上限（streaming 可以跑更久）
+export const maxDuration = 120
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,11 +39,12 @@ export async function POST(request: NextRequest) {
       includeFrameworks: true,
     })
 
-    // 根據訂閱等級設定 token 上限：付費版可生成更完整的內容
+    // 根據訂閱等級設定 token 上限
     const isPremium = authResult.tier === 'pro' || authResult.tier === 'lifetime'
     const maxTokens = isPremium ? 16000 : 12000
 
-    const completion = await openai.chat.completions.create({
+    // 使用 streaming 避免超時
+    const stream = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
@@ -51,76 +52,115 @@ export async function POST(request: NextRequest) {
       ],
       temperature: 0.85,
       max_tokens: maxTokens,
-      response_format: { type: "json_object" }
+      response_format: { type: "json_object" },
+      stream: true,
+      stream_options: { include_usage: true }
     })
 
-    const content = completion.choices[0]?.message?.content || "{}"
+    let fullContent = ''
+    let promptTokens = 0
+    let completionTokens = 0
+    const encoder = new TextEncoder()
 
-    try {
-      const result = JSON.parse(content)
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || ''
+            if (content) {
+              fullContent += content
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'chunk', content })}\n\n`))
+            }
+            // 最後一個 chunk 會包含 usage
+            if (chunk.usage) {
+              promptTokens = chunk.usage.prompt_tokens
+              completionTokens = chunk.usage.completion_tokens
+            }
+          }
 
-      // 記錄使用量
-      await recordUsage(request, authResult.userId, 'script')
+          // 解析完整 JSON
+          let result: Record<string, unknown>
+          try {
+            result = JSON.parse(fullContent)
+          } catch {
+            result = {
+              versions: [{
+                id: "A",
+                style: "標準版",
+                styleDescription: "AI 生成的腳本",
+                framework: "HOOK-CONTENT-CTA",
+                script: {
+                  title: videoSettings.topic,
+                  segments: [],
+                  bgm: { style: "輕快", mood: "活潑", suggestions: [] },
+                  cta: "追蹤看更多～"
+                },
+                shootingTips: ["光線要夠", "收音要清楚", "多拍幾次"],
+                equipmentNeeded: ["手機", "腳架"],
+                rawContent: fullContent
+              }],
+              error: "解析腳本時發生問題，已返回基本格式"
+            }
+          }
 
-      // 追蹤 API 成本
-      if (completion.usage) {
-        await trackApiCost({
-          userId: authResult.userId || undefined,
-          featureType: 'script',
-          modelName: 'gpt-4o',
-          inputTokens: completion.usage.prompt_tokens,
-          outputTokens: completion.usage.completion_tokens,
-        })
+          // 記錄使用量
+          await recordUsage(request, authResult.userId, 'script')
+
+          // 追蹤 API 成本
+          if (promptTokens > 0 || completionTokens > 0) {
+            await trackApiCost({
+              userId: authResult.userId || undefined,
+              featureType: 'script',
+              modelName: 'gpt-4o',
+              inputTokens: promptTokens,
+              outputTokens: completionTokens,
+            })
+          }
+
+          // Pro/Lifetime 用戶保存生成記錄
+          let generationId: string | null = null
+          if (isPremium && (result.versions as Array<unknown>)?.length > 0) {
+            generationId = await saveGeneration({
+              userId: authResult.userId,
+              featureType: 'script',
+              title: `腳本 - ${videoSettings.topic}（${(result.versions as Array<unknown>).length}版本）`,
+              inputData: { creatorBackground, videoSettings, generateVersions },
+              outputData: result,
+              modelUsed: 'gpt-4o',
+              tokensUsed: promptTokens + completionTokens
+            })
+          }
+
+          // 發送最終結果（包含完整解析後的資料和 metadata）
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            type: 'done',
+            result,
+            generationId,
+            _creditConsumed: true,
+            _featureType: 'script',
+            _remainingCredits: authResult.remainingCredits,
+            _isGuest: authResult.isGuest
+          })}\n\n`))
+
+          controller.close()
+        } catch (error) {
+          console.error("Stream error:", error)
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            type: 'error',
+            error: '生成腳本時發生錯誤，請稍後再試'
+          })}\n\n`))
+          controller.close()
+        }
       }
+    })
 
-      // Pro/Lifetime 用戶保存生成記錄到 generations 表
-      const isPremium = authResult.tier === 'pro' || authResult.tier === 'lifetime'
-      let generationId: string | null = null
-      if (isPremium && result.versions?.length > 0) {
-        generationId = await saveGeneration({
-          userId: authResult.userId,
-          featureType: 'script',
-          title: `腳本 - ${videoSettings.topic}（${result.versions.length}版本）`,
-          inputData: { creatorBackground, videoSettings, generateVersions },
-          outputData: result,
-          modelUsed: 'gpt-4o',
-          tokensUsed: completion.usage?.total_tokens
-        })
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       }
-
-      return NextResponse.json({
-        ...result,
-        generationId,
-        _creditConsumed: true,
-        _featureType: 'script',
-        _remainingCredits: authResult.remainingCredits,
-        _isGuest: authResult.isGuest
-      })
-    } catch {
-      return NextResponse.json({
-        versions: [{
-          id: "A",
-          style: "標準版",
-          styleDescription: "AI 生成的腳本",
-          framework: "HOOK-CONTENT-CTA",
-          script: {
-            title: videoSettings.topic,
-            segments: [],
-            bgm: { style: "輕快", mood: "活潑", suggestions: [] },
-            cta: "追蹤看更多～"
-          },
-          shootingTips: ["光線要夠", "收音要清楚", "多拍幾次"],
-          equipmentNeeded: ["手機", "腳架"],
-          estimatedMetrics: {
-            completionRate: "50-60%",
-            engagementRate: "5-8%",
-            bestPostTime: "晚上 8-10 點"
-          },
-          rawContent: content
-        }],
-        error: "解析腳本時發生問題，已返回基本格式"
-      })
-    }
+    })
   } catch (error) {
     console.error("API Error:", error)
     return NextResponse.json(

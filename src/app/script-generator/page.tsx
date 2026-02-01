@@ -120,10 +120,10 @@ const EXAMPLE_TOPICS = [
 
 // 各方案的腳本版本數上限
 const TIER_SCRIPT_LIMITS: Record<string, number> = {
-  free: 2,      // 免費版固定 2 個
-  creator: 3,   // 創作者 3 個
-  pro: 5,       // 專業版 5 個
-  lifetime: 5,  // 終身版 5 個
+  free: 1,      // 免費版固定 1 個
+  creator: 2,   // 創作者 2 個
+  pro: 3,       // 專業版 3 個
+  lifetime: 3,  // 終身版 3 個
 }
 
 function ScriptGeneratorContent() {
@@ -143,13 +143,13 @@ function ScriptGeneratorContent() {
 
   // 根據訂閱等級決定可生成的版本數（等 credits 載入後才能確定）
   const tier = credits?.tier || 'free'
-  const maxVersions = creditsLoading ? 5 : (TIER_SCRIPT_LIMITS[tier] || 2) // 載入中時預設顯示最高值，避免誤導
-  const [generateCount, setGenerateCount] = useState(2) // 預設值，會在 useEffect 中更新
+  const maxVersions = creditsLoading ? 3 : (TIER_SCRIPT_LIMITS[tier] || 1) // 載入中時預設顯示最高值，避免誤導
+  const [generateCount, setGenerateCount] = useState(1) // 預設值，會在 useEffect 中更新
 
   // 當 credits 載入後，更新 generateCount 為該方案的上限
   useEffect(() => {
     if (credits?.tier) {
-      const limit = TIER_SCRIPT_LIMITS[credits.tier] || 5
+      const limit = TIER_SCRIPT_LIMITS[credits.tier] || 3
       setGenerateCount(limit)
       // 清除「載入中」的錯誤訊息
       if (creditError === '載入中...') {
@@ -340,7 +340,6 @@ function ScriptGeneratorContent() {
         const errorData = await response.json().catch(() => ({}))
         const errorMsg = errorData.error || `伺服器錯誤 (${response.status})`
 
-        // 針對不同錯誤碼給出更具體的提示
         if (response.status === 504 || response.status === 408) {
           alert("生成超時，請稍後再試。\n\n提示：可以嘗試減少生成版本數量")
         } else if (response.status === 401) {
@@ -353,24 +352,55 @@ function ScriptGeneratorContent() {
         return
       }
 
-      const data = await response.json()
+      // 處理 SSE streaming 回應
+      const reader = response.body?.getReader()
+      if (!reader) {
+        alert("生成失敗：無法讀取回應")
+        return
+      }
 
-      if (data.versions && data.versions.length > 0) {
-        // 成功生成後扣除額度
-        if (data._creditConsumed) {
-          useCredit('script')
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+
+        // 解析 SSE 事件
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || '' // 保留不完整的事件
+
+        for (const event of events) {
+          if (!event.startsWith('data: ')) continue
+          try {
+            const data = JSON.parse(event.slice(6))
+
+            if (data.type === 'done') {
+              // 收到完整結果
+              if (data.result?.versions?.length > 0) {
+                if (data._creditConsumed) {
+                  useCredit('script')
+                }
+                setGeneratedVersions(data.result.versions)
+                setActiveVersion(data.result.versions[0].id)
+                setStep(3)
+              } else if (data.result?.error) {
+                alert(`生成失敗：${data.result.error}`)
+              } else {
+                alert("生成失敗，請稍後再試")
+              }
+            } else if (data.type === 'error') {
+              alert(`生成失敗：${data.error}`)
+            }
+            // type === 'chunk' 不需要特別處理，只是保持連線活躍
+          } catch {
+            // 忽略解析失敗的事件
+          }
         }
-        setGeneratedVersions(data.versions)
-        setActiveVersion(data.versions[0].id)
-        setStep(3)
-      } else if (data.error) {
-        alert(`生成失敗：${data.error}`)
-      } else {
-        alert("生成失敗，請稍後再試")
       }
     } catch (error) {
       console.error("Error:", error)
-      // 區分網路錯誤和其他錯誤
       if (error instanceof TypeError && error.message.includes('fetch')) {
         alert("網路連線失敗，請檢查網路狀態")
       } else {
@@ -965,21 +995,21 @@ function ScriptGeneratorContent() {
                   } className="text-[10px] sm:text-xs shrink-0">
                     {videoSettings.duration <= 30 ? "極短 / 高完播" :
                      videoSettings.duration <= 60 ? "標準 / 最常見" :
-                     videoSettings.duration <= 90 ? "中長 / 教學適合" : "長片 / 深度內容"}
+                     videoSettings.duration <= 90 ? "中長 / 教學適合" : "長片 / 深度內容（上限）"}
                   </Badge>
                 </div>
                 <Slider
                   value={[videoSettings.duration]}
                   onValueChange={(v) => setVideoSettings({ ...videoSettings, duration: v[0] })}
                   min={15}
-                  max={180}
+                  max={120}
                   step={5}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>15秒</span>
+                  <span>45秒</span>
                   <span>60秒</span>
                   <span>120秒</span>
-                  <span>180秒</span>
                 </div>
               </div>
 
@@ -1033,9 +1063,9 @@ function ScriptGeneratorContent() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {maxVersions >= 3 && <SelectItem value="3">3 個版本{maxVersions === 3 ? '（上限）' : ''}</SelectItem>}
-                        {maxVersions >= 4 && <SelectItem value="4">4 個版本</SelectItem>}
-                        {maxVersions >= 5 && <SelectItem value="5">5 個版本（推薦）</SelectItem>}
+                        <SelectItem value="1">1 個版本</SelectItem>
+                        {maxVersions >= 2 && <SelectItem value="2">2 個版本{maxVersions === 2 ? '（上限）' : ''}</SelectItem>}
+                        {maxVersions >= 3 && <SelectItem value="3">3 個版本（推薦）{maxVersions === 3 ? '' : ''}</SelectItem>}
                       </SelectContent>
                     </Select>
                   )}
